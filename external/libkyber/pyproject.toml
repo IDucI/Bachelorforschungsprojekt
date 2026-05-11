@@ -1,0 +1,27 @@
+[build-system]
+requires = ["setuptools >= 64.0", "setuptools_scm>=8"]
+build-backend = "setuptools.build_meta"
+
+[project]
+dynamic = ["version"]
+description="descr"
+name="kyber"
+authors=[{name="Tarick Welling", email="tarick.welling@informatik.uni-stuttgart.de"}]
+requires-python=">=3.10"
+dependencies = [] # "loguru"
+license = {file = "LICENSE.txt"}
+readme="README.md"
+
+[project.urls]
+# Homepage = "https://"
+# Documentation = "https://"
+Repository = "https://github.com/trick2011/libkyber"
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.packages.find]
+where = ["kyber"]
+
+[tool.setuptools.dynamic]
+version = {attr = "__version__"}

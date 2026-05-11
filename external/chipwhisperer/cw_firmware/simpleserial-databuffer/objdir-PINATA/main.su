@@ -1,0 +1,4 @@
+main.c:33:9:subroutines	16	static
+main.c:55:9:metainfo	8	static
+main.c:71:9:set_value	24	static
+main.c:91:5:main	8	static

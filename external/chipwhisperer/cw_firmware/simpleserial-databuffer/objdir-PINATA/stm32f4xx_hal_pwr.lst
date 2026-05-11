@@ -1,0 +1,1337 @@
+   1              		.cpu cortex-m4
+   2              		.arch armv7e-m
+   3              		.fpu softvfp
+   4              		.eabi_attribute 20, 1
+   5              		.eabi_attribute 21, 1
+   6              		.eabi_attribute 23, 3
+   7              		.eabi_attribute 24, 1
+   8              		.eabi_attribute 25, 1
+   9              		.eabi_attribute 26, 1
+  10              		.eabi_attribute 30, 4
+  11              		.eabi_attribute 34, 1
+  12              		.eabi_attribute 18, 4
+  13              		.file	"stm32f4xx_hal_pwr.c"
+  14              		.text
+  15              	.Ltext0:
+  16              		.cfi_sections	.debug_frame
+  17              		.file 1 "../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c"
+  18              		.section	.text.HAL_PWR_DeInit,"ax",%progbits
+  19              		.align	1
+  20              		.global	HAL_PWR_DeInit
+  21              		.syntax unified
+  22              		.thumb
+  23              		.thumb_func
+  25              	HAL_PWR_DeInit:
+  26              	.LFB134:
+   1:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c **** /**
+   2:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   ******************************************************************************
+   3:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   * @file    stm32f4xx_hal_pwr.c
+   4:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   * @author  MCD Application Team
+   5:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   * @brief   PWR HAL module driver.
+   6:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   *          This file provides firmware functions to manage the following 
+   7:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   *          functionalities of the Power Controller (PWR) peripheral:
+   8:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   *           + Initialization and de-initialization functions
+   9:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   *           + Peripheral Control functions 
+  10:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   *         
+  11:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   ******************************************************************************
+  12:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   * @attention
+  13:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   *
+  14:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   * Copyright (c) 2017 STMicroelectronics.
+  15:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   * All rights reserved.
+  16:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   *
+  17:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   * This software is licensed under terms that can be found in the LICENSE file in
+  18:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   * the root directory of this software component.
+  19:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   * If no LICENSE file comes with this software, it is provided AS-IS.
+  20:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   ******************************************************************************
+  21:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   */ 
+  22:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c **** 
+  23:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c **** /* Includes ------------------------------------------------------------------*/
+  24:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c **** #include "stm32f4xx_hal.h"
+  25:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c **** 
+  26:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c **** /** @addtogroup STM32F4xx_HAL_Driver
+  27:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   * @{
+  28:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   */
+  29:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c **** 
+  30:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c **** /** @defgroup PWR PWR
+  31:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   * @brief PWR HAL module driver
+  32:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   * @{
+  33:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   */
+  34:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c **** 
+  35:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c **** #ifdef HAL_PWR_MODULE_ENABLED
+  36:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c **** 
+  37:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c **** /* Private typedef -----------------------------------------------------------*/
+  38:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c **** /* Private define ------------------------------------------------------------*/
+  39:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c **** /** @addtogroup PWR_Private_Constants
+  40:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   * @{
+  41:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   */
+  42:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   
+  43:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c **** /** @defgroup PWR_PVD_Mode_Mask PWR PVD Mode Mask
+  44:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   * @{
+  45:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   */     
+  46:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c **** #define PVD_MODE_IT               0x00010000U
+  47:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c **** #define PVD_MODE_EVT              0x00020000U
+  48:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c **** #define PVD_RISING_EDGE           0x00000001U
+  49:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c **** #define PVD_FALLING_EDGE          0x00000002U
+  50:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c **** /**
+  51:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   * @}
+  52:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   */
+  53:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c **** 
+  54:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c **** /**
+  55:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   * @}
+  56:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   */    
+  57:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c **** /* Private macro -------------------------------------------------------------*/
+  58:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c **** /* Private variables ---------------------------------------------------------*/
+  59:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c **** /* Private function prototypes -----------------------------------------------*/
+  60:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c **** /* Private functions ---------------------------------------------------------*/
+  61:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c **** 
+  62:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c **** /** @defgroup PWR_Exported_Functions PWR Exported Functions
+  63:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   * @{
+  64:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   */
+  65:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c **** 
+  66:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c **** /** @defgroup PWR_Exported_Functions_Group1 Initialization and de-initialization functions 
+  67:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   *  @brief    Initialization and de-initialization functions
+  68:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   *
+  69:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c **** @verbatim
+  70:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****  ===============================================================================
+  71:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****               ##### Initialization and de-initialization functions #####
+  72:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****  ===============================================================================
+  73:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****     [..]
+  74:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****       After reset, the backup domain (RTC registers, RTC backup data 
+  75:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****       registers and backup SRAM) is protected against possible unwanted 
+  76:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****       write accesses. 
+  77:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****       To enable access to the RTC Domain and RTC registers, proceed as follows:
+  78:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****         (+) Enable the Power Controller (PWR) APB1 interface clock using the
+  79:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****             __HAL_RCC_PWR_CLK_ENABLE() macro.
+  80:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****         (+) Enable access to RTC domain using the HAL_PWR_EnableBkUpAccess() function.
+  81:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****  
+  82:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c **** @endverbatim
+  83:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   * @{
+  84:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   */
+  85:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c **** 
+  86:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c **** /**
+  87:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   * @brief Deinitializes the HAL PWR peripheral registers to their default reset values.
+  88:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   * @retval None
+  89:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   */
+  90:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c **** void HAL_PWR_DeInit(void)
+  91:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c **** {
+  27              		.loc 1 91 1 view -0
+  28              		.cfi_startproc
+  29              		@ args = 0, pretend = 0, frame = 0
+  30              		@ frame_needed = 0, uses_anonymous_args = 0
+  31              		@ link register save eliminated.
+  92:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   __HAL_RCC_PWR_FORCE_RESET();
+  32              		.loc 1 92 3 view .LVU1
+  33 0000 044B     		ldr	r3, .L2
+  34 0002 1A6A     		ldr	r2, [r3, #32]
+  35 0004 42F08052 		orr	r2, r2, #268435456
+  36 0008 1A62     		str	r2, [r3, #32]
+  93:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   __HAL_RCC_PWR_RELEASE_RESET();
+  37              		.loc 1 93 3 view .LVU2
+  38 000a 1A6A     		ldr	r2, [r3, #32]
+  39 000c 22F08052 		bic	r2, r2, #268435456
+  40 0010 1A62     		str	r2, [r3, #32]
+  94:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c **** }
+  41              		.loc 1 94 1 is_stmt 0 view .LVU3
+  42 0012 7047     		bx	lr
+  43              	.L3:
+  44              		.align	2
+  45              	.L2:
+  46 0014 00380240 		.word	1073887232
+  47              		.cfi_endproc
+  48              	.LFE134:
+  50              		.section	.text.HAL_PWR_EnableBkUpAccess,"ax",%progbits
+  51              		.align	1
+  52              		.global	HAL_PWR_EnableBkUpAccess
+  53              		.syntax unified
+  54              		.thumb
+  55              		.thumb_func
+  57              	HAL_PWR_EnableBkUpAccess:
+  58              	.LFB135:
+  95:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c **** 
+  96:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c **** /**
+  97:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   * @brief Enables access to the backup domain (RTC registers, RTC 
+  98:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   *         backup data registers and backup SRAM).
+  99:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   * @note If the HSE divided by 2, 3, ..31 is used as the RTC clock, the 
+ 100:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   *         Backup Domain Access should be kept enabled.
+ 101:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   * @note The following sequence is required to bypass the delay between
+ 102:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   *         DBP bit programming and the effective enabling  of the backup domain.
+ 103:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   *         Please check the Errata Sheet for more details under "Possible delay
+ 104:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   *         in backup domain protection disabling/enabling after programming the
+ 105:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   *         DBP bit" section.
+ 106:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   * @retval None
+ 107:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   */
+ 108:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c **** void HAL_PWR_EnableBkUpAccess(void)
+ 109:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c **** {
+  59              		.loc 1 109 1 is_stmt 1 view -0
+  60              		.cfi_startproc
+  61              		@ args = 0, pretend = 0, frame = 8
+  62              		@ frame_needed = 0, uses_anonymous_args = 0
+  63              		@ link register save eliminated.
+ 110:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   __IO uint32_t dummyread;
+  64              		.loc 1 110 3 view .LVU5
+ 111:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   *(__IO uint32_t *) CR_DBP_BB = (uint32_t)ENABLE;
+  65              		.loc 1 111 3 view .LVU6
+  66              		.loc 1 111 32 is_stmt 0 view .LVU7
+  67 0000 044B     		ldr	r3, .L5
+  68 0002 0122     		movs	r2, #1
+ 109:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   __IO uint32_t dummyread;
+  69              		.loc 1 109 1 view .LVU8
+  70 0004 82B0     		sub	sp, sp, #8
+  71              	.LCFI0:
+  72              		.cfi_def_cfa_offset 8
+  73              		.loc 1 111 32 view .LVU9
+  74 0006 1A62     		str	r2, [r3, #32]
+ 112:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   dummyread = PWR->CR;
+  75              		.loc 1 112 3 is_stmt 1 view .LVU10
+  76              		.loc 1 112 18 is_stmt 0 view .LVU11
+  77 0008 034B     		ldr	r3, .L5+4
+  78 000a 1B68     		ldr	r3, [r3]
+  79              		.loc 1 112 13 view .LVU12
+  80 000c 0193     		str	r3, [sp, #4]
+ 113:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   UNUSED(dummyread);
+  81              		.loc 1 113 3 is_stmt 1 view .LVU13
+  82 000e 019B     		ldr	r3, [sp, #4]
+ 114:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c **** }
+  83              		.loc 1 114 1 is_stmt 0 view .LVU14
+  84 0010 02B0     		add	sp, sp, #8
+  85              	.LCFI1:
+  86              		.cfi_def_cfa_offset 0
+  87              		@ sp needed
+  88 0012 7047     		bx	lr
+  89              	.L6:
+  90              		.align	2
+  91              	.L5:
+  92 0014 00000E42 		.word	1108213760
+  93 0018 00700040 		.word	1073770496
+  94              		.cfi_endproc
+  95              	.LFE135:
+  97              		.section	.text.HAL_PWR_DisableBkUpAccess,"ax",%progbits
+  98              		.align	1
+  99              		.global	HAL_PWR_DisableBkUpAccess
+ 100              		.syntax unified
+ 101              		.thumb
+ 102              		.thumb_func
+ 104              	HAL_PWR_DisableBkUpAccess:
+ 105              	.LFB136:
+ 115:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c **** 
+ 116:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c **** /**
+ 117:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   * @brief Disables access to the backup domain (RTC registers, RTC 
+ 118:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   *         backup data registers and backup SRAM).
+ 119:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   * @note If the HSE divided by 2, 3, ..31 is used as the RTC clock, the 
+ 120:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   *         Backup Domain Access should be kept enabled.
+ 121:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   * @note The following sequence is required to bypass the delay between
+ 122:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   *         DBP bit programming and the effective disabling  of the backup domain.
+ 123:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   *         Please check the Errata Sheet for more details under "Possible delay
+ 124:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   *         in backup domain protection disabling/enabling after programming the
+ 125:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   *         DBP bit" section.
+ 126:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   * @retval None
+ 127:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   */
+ 128:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c **** void HAL_PWR_DisableBkUpAccess(void)
+ 129:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c **** {
+ 106              		.loc 1 129 1 is_stmt 1 view -0
+ 107              		.cfi_startproc
+ 108              		@ args = 0, pretend = 0, frame = 8
+ 109              		@ frame_needed = 0, uses_anonymous_args = 0
+ 110              		@ link register save eliminated.
+ 130:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   __IO uint32_t dummyread;
+ 111              		.loc 1 130 3 view .LVU16
+ 131:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   *(__IO uint32_t *) CR_DBP_BB = (uint32_t)DISABLE;
+ 112              		.loc 1 131 3 view .LVU17
+ 113              		.loc 1 131 32 is_stmt 0 view .LVU18
+ 114 0000 044B     		ldr	r3, .L8
+ 115 0002 0022     		movs	r2, #0
+ 129:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   __IO uint32_t dummyread;
+ 116              		.loc 1 129 1 view .LVU19
+ 117 0004 82B0     		sub	sp, sp, #8
+ 118              	.LCFI2:
+ 119              		.cfi_def_cfa_offset 8
+ 120              		.loc 1 131 32 view .LVU20
+ 121 0006 1A62     		str	r2, [r3, #32]
+ 132:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   dummyread = PWR->CR;
+ 122              		.loc 1 132 3 is_stmt 1 view .LVU21
+ 123              		.loc 1 132 18 is_stmt 0 view .LVU22
+ 124 0008 034B     		ldr	r3, .L8+4
+ 125 000a 1B68     		ldr	r3, [r3]
+ 126              		.loc 1 132 13 view .LVU23
+ 127 000c 0193     		str	r3, [sp, #4]
+ 133:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   UNUSED(dummyread);
+ 128              		.loc 1 133 3 is_stmt 1 view .LVU24
+ 129 000e 019B     		ldr	r3, [sp, #4]
+ 134:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c **** }
+ 130              		.loc 1 134 1 is_stmt 0 view .LVU25
+ 131 0010 02B0     		add	sp, sp, #8
+ 132              	.LCFI3:
+ 133              		.cfi_def_cfa_offset 0
+ 134              		@ sp needed
+ 135 0012 7047     		bx	lr
+ 136              	.L9:
+ 137              		.align	2
+ 138              	.L8:
+ 139 0014 00000E42 		.word	1108213760
+ 140 0018 00700040 		.word	1073770496
+ 141              		.cfi_endproc
+ 142              	.LFE136:
+ 144              		.section	.text.HAL_PWR_ConfigPVD,"ax",%progbits
+ 145              		.align	1
+ 146              		.global	HAL_PWR_ConfigPVD
+ 147              		.syntax unified
+ 148              		.thumb
+ 149              		.thumb_func
+ 151              	HAL_PWR_ConfigPVD:
+ 152              	.LVL0:
+ 153              	.LFB137:
+ 135:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c **** 
+ 136:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c **** /**
+ 137:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   * @}
+ 138:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   */
+ 139:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c **** 
+ 140:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c **** /** @defgroup PWR_Exported_Functions_Group2 Peripheral Control functions 
+ 141:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   *  @brief Low Power modes configuration functions 
+ 142:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   *
+ 143:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c **** @verbatim
+ 144:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c **** 
+ 145:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****  ===============================================================================
+ 146:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****                  ##### Peripheral Control functions #####
+ 147:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****  ===============================================================================
+ 148:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****      
+ 149:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****     *** PVD configuration ***
+ 150:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****     =========================
+ 151:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****     [..]
+ 152:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****       (+) The PVD is used to monitor the VDD power supply by comparing it to a 
+ 153:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****           threshold selected by the PVD Level (PLS[2:0] bits in the PWR_CR).
+ 154:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****       (+) A PVDO flag is available to indicate if VDD/VDDA is higher or lower 
+ 155:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****           than the PVD threshold. This event is internally connected to the EXTI 
+ 156:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****           line16 and can generate an interrupt if enabled. This is done through
+ 157:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****           __HAL_PWR_PVD_EXTI_ENABLE_IT() macro.
+ 158:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****       (+) The PVD is stopped in Standby mode.
+ 159:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c **** 
+ 160:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****     *** Wake-up pin configuration ***
+ 161:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****     ================================
+ 162:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****     [..]
+ 163:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****       (+) Wake-up pin is used to wake up the system from Standby mode. This pin is 
+ 164:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****           forced in input pull-down configuration and is active on rising edges.
+ 165:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****       (+) There is one Wake-up pin: Wake-up Pin 1 on PA.00.
+ 166:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c **** 	   (++) For STM32F446xx there are two Wake-Up pins: Pin1 on PA.00 and Pin2 on PC.13
+ 167:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****            (++) For STM32F410xx/STM32F412xx/STM32F413xx/STM32F423xx  there are three Wake-Up pins: 
+ 168:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c **** 
+ 169:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****     *** Low Power modes configuration ***
+ 170:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****     =====================================
+ 171:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****     [..]
+ 172:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****       The devices feature 3 low-power modes:
+ 173:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****       (+) Sleep mode: Cortex-M4 core stopped, peripherals kept running.
+ 174:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****       (+) Stop mode: all clocks are stopped, regulator running, regulator 
+ 175:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****           in low power mode
+ 176:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****       (+) Standby mode: 1.2V domain powered off.
+ 177:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****    
+ 178:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****    *** Sleep mode ***
+ 179:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****    ==================
+ 180:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****     [..]
+ 181:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****       (+) Entry:
+ 182:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****         The Sleep mode is entered by using the HAL_PWR_EnterSLEEPMode(Regulator, SLEEPEntry)
+ 183:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****               functions with
+ 184:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****           (++) PWR_SLEEPENTRY_WFI: enter SLEEP mode with WFI instruction
+ 185:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****           (++) PWR_SLEEPENTRY_WFE: enter SLEEP mode with WFE instruction
+ 186:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****           (++) PWR_SLEEPENTRY_WFE_NO_EVT_CLEAR: Enter SLEEP mode with WFE instruction and
+ 187:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****                                                 no clear of pending event before.
+ 188:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****       
+ 189:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****       -@@- The Regulator parameter is not used for the STM32F4 family 
+ 190:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****               and is kept as parameter just to maintain compatibility with the 
+ 191:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****               lower power families (STM32L).
+ 192:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****       (+) Exit:
+ 193:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****         Any peripheral interrupt acknowledged by the nested vectored interrupt 
+ 194:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****               controller (NVIC) can wake up the device from Sleep mode.
+ 195:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c **** 
+ 196:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****    *** Stop mode ***
+ 197:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****    =================
+ 198:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****     [..]
+ 199:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****       In Stop mode, all clocks in the 1.2V domain are stopped, the PLL, the HSI,
+ 200:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****       and the HSE RC oscillators are disabled. Internal SRAM and register contents 
+ 201:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****       are preserved.
+ 202:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****       The voltage regulator can be configured either in normal or low-power mode.
+ 203:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****       To minimize the consumption In Stop mode, FLASH can be powered off before 
+ 204:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****       entering the Stop mode using the HAL_PWREx_EnableFlashPowerDown() function.
+ 205:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****       It can be switched on again by software after exiting the Stop mode using
+ 206:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****       the HAL_PWREx_DisableFlashPowerDown() function. 
+ 207:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c **** 
+ 208:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****       (+) Entry:
+ 209:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****          The Stop mode is entered using the HAL_PWR_EnterSTOPMode(Regulator, STOPEntry) 
+ 210:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****              function with:
+ 211:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****        (++) Regulator:
+ 212:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****         (+++) Main regulator ON.
+ 213:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****         (+++) Low Power regulator ON.
+ 214:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****        (++) STOPEntry:
+ 215:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****         (+++) PWR_STOPENTRY_WFI              : Enter STOP mode with WFI instruction.
+ 216:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****         (+++) PWR_STOPENTRY_WFE              : Enter STOP mode with WFE instruction and
+ 217:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****                                                clear of pending events before.
+ 218:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****         (+++) PWR_STOPENTRY_WFE_NO_EVT_CLEAR : Enter STOP mode with WFE instruction and
+ 219:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****                                                no clear of pending event before.
+ 220:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****       (+) Exit:
+ 221:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****         Any EXTI Line (Internal or External) configured in Interrupt/Event mode.
+ 222:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c **** 
+ 223:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****    *** Standby mode ***
+ 224:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****    ====================
+ 225:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****     [..]
+ 226:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****     (+)
+ 227:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****       The Standby mode allows to achieve the lowest power consumption. It is based 
+ 228:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****       on the Cortex-M4 deep sleep mode, with the voltage regulator disabled. 
+ 229:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****       The 1.2V domain is consequently powered off. The PLL, the HSI oscillator and 
+ 230:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****       the HSE oscillator are also switched off. SRAM and register contents are lost 
+ 231:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****       except for the RTC registers, RTC backup registers, backup SRAM and Standby 
+ 232:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****       circuitry.
+ 233:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****    
+ 234:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****       The voltage regulator is OFF.
+ 235:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****       
+ 236:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****       (++) Entry:
+ 237:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****         (+++) The Standby mode is entered using the HAL_PWR_EnterSTANDBYMode() function.
+ 238:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****       (++) Exit:
+ 239:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****         (+++) WKUP pin rising edge, RTC alarm (Alarm A and Alarm B), RTC wake-up,
+ 240:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****              tamper event, time-stamp event, external reset in NRST pin, IWDG reset.
+ 241:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c **** 
+ 242:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****    *** Auto-wake-up (AWU) from low-power mode ***
+ 243:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****    =============================================
+ 244:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****     [..]
+ 245:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****     
+ 246:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****      (+) The MCU can be woken up from low-power mode by an RTC Alarm event, an RTC 
+ 247:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****       Wake-up event, a tamper event or a time-stamp event, without depending on 
+ 248:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****       an external interrupt (Auto-wake-up mode).
+ 249:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c **** 
+ 250:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****       (+) RTC auto-wake-up (AWU) from the Stop and Standby modes
+ 251:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****        
+ 252:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****         (++) To wake up from the Stop mode with an RTC alarm event, it is necessary to 
+ 253:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****               configure the RTC to generate the RTC alarm using the HAL_RTC_SetAlarm_IT() function.
+ 254:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c **** 
+ 255:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****         (++) To wake up from the Stop mode with an RTC Tamper or time stamp event, it 
+ 256:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****              is necessary to configure the RTC to detect the tamper or time stamp event using the
+ 257:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****                 HAL_RTCEx_SetTimeStamp_IT() or HAL_RTCEx_SetTamper_IT() functions.
+ 258:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****                   
+ 259:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****         (++) To wake up from the Stop mode with an RTC Wake-up event, it is necessary to
+ 260:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****               configure the RTC to generate the RTC Wake-up event using the HAL_RTCEx_SetWakeUpTime
+ 261:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c **** 
+ 262:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c **** @endverbatim
+ 263:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   * @{
+ 264:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   */
+ 265:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c **** 
+ 266:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c **** /**
+ 267:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   * @brief Configures the voltage threshold detected by the Power Voltage Detector(PVD).
+ 268:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   * @param sConfigPVD pointer to an PWR_PVDTypeDef structure that contains the configuration
+ 269:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   *        information for the PVD.
+ 270:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   * @note Refer to the electrical characteristics of your device datasheet for
+ 271:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   *         more details about the voltage threshold corresponding to each 
+ 272:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   *         detection level.
+ 273:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   * @retval None
+ 274:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   */
+ 275:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c **** void HAL_PWR_ConfigPVD(PWR_PVDTypeDef *sConfigPVD)
+ 276:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c **** {
+ 154              		.loc 1 276 1 is_stmt 1 view -0
+ 155              		.cfi_startproc
+ 156              		@ args = 0, pretend = 0, frame = 0
+ 157              		@ frame_needed = 0, uses_anonymous_args = 0
+ 158              		@ link register save eliminated.
+ 277:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   /* Check the parameters */
+ 278:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   assert_param(IS_PWR_PVD_LEVEL(sConfigPVD->PVDLevel));
+ 159              		.loc 1 278 3 view .LVU27
+ 279:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   assert_param(IS_PWR_PVD_MODE(sConfigPVD->Mode));
+ 160              		.loc 1 279 3 view .LVU28
+ 280:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   
+ 281:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   /* Set PLS[7:5] bits according to PVDLevel value */
+ 282:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   MODIFY_REG(PWR->CR, PWR_CR_PLS, sConfigPVD->PVDLevel);
+ 161              		.loc 1 282 3 view .LVU29
+ 162 0000 194A     		ldr	r2, .L27
+ 163 0002 0168     		ldr	r1, [r0]
+ 164 0004 1368     		ldr	r3, [r2]
+ 165 0006 23F0E003 		bic	r3, r3, #224
+ 166 000a 0B43     		orrs	r3, r3, r1
+ 167 000c 1360     		str	r3, [r2]
+ 283:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   
+ 284:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   /* Clear any previous config. Keep it clear if no event or IT mode is selected */
+ 285:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   __HAL_PWR_PVD_EXTI_DISABLE_EVENT();
+ 168              		.loc 1 285 3 view .LVU30
+ 169 000e 174B     		ldr	r3, .L27+4
+ 170 0010 5A68     		ldr	r2, [r3, #4]
+ 171 0012 22F48032 		bic	r2, r2, #65536
+ 172 0016 5A60     		str	r2, [r3, #4]
+ 286:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   __HAL_PWR_PVD_EXTI_DISABLE_IT();
+ 173              		.loc 1 286 3 view .LVU31
+ 174 0018 1A68     		ldr	r2, [r3]
+ 175 001a 22F48032 		bic	r2, r2, #65536
+ 176 001e 1A60     		str	r2, [r3]
+ 287:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   __HAL_PWR_PVD_EXTI_DISABLE_RISING_EDGE();
+ 177              		.loc 1 287 3 view .LVU32
+ 178 0020 9A68     		ldr	r2, [r3, #8]
+ 179 0022 22F48032 		bic	r2, r2, #65536
+ 180 0026 9A60     		str	r2, [r3, #8]
+ 288:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   __HAL_PWR_PVD_EXTI_DISABLE_FALLING_EDGE(); 
+ 181              		.loc 1 288 3 view .LVU33
+ 182 0028 DA68     		ldr	r2, [r3, #12]
+ 183 002a 22F48032 		bic	r2, r2, #65536
+ 184 002e DA60     		str	r2, [r3, #12]
+ 289:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c **** 
+ 290:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   /* Configure interrupt mode */
+ 291:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   if((sConfigPVD->Mode & PVD_MODE_IT) == PVD_MODE_IT)
+ 185              		.loc 1 291 3 view .LVU34
+ 186              		.loc 1 291 17 is_stmt 0 view .LVU35
+ 187 0030 4268     		ldr	r2, [r0, #4]
+ 188              		.loc 1 291 5 view .LVU36
+ 189 0032 D103     		lsls	r1, r2, #15
+ 292:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   {
+ 293:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****     __HAL_PWR_PVD_EXTI_ENABLE_IT();
+ 190              		.loc 1 293 5 is_stmt 1 view .LVU37
+ 191 0034 42BF     		ittt	mi
+ 192 0036 1968     		ldrmi	r1, [r3]
+ 193 0038 41F48031 		orrmi	r1, r1, #65536
+ 194 003c 1960     		strmi	r1, [r3]
+ 294:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   }
+ 295:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   
+ 296:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   /* Configure event mode */
+ 297:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   if((sConfigPVD->Mode & PVD_MODE_EVT) == PVD_MODE_EVT)
+ 195              		.loc 1 297 3 view .LVU38
+ 196              		.loc 1 297 5 is_stmt 0 view .LVU39
+ 197 003e 9003     		lsls	r0, r2, #14
+ 198              	.LVL1:
+ 298:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   {
+ 299:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****     __HAL_PWR_PVD_EXTI_ENABLE_EVENT();
+ 199              		.loc 1 299 5 is_stmt 1 view .LVU40
+ 200 0040 42BF     		ittt	mi
+ 201 0042 5968     		ldrmi	r1, [r3, #4]
+ 202 0044 41F48031 		orrmi	r1, r1, #65536
+ 203 0048 5960     		strmi	r1, [r3, #4]
+ 300:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   }
+ 301:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   
+ 302:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   /* Configure the edge */
+ 303:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   if((sConfigPVD->Mode & PVD_RISING_EDGE) == PVD_RISING_EDGE)
+ 204              		.loc 1 303 3 view .LVU41
+ 205              		.loc 1 303 5 is_stmt 0 view .LVU42
+ 206 004a D107     		lsls	r1, r2, #31
+ 304:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   {
+ 305:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****     __HAL_PWR_PVD_EXTI_ENABLE_RISING_EDGE();
+ 207              		.loc 1 305 5 is_stmt 1 view .LVU43
+ 208 004c 41BF     		itttt	mi
+ 209 004e 0749     		ldrmi	r1, .L27+4
+ 210 0050 8B68     		ldrmi	r3, [r1, #8]
+ 211 0052 43F48033 		orrmi	r3, r3, #65536
+ 212 0056 8B60     		strmi	r3, [r1, #8]
+ 306:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   }
+ 307:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   
+ 308:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   if((sConfigPVD->Mode & PVD_FALLING_EDGE) == PVD_FALLING_EDGE)
+ 213              		.loc 1 308 3 view .LVU44
+ 214              		.loc 1 308 5 is_stmt 0 view .LVU45
+ 215 0058 9307     		lsls	r3, r2, #30
+ 309:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   {
+ 310:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****     __HAL_PWR_PVD_EXTI_ENABLE_FALLING_EDGE();
+ 216              		.loc 1 310 5 is_stmt 1 view .LVU46
+ 217 005a 41BF     		itttt	mi
+ 218 005c 034A     		ldrmi	r2, .L27+4
+ 219 005e D368     		ldrmi	r3, [r2, #12]
+ 220 0060 43F48033 		orrmi	r3, r3, #65536
+ 221 0064 D360     		strmi	r3, [r2, #12]
+ 311:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   }
+ 312:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c **** }
+ 222              		.loc 1 312 1 is_stmt 0 view .LVU47
+ 223 0066 7047     		bx	lr
+ 224              	.L28:
+ 225              		.align	2
+ 226              	.L27:
+ 227 0068 00700040 		.word	1073770496
+ 228 006c 003C0140 		.word	1073822720
+ 229              		.cfi_endproc
+ 230              	.LFE137:
+ 232              		.section	.text.HAL_PWR_EnablePVD,"ax",%progbits
+ 233              		.align	1
+ 234              		.global	HAL_PWR_EnablePVD
+ 235              		.syntax unified
+ 236              		.thumb
+ 237              		.thumb_func
+ 239              	HAL_PWR_EnablePVD:
+ 240              	.LFB138:
+ 313:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c **** 
+ 314:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c **** /**
+ 315:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   * @brief Enables the Power Voltage Detector(PVD).
+ 316:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   * @retval None
+ 317:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   */
+ 318:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c **** void HAL_PWR_EnablePVD(void)
+ 319:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c **** {
+ 241              		.loc 1 319 1 is_stmt 1 view -0
+ 242              		.cfi_startproc
+ 243              		@ args = 0, pretend = 0, frame = 0
+ 244              		@ frame_needed = 0, uses_anonymous_args = 0
+ 245              		@ link register save eliminated.
+ 320:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   *(__IO uint32_t *) CR_PVDE_BB = (uint32_t)ENABLE;
+ 246              		.loc 1 320 3 view .LVU49
+ 247              		.loc 1 320 33 is_stmt 0 view .LVU50
+ 248 0000 014B     		ldr	r3, .L30
+ 249 0002 0122     		movs	r2, #1
+ 250 0004 1A61     		str	r2, [r3, #16]
+ 321:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c **** }
+ 251              		.loc 1 321 1 view .LVU51
+ 252 0006 7047     		bx	lr
+ 253              	.L31:
+ 254              		.align	2
+ 255              	.L30:
+ 256 0008 00000E42 		.word	1108213760
+ 257              		.cfi_endproc
+ 258              	.LFE138:
+ 260              		.section	.text.HAL_PWR_DisablePVD,"ax",%progbits
+ 261              		.align	1
+ 262              		.global	HAL_PWR_DisablePVD
+ 263              		.syntax unified
+ 264              		.thumb
+ 265              		.thumb_func
+ 267              	HAL_PWR_DisablePVD:
+ 268              	.LFB139:
+ 322:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c **** 
+ 323:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c **** /**
+ 324:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   * @brief Disables the Power Voltage Detector(PVD).
+ 325:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   * @retval None
+ 326:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   */
+ 327:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c **** void HAL_PWR_DisablePVD(void)
+ 328:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c **** {
+ 269              		.loc 1 328 1 is_stmt 1 view -0
+ 270              		.cfi_startproc
+ 271              		@ args = 0, pretend = 0, frame = 0
+ 272              		@ frame_needed = 0, uses_anonymous_args = 0
+ 273              		@ link register save eliminated.
+ 329:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   *(__IO uint32_t *) CR_PVDE_BB = (uint32_t)DISABLE;
+ 274              		.loc 1 329 3 view .LVU53
+ 275              		.loc 1 329 33 is_stmt 0 view .LVU54
+ 276 0000 014B     		ldr	r3, .L33
+ 277 0002 0022     		movs	r2, #0
+ 278 0004 1A61     		str	r2, [r3, #16]
+ 330:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c **** }
+ 279              		.loc 1 330 1 view .LVU55
+ 280 0006 7047     		bx	lr
+ 281              	.L34:
+ 282              		.align	2
+ 283              	.L33:
+ 284 0008 00000E42 		.word	1108213760
+ 285              		.cfi_endproc
+ 286              	.LFE139:
+ 288              		.section	.text.HAL_PWR_EnableWakeUpPin,"ax",%progbits
+ 289              		.align	1
+ 290              		.global	HAL_PWR_EnableWakeUpPin
+ 291              		.syntax unified
+ 292              		.thumb
+ 293              		.thumb_func
+ 295              	HAL_PWR_EnableWakeUpPin:
+ 296              	.LVL2:
+ 297              	.LFB140:
+ 331:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c **** 
+ 332:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c **** /**
+ 333:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   * @brief Enables the Wake-up PINx functionality.
+ 334:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   * @param WakeUpPinx Specifies the Power Wake-Up pin to enable.
+ 335:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   *         This parameter can be one of the following values:
+ 336:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   *           @arg PWR_WAKEUP_PIN1
+ 337:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   *           @arg PWR_WAKEUP_PIN2 available only on STM32F410xx/STM32F446xx/STM32F412xx/STM32F413x
+ 338:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   *           @arg PWR_WAKEUP_PIN3 available only on STM32F410xx/STM32F412xx/STM32F413xx/STM32F423x
+ 339:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   * @retval None
+ 340:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   */
+ 341:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c **** void HAL_PWR_EnableWakeUpPin(uint32_t WakeUpPinx)
+ 342:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c **** {
+ 298              		.loc 1 342 1 is_stmt 1 view -0
+ 299              		.cfi_startproc
+ 300              		@ args = 0, pretend = 0, frame = 0
+ 301              		@ frame_needed = 0, uses_anonymous_args = 0
+ 302              		@ link register save eliminated.
+ 343:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   /* Check the parameter */
+ 344:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   assert_param(IS_PWR_WAKEUP_PIN(WakeUpPinx));
+ 303              		.loc 1 344 3 view .LVU57
+ 345:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c **** 
+ 346:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   /* Enable the wake up pin */
+ 347:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   SET_BIT(PWR->CSR, WakeUpPinx);
+ 304              		.loc 1 347 3 view .LVU58
+ 305 0000 024A     		ldr	r2, .L36
+ 306 0002 5368     		ldr	r3, [r2, #4]
+ 307 0004 0343     		orrs	r3, r3, r0
+ 308 0006 5360     		str	r3, [r2, #4]
+ 348:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c **** }
+ 309              		.loc 1 348 1 is_stmt 0 view .LVU59
+ 310 0008 7047     		bx	lr
+ 311              	.L37:
+ 312 000a 00BF     		.align	2
+ 313              	.L36:
+ 314 000c 00700040 		.word	1073770496
+ 315              		.cfi_endproc
+ 316              	.LFE140:
+ 318              		.section	.text.HAL_PWR_DisableWakeUpPin,"ax",%progbits
+ 319              		.align	1
+ 320              		.global	HAL_PWR_DisableWakeUpPin
+ 321              		.syntax unified
+ 322              		.thumb
+ 323              		.thumb_func
+ 325              	HAL_PWR_DisableWakeUpPin:
+ 326              	.LVL3:
+ 327              	.LFB141:
+ 349:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c **** 
+ 350:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c **** /**
+ 351:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   * @brief Disables the Wake-up PINx functionality.
+ 352:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   * @param WakeUpPinx Specifies the Power Wake-Up pin to disable.
+ 353:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   *         This parameter can be one of the following values:
+ 354:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   *           @arg PWR_WAKEUP_PIN1
+ 355:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   *           @arg PWR_WAKEUP_PIN2 available only on STM32F410xx/STM32F446xx/STM32F412xx/STM32F413x
+ 356:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   *           @arg PWR_WAKEUP_PIN3 available only on STM32F410xx/STM32F412xx/STM32F413xx/STM32F423x
+ 357:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   * @retval None
+ 358:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   */
+ 359:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c **** void HAL_PWR_DisableWakeUpPin(uint32_t WakeUpPinx)
+ 360:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c **** {
+ 328              		.loc 1 360 1 is_stmt 1 view -0
+ 329              		.cfi_startproc
+ 330              		@ args = 0, pretend = 0, frame = 0
+ 331              		@ frame_needed = 0, uses_anonymous_args = 0
+ 332              		@ link register save eliminated.
+ 361:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   /* Check the parameter */
+ 362:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   assert_param(IS_PWR_WAKEUP_PIN(WakeUpPinx));  
+ 333              		.loc 1 362 3 view .LVU61
+ 363:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c **** 
+ 364:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   /* Disable the wake up pin */
+ 365:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   CLEAR_BIT(PWR->CSR, WakeUpPinx);
+ 334              		.loc 1 365 3 view .LVU62
+ 335 0000 024A     		ldr	r2, .L39
+ 336 0002 5368     		ldr	r3, [r2, #4]
+ 337 0004 23EA0003 		bic	r3, r3, r0
+ 338 0008 5360     		str	r3, [r2, #4]
+ 366:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c **** }
+ 339              		.loc 1 366 1 is_stmt 0 view .LVU63
+ 340 000a 7047     		bx	lr
+ 341              	.L40:
+ 342              		.align	2
+ 343              	.L39:
+ 344 000c 00700040 		.word	1073770496
+ 345              		.cfi_endproc
+ 346              	.LFE141:
+ 348              		.section	.text.HAL_PWR_EnterSLEEPMode,"ax",%progbits
+ 349              		.align	1
+ 350              		.global	HAL_PWR_EnterSLEEPMode
+ 351              		.syntax unified
+ 352              		.thumb
+ 353              		.thumb_func
+ 355              	HAL_PWR_EnterSLEEPMode:
+ 356              	.LVL4:
+ 357              	.LFB142:
+ 367:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   
+ 368:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c **** /**
+ 369:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   * @brief Enters Sleep mode.
+ 370:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   *   
+ 371:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   * @note In Sleep mode, all I/O pins keep the same state as in Run mode.
+ 372:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   * 
+ 373:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   * @note In Sleep mode, the systick is stopped to avoid exit from this mode with
+ 374:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   *       systick interrupt when used as time base for Timeout 
+ 375:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   *                
+ 376:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   * @param Regulator Specifies the regulator state in SLEEP mode.
+ 377:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   *            This parameter can be one of the following values:
+ 378:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   *            @arg PWR_MAINREGULATOR_ON: SLEEP mode with regulator ON
+ 379:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   *            @arg PWR_LOWPOWERREGULATOR_ON: SLEEP mode with low power regulator ON
+ 380:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   * @note This parameter is not used for the STM32F4 family and is kept as parameter
+ 381:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   *       just to maintain compatibility with the lower power families.
+ 382:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   * @param SLEEPEntry Specifies if SLEEP mode in entered with WFI or WFE instruction.
+ 383:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   *          This parameter can be one of the following values:
+ 384:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   *            @arg PWR_SLEEPENTRY_WFI              : Enter SLEEP mode with WFI instruction
+ 385:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   *            @arg PWR_SLEEPENTRY_WFE              : Enter SLEEP mode with WFE instruction and
+ 386:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   *                                                   clear of pending events before.
+ 387:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   *            @arg PWR_SLEEPENTRY_WFE_NO_EVT_CLEAR : Enter SLEEP mode with WFE instruction and
+ 388:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   *                                                   no clear of pending event before.
+ 389:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   * @retval None
+ 390:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   */
+ 391:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c **** void HAL_PWR_EnterSLEEPMode(uint32_t Regulator, uint8_t SLEEPEntry)
+ 392:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c **** {
+ 358              		.loc 1 392 1 is_stmt 1 view -0
+ 359              		.cfi_startproc
+ 360              		@ args = 0, pretend = 0, frame = 0
+ 361              		@ frame_needed = 0, uses_anonymous_args = 0
+ 362              		@ link register save eliminated.
+ 393:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   /* Prevent unused argument(s) compilation warning */
+ 394:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   UNUSED(Regulator);
+ 363              		.loc 1 394 3 view .LVU65
+ 395:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c **** 
+ 396:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   /* Check the parameters */
+ 397:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   assert_param(IS_PWR_REGULATOR(Regulator));
+ 364              		.loc 1 397 3 view .LVU66
+ 398:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   assert_param(IS_PWR_SLEEP_ENTRY(SLEEPEntry));
+ 365              		.loc 1 398 3 view .LVU67
+ 399:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c **** 
+ 400:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   /* Clear SLEEPDEEP bit of Cortex System Control Register */
+ 401:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   CLEAR_BIT(SCB->SCR, ((uint32_t)SCB_SCR_SLEEPDEEP_Msk));
+ 366              		.loc 1 401 3 view .LVU68
+ 367 0000 074A     		ldr	r2, .L48
+ 368 0002 1369     		ldr	r3, [r2, #16]
+ 402:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c **** 
+ 403:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   /* Select SLEEP mode entry -------------------------------------------------*/
+ 404:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   if(SLEEPEntry == PWR_SLEEPENTRY_WFI)
+ 369              		.loc 1 404 5 is_stmt 0 view .LVU69
+ 370 0004 0129     		cmp	r1, #1
+ 401:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c **** 
+ 371              		.loc 1 401 3 view .LVU70
+ 372 0006 23F00403 		bic	r3, r3, #4
+ 373 000a 1361     		str	r3, [r2, #16]
+ 374              		.loc 1 404 3 is_stmt 1 view .LVU71
+ 375              		.loc 1 404 5 is_stmt 0 view .LVU72
+ 376 000c 01D1     		bne	.L42
+ 405:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   {   
+ 406:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****     /* Request Wait For Interrupt */
+ 407:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****     __WFI();
+ 377              		.loc 1 407 5 is_stmt 1 view .LVU73
+ 378              		.syntax unified
+ 379              	@ 407 "../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c" 1
+ 380 000e 30BF     		wfi
+ 381              	@ 0 "" 2
+ 382              		.thumb
+ 383              		.syntax unified
+ 384 0010 7047     		bx	lr
+ 385              	.L42:
+ 408:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   }
+ 409:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   else
+ 410:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   {
+ 411:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****     if(SLEEPEntry != PWR_SLEEPENTRY_WFE_NO_EVT_CLEAR)
+ 386              		.loc 1 411 5 view .LVU74
+ 387              		.loc 1 411 7 is_stmt 0 view .LVU75
+ 388 0012 0329     		cmp	r1, #3
+ 389 0014 01D0     		beq	.L44
+ 412:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****     {
+ 413:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****       /* Clear all pending event */
+ 414:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****       __SEV();
+ 390              		.loc 1 414 7 is_stmt 1 view .LVU76
+ 391              		.syntax unified
+ 392              	@ 414 "../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c" 1
+ 393 0016 40BF     		sev
+ 394              	@ 0 "" 2
+ 415:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****       __WFE();
+ 395              		.loc 1 415 7 view .LVU77
+ 396              	@ 415 "../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c" 1
+ 397 0018 20BF     		wfe
+ 398              	@ 0 "" 2
+ 399              		.thumb
+ 400              		.syntax unified
+ 401              	.L44:
+ 416:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****     }
+ 417:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c **** 
+ 418:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****     /* Request Wait For Event */
+ 419:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****     __WFE();
+ 402              		.loc 1 419 5 view .LVU78
+ 403              		.syntax unified
+ 404              	@ 419 "../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c" 1
+ 405 001a 20BF     		wfe
+ 406              	@ 0 "" 2
+ 420:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   }
+ 421:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c **** }
+ 407              		.loc 1 421 1 is_stmt 0 view .LVU79
+ 408              		.thumb
+ 409              		.syntax unified
+ 410 001c 7047     		bx	lr
+ 411              	.L49:
+ 412 001e 00BF     		.align	2
+ 413              	.L48:
+ 414 0020 00ED00E0 		.word	-536810240
+ 415              		.cfi_endproc
+ 416              	.LFE142:
+ 418              		.section	.text.HAL_PWR_EnterSTOPMode,"ax",%progbits
+ 419              		.align	1
+ 420              		.global	HAL_PWR_EnterSTOPMode
+ 421              		.syntax unified
+ 422              		.thumb
+ 423              		.thumb_func
+ 425              	HAL_PWR_EnterSTOPMode:
+ 426              	.LVL5:
+ 427              	.LFB143:
+ 422:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c **** 
+ 423:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c **** /**
+ 424:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   * @brief Enters Stop mode. 
+ 425:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   * @note In Stop mode, all I/O pins keep the same state as in Run mode.
+ 426:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   * @note When exiting Stop mode by issuing an interrupt or a wake-up event, 
+ 427:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   *         the HSI RC oscillator is selected as system clock.
+ 428:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   * @note When the voltage regulator operates in low power mode, an additional 
+ 429:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   *         startup delay is incurred when waking up from Stop mode. 
+ 430:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   *         By keeping the internal regulator ON during Stop mode, the consumption 
+ 431:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   *         is higher although the startup time is reduced.    
+ 432:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   * @param Regulator Specifies the regulator state in Stop mode.
+ 433:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   *          This parameter can be one of the following values:
+ 434:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   *            @arg PWR_MAINREGULATOR_ON: Stop mode with regulator ON
+ 435:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   *            @arg PWR_LOWPOWERREGULATOR_ON: Stop mode with low power regulator ON
+ 436:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   * @param STOPEntry Specifies if Stop mode in entered with WFI or WFE instruction.
+ 437:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   *          This parameter can be one of the following values:
+ 438:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   *            @arg PWR_STOPENTRY_WFI              : Enter Stop mode with WFI instruction 
+ 439:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   *            @arg PWR_STOPENTRY_WFE              : Enter Stop mode with WFE instruction and
+ 440:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   *                                                  clear of pending events before.
+ 441:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   *            @arg PWR_STOPENTRY_WFE_NO_EVT_CLEAR : Enter STOP mode with WFE instruction and
+ 442:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   *                                                  no clear of pending event before.
+ 443:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   * @retval None
+ 444:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   */
+ 445:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c **** void HAL_PWR_EnterSTOPMode(uint32_t Regulator, uint8_t STOPEntry)
+ 446:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c **** {
+ 428              		.loc 1 446 1 is_stmt 1 view -0
+ 429              		.cfi_startproc
+ 430              		@ args = 0, pretend = 0, frame = 0
+ 431              		@ frame_needed = 0, uses_anonymous_args = 0
+ 432              		@ link register save eliminated.
+ 447:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   /* Check the parameters */
+ 448:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   assert_param(IS_PWR_REGULATOR(Regulator));
+ 433              		.loc 1 448 3 view .LVU81
+ 449:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   assert_param(IS_PWR_STOP_ENTRY(STOPEntry));
+ 434              		.loc 1 449 3 view .LVU82
+ 450:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   
+ 451:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   /* Select the regulator state in Stop mode: Set PDDS and LPDS bits according to PWR_Regulator val
+ 452:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   MODIFY_REG(PWR->CR, (PWR_CR_PDDS | PWR_CR_LPDS), Regulator);
+ 435              		.loc 1 452 3 view .LVU83
+ 436 0000 0C4A     		ldr	r2, .L57
+ 437 0002 1368     		ldr	r3, [r2]
+ 438 0004 23F00303 		bic	r3, r3, #3
+ 439 0008 0343     		orrs	r3, r3, r0
+ 440 000a 1360     		str	r3, [r2]
+ 453:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   
+ 454:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   /* Set SLEEPDEEP bit of Cortex System Control Register */
+ 455:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   SET_BIT(SCB->SCR, ((uint32_t)SCB_SCR_SLEEPDEEP_Msk));
+ 441              		.loc 1 455 3 view .LVU84
+ 442 000c 0A4B     		ldr	r3, .L57+4
+ 443 000e 1A69     		ldr	r2, [r3, #16]
+ 456:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   
+ 457:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   /* Select Stop mode entry --------------------------------------------------*/
+ 458:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   if(STOPEntry == PWR_STOPENTRY_WFI)
+ 444              		.loc 1 458 5 is_stmt 0 view .LVU85
+ 445 0010 0129     		cmp	r1, #1
+ 455:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   
+ 446              		.loc 1 455 3 view .LVU86
+ 447 0012 42F00402 		orr	r2, r2, #4
+ 448 0016 1A61     		str	r2, [r3, #16]
+ 449              		.loc 1 458 3 is_stmt 1 view .LVU87
+ 450              		.loc 1 458 5 is_stmt 0 view .LVU88
+ 451 0018 05D1     		bne	.L51
+ 459:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   {   
+ 460:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****     /* Request Wait For Interrupt */
+ 461:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****     __WFI();
+ 452              		.loc 1 461 5 is_stmt 1 view .LVU89
+ 453              		.syntax unified
+ 454              	@ 461 "../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c" 1
+ 455 001a 30BF     		wfi
+ 456              	@ 0 "" 2
+ 457              		.thumb
+ 458              		.syntax unified
+ 459              	.L52:
+ 462:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   }
+ 463:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   else
+ 464:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   {
+ 465:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****     if(STOPEntry != PWR_STOPENTRY_WFE_NO_EVT_CLEAR)
+ 466:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****     {
+ 467:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****       /* Clear all pending event */
+ 468:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****       __SEV();
+ 469:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****       __WFE();
+ 470:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****     }
+ 471:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****     /* Request Wait For Event */
+ 472:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****     __WFE();
+ 473:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   }
+ 474:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   /* Reset SLEEPDEEP bit of Cortex System Control Register */
+ 475:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   CLEAR_BIT(SCB->SCR, ((uint32_t)SCB_SCR_SLEEPDEEP_Msk));  
+ 460              		.loc 1 475 3 view .LVU90
+ 461 001c 1A69     		ldr	r2, [r3, #16]
+ 462 001e 22F00402 		bic	r2, r2, #4
+ 463 0022 1A61     		str	r2, [r3, #16]
+ 476:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c **** }
+ 464              		.loc 1 476 1 is_stmt 0 view .LVU91
+ 465 0024 7047     		bx	lr
+ 466              	.L51:
+ 465:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****     {
+ 467              		.loc 1 465 5 is_stmt 1 view .LVU92
+ 465:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****     {
+ 468              		.loc 1 465 7 is_stmt 0 view .LVU93
+ 469 0026 0329     		cmp	r1, #3
+ 470 0028 01D0     		beq	.L53
+ 468:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****       __WFE();
+ 471              		.loc 1 468 7 is_stmt 1 view .LVU94
+ 472              		.syntax unified
+ 473              	@ 468 "../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c" 1
+ 474 002a 40BF     		sev
+ 475              	@ 0 "" 2
+ 469:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****     }
+ 476              		.loc 1 469 7 view .LVU95
+ 477              	@ 469 "../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c" 1
+ 478 002c 20BF     		wfe
+ 479              	@ 0 "" 2
+ 480              		.thumb
+ 481              		.syntax unified
+ 482              	.L53:
+ 472:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   }
+ 483              		.loc 1 472 5 view .LVU96
+ 484              		.syntax unified
+ 485              	@ 472 "../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c" 1
+ 486 002e 20BF     		wfe
+ 487              	@ 0 "" 2
+ 488              		.thumb
+ 489              		.syntax unified
+ 490 0030 F4E7     		b	.L52
+ 491              	.L58:
+ 492 0032 00BF     		.align	2
+ 493              	.L57:
+ 494 0034 00700040 		.word	1073770496
+ 495 0038 00ED00E0 		.word	-536810240
+ 496              		.cfi_endproc
+ 497              	.LFE143:
+ 499              		.section	.text.HAL_PWR_EnterSTANDBYMode,"ax",%progbits
+ 500              		.align	1
+ 501              		.global	HAL_PWR_EnterSTANDBYMode
+ 502              		.syntax unified
+ 503              		.thumb
+ 504              		.thumb_func
+ 506              	HAL_PWR_EnterSTANDBYMode:
+ 507              	.LFB144:
+ 477:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c **** 
+ 478:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c **** /**
+ 479:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   * @brief Enters Standby mode.
+ 480:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   * @note In Standby mode, all I/O pins are high impedance except for:
+ 481:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   *          - Reset pad (still available) 
+ 482:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   *          - RTC_AF1 pin (PC13) if configured for tamper, time-stamp, RTC 
+ 483:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   *            Alarm out, or RTC clock calibration out.
+ 484:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   *          - RTC_AF2 pin (PI8) if configured for tamper or time-stamp.  
+ 485:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   *          - WKUP pin 1 (PA0) if enabled.       
+ 486:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   * @retval None
+ 487:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   */
+ 488:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c **** void HAL_PWR_EnterSTANDBYMode(void)
+ 489:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c **** {
+ 508              		.loc 1 489 1 view -0
+ 509              		.cfi_startproc
+ 510              		@ args = 0, pretend = 0, frame = 0
+ 511              		@ frame_needed = 0, uses_anonymous_args = 0
+ 512              		@ link register save eliminated.
+ 490:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   /* Select Standby mode */
+ 491:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   SET_BIT(PWR->CR, PWR_CR_PDDS);
+ 513              		.loc 1 491 3 view .LVU98
+ 514 0000 054A     		ldr	r2, .L60
+ 515 0002 1368     		ldr	r3, [r2]
+ 516 0004 43F00203 		orr	r3, r3, #2
+ 517 0008 1360     		str	r3, [r2]
+ 492:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c **** 
+ 493:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   /* Set SLEEPDEEP bit of Cortex System Control Register */
+ 494:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   SET_BIT(SCB->SCR, ((uint32_t)SCB_SCR_SLEEPDEEP_Msk));
+ 518              		.loc 1 494 3 view .LVU99
+ 519 000a 044A     		ldr	r2, .L60+4
+ 520 000c 1369     		ldr	r3, [r2, #16]
+ 521 000e 43F00403 		orr	r3, r3, #4
+ 522 0012 1361     		str	r3, [r2, #16]
+ 495:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   
+ 496:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   /* This option is used to ensure that store operations are completed */
+ 497:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c **** #if defined ( __CC_ARM)
+ 498:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   __force_stores();
+ 499:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c **** #endif
+ 500:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   /* Request Wait For Interrupt */
+ 501:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   __WFI();
+ 523              		.loc 1 501 3 view .LVU100
+ 524              		.syntax unified
+ 525              	@ 501 "../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c" 1
+ 526 0014 30BF     		wfi
+ 527              	@ 0 "" 2
+ 502:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c **** }
+ 528              		.loc 1 502 1 is_stmt 0 view .LVU101
+ 529              		.thumb
+ 530              		.syntax unified
+ 531 0016 7047     		bx	lr
+ 532              	.L61:
+ 533              		.align	2
+ 534              	.L60:
+ 535 0018 00700040 		.word	1073770496
+ 536 001c 00ED00E0 		.word	-536810240
+ 537              		.cfi_endproc
+ 538              	.LFE144:
+ 540              		.section	.text.HAL_PWR_PVDCallback,"ax",%progbits
+ 541              		.align	1
+ 542              		.weak	HAL_PWR_PVDCallback
+ 543              		.syntax unified
+ 544              		.thumb
+ 545              		.thumb_func
+ 547              	HAL_PWR_PVDCallback:
+ 548              	.LFB146:
+ 503:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c **** 
+ 504:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c **** /**
+ 505:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   * @brief This function handles the PWR PVD interrupt request.
+ 506:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   * @note This API should be called under the PVD_IRQHandler().
+ 507:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   * @retval None
+ 508:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   */
+ 509:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c **** void HAL_PWR_PVD_IRQHandler(void)
+ 510:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c **** {
+ 511:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   /* Check PWR Exti flag */
+ 512:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   if(__HAL_PWR_PVD_EXTI_GET_FLAG() != RESET)
+ 513:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   {
+ 514:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****     /* PWR PVD interrupt user callback */
+ 515:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****     HAL_PWR_PVDCallback();
+ 516:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****     
+ 517:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****     /* Clear PWR Exti pending bit */
+ 518:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****     __HAL_PWR_PVD_EXTI_CLEAR_FLAG();
+ 519:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   }
+ 520:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c **** }
+ 521:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c **** 
+ 522:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c **** /**
+ 523:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   * @brief  PWR PVD interrupt callback
+ 524:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   * @retval None
+ 525:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   */
+ 526:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c **** __weak void HAL_PWR_PVDCallback(void)
+ 527:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c **** {
+ 549              		.loc 1 527 1 is_stmt 1 view -0
+ 550              		.cfi_startproc
+ 551              		@ args = 0, pretend = 0, frame = 0
+ 552              		@ frame_needed = 0, uses_anonymous_args = 0
+ 553              		@ link register save eliminated.
+ 528:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   /* NOTE : This function Should not be modified, when the callback is needed,
+ 529:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****             the HAL_PWR_PVDCallback could be implemented in the user file
+ 530:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****    */ 
+ 531:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c **** }
+ 554              		.loc 1 531 1 view .LVU103
+ 555 0000 7047     		bx	lr
+ 556              		.cfi_endproc
+ 557              	.LFE146:
+ 559              		.section	.text.HAL_PWR_PVD_IRQHandler,"ax",%progbits
+ 560              		.align	1
+ 561              		.global	HAL_PWR_PVD_IRQHandler
+ 562              		.syntax unified
+ 563              		.thumb
+ 564              		.thumb_func
+ 566              	HAL_PWR_PVD_IRQHandler:
+ 567              	.LFB145:
+ 510:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   /* Check PWR Exti flag */
+ 568              		.loc 1 510 1 view -0
+ 569              		.cfi_startproc
+ 570              		@ args = 0, pretend = 0, frame = 0
+ 571              		@ frame_needed = 0, uses_anonymous_args = 0
+ 512:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   {
+ 572              		.loc 1 512 3 view .LVU105
+ 510:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   /* Check PWR Exti flag */
+ 573              		.loc 1 510 1 is_stmt 0 view .LVU106
+ 574 0000 10B5     		push	{r4, lr}
+ 575              	.LCFI4:
+ 576              		.cfi_def_cfa_offset 8
+ 577              		.cfi_offset 4, -8
+ 578              		.cfi_offset 14, -4
+ 512:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   {
+ 579              		.loc 1 512 6 view .LVU107
+ 580 0002 054C     		ldr	r4, .L68
+ 581 0004 6369     		ldr	r3, [r4, #20]
+ 512:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   {
+ 582              		.loc 1 512 5 view .LVU108
+ 583 0006 DB03     		lsls	r3, r3, #15
+ 584 0008 04D5     		bpl	.L63
+ 515:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****     
+ 585              		.loc 1 515 5 is_stmt 1 view .LVU109
+ 586 000a FFF7FEFF 		bl	HAL_PWR_PVDCallback
+ 587              	.LVL6:
+ 518:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   }
+ 588              		.loc 1 518 5 view .LVU110
+ 589 000e 4FF48033 		mov	r3, #65536
+ 590 0012 6361     		str	r3, [r4, #20]
+ 591              	.L63:
+ 520:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c **** 
+ 592              		.loc 1 520 1 is_stmt 0 view .LVU111
+ 593 0014 10BD     		pop	{r4, pc}
+ 594              	.L69:
+ 595 0016 00BF     		.align	2
+ 596              	.L68:
+ 597 0018 003C0140 		.word	1073822720
+ 598              		.cfi_endproc
+ 599              	.LFE145:
+ 601              		.section	.text.HAL_PWR_EnableSleepOnExit,"ax",%progbits
+ 602              		.align	1
+ 603              		.global	HAL_PWR_EnableSleepOnExit
+ 604              		.syntax unified
+ 605              		.thumb
+ 606              		.thumb_func
+ 608              	HAL_PWR_EnableSleepOnExit:
+ 609              	.LFB147:
+ 532:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c **** 
+ 533:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c **** /**
+ 534:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   * @brief Indicates Sleep-On-Exit when returning from Handler mode to Thread mode. 
+ 535:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   * @note Set SLEEPONEXIT bit of SCR register. When this bit is set, the processor 
+ 536:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   *       re-enters SLEEP mode when an interruption handling is over.
+ 537:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   *       Setting this bit is useful when the processor is expected to run only on
+ 538:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   *       interruptions handling.         
+ 539:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   * @retval None
+ 540:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   */
+ 541:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c **** void HAL_PWR_EnableSleepOnExit(void)
+ 542:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c **** {
+ 610              		.loc 1 542 1 is_stmt 1 view -0
+ 611              		.cfi_startproc
+ 612              		@ args = 0, pretend = 0, frame = 0
+ 613              		@ frame_needed = 0, uses_anonymous_args = 0
+ 614              		@ link register save eliminated.
+ 543:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   /* Set SLEEPONEXIT bit of Cortex System Control Register */
+ 544:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   SET_BIT(SCB->SCR, ((uint32_t)SCB_SCR_SLEEPONEXIT_Msk));
+ 615              		.loc 1 544 3 view .LVU113
+ 616 0000 024A     		ldr	r2, .L71
+ 617 0002 1369     		ldr	r3, [r2, #16]
+ 618 0004 43F00203 		orr	r3, r3, #2
+ 619 0008 1361     		str	r3, [r2, #16]
+ 545:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c **** }
+ 620              		.loc 1 545 1 is_stmt 0 view .LVU114
+ 621 000a 7047     		bx	lr
+ 622              	.L72:
+ 623              		.align	2
+ 624              	.L71:
+ 625 000c 00ED00E0 		.word	-536810240
+ 626              		.cfi_endproc
+ 627              	.LFE147:
+ 629              		.section	.text.HAL_PWR_DisableSleepOnExit,"ax",%progbits
+ 630              		.align	1
+ 631              		.global	HAL_PWR_DisableSleepOnExit
+ 632              		.syntax unified
+ 633              		.thumb
+ 634              		.thumb_func
+ 636              	HAL_PWR_DisableSleepOnExit:
+ 637              	.LFB148:
+ 546:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c **** 
+ 547:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c **** /**
+ 548:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   * @brief Disables Sleep-On-Exit feature when returning from Handler mode to Thread mode. 
+ 549:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   * @note Clears SLEEPONEXIT bit of SCR register. When this bit is set, the processor 
+ 550:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   *       re-enters SLEEP mode when an interruption handling is over.          
+ 551:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   * @retval None
+ 552:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   */
+ 553:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c **** void HAL_PWR_DisableSleepOnExit(void)
+ 554:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c **** {
+ 638              		.loc 1 554 1 is_stmt 1 view -0
+ 639              		.cfi_startproc
+ 640              		@ args = 0, pretend = 0, frame = 0
+ 641              		@ frame_needed = 0, uses_anonymous_args = 0
+ 642              		@ link register save eliminated.
+ 555:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   /* Clear SLEEPONEXIT bit of Cortex System Control Register */
+ 556:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   CLEAR_BIT(SCB->SCR, ((uint32_t)SCB_SCR_SLEEPONEXIT_Msk));
+ 643              		.loc 1 556 3 view .LVU116
+ 644 0000 024A     		ldr	r2, .L74
+ 645 0002 1369     		ldr	r3, [r2, #16]
+ 646 0004 23F00203 		bic	r3, r3, #2
+ 647 0008 1361     		str	r3, [r2, #16]
+ 557:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c **** }
+ 648              		.loc 1 557 1 is_stmt 0 view .LVU117
+ 649 000a 7047     		bx	lr
+ 650              	.L75:
+ 651              		.align	2
+ 652              	.L74:
+ 653 000c 00ED00E0 		.word	-536810240
+ 654              		.cfi_endproc
+ 655              	.LFE148:
+ 657              		.section	.text.HAL_PWR_EnableSEVOnPend,"ax",%progbits
+ 658              		.align	1
+ 659              		.global	HAL_PWR_EnableSEVOnPend
+ 660              		.syntax unified
+ 661              		.thumb
+ 662              		.thumb_func
+ 664              	HAL_PWR_EnableSEVOnPend:
+ 665              	.LFB149:
+ 558:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c **** 
+ 559:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c **** /**
+ 560:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   * @brief Enables CORTEX M4 SEVONPEND bit. 
+ 561:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   * @note Sets SEVONPEND bit of SCR register. When this bit is set, this causes 
+ 562:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   *       WFE to wake up when an interrupt moves from inactive to pended.
+ 563:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   * @retval None
+ 564:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   */
+ 565:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c **** void HAL_PWR_EnableSEVOnPend(void)
+ 566:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c **** {
+ 666              		.loc 1 566 1 is_stmt 1 view -0
+ 667              		.cfi_startproc
+ 668              		@ args = 0, pretend = 0, frame = 0
+ 669              		@ frame_needed = 0, uses_anonymous_args = 0
+ 670              		@ link register save eliminated.
+ 567:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   /* Set SEVONPEND bit of Cortex System Control Register */
+ 568:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   SET_BIT(SCB->SCR, ((uint32_t)SCB_SCR_SEVONPEND_Msk));
+ 671              		.loc 1 568 3 view .LVU119
+ 672 0000 024A     		ldr	r2, .L77
+ 673 0002 1369     		ldr	r3, [r2, #16]
+ 674 0004 43F01003 		orr	r3, r3, #16
+ 675 0008 1361     		str	r3, [r2, #16]
+ 569:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c **** }
+ 676              		.loc 1 569 1 is_stmt 0 view .LVU120
+ 677 000a 7047     		bx	lr
+ 678              	.L78:
+ 679              		.align	2
+ 680              	.L77:
+ 681 000c 00ED00E0 		.word	-536810240
+ 682              		.cfi_endproc
+ 683              	.LFE149:
+ 685              		.section	.text.HAL_PWR_DisableSEVOnPend,"ax",%progbits
+ 686              		.align	1
+ 687              		.global	HAL_PWR_DisableSEVOnPend
+ 688              		.syntax unified
+ 689              		.thumb
+ 690              		.thumb_func
+ 692              	HAL_PWR_DisableSEVOnPend:
+ 693              	.LFB150:
+ 570:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c **** 
+ 571:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c **** /**
+ 572:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   * @brief Disables CORTEX M4 SEVONPEND bit. 
+ 573:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   * @note Clears SEVONPEND bit of SCR register. When this bit is set, this causes 
+ 574:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   *       WFE to wake up when an interrupt moves from inactive to pended.         
+ 575:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   * @retval None
+ 576:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   */
+ 577:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c **** void HAL_PWR_DisableSEVOnPend(void)
+ 578:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c **** {
+ 694              		.loc 1 578 1 is_stmt 1 view -0
+ 695              		.cfi_startproc
+ 696              		@ args = 0, pretend = 0, frame = 0
+ 697              		@ frame_needed = 0, uses_anonymous_args = 0
+ 698              		@ link register save eliminated.
+ 579:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   /* Clear SEVONPEND bit of Cortex System Control Register */
+ 580:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c ****   CLEAR_BIT(SCB->SCR, ((uint32_t)SCB_SCR_SEVONPEND_Msk));
+ 699              		.loc 1 580 3 view .LVU122
+ 700 0000 024A     		ldr	r2, .L80
+ 701 0002 1369     		ldr	r3, [r2, #16]
+ 702 0004 23F01003 		bic	r3, r3, #16
+ 703 0008 1361     		str	r3, [r2, #16]
+ 581:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c **** }
+ 704              		.loc 1 581 1 is_stmt 0 view .LVU123
+ 705 000a 7047     		bx	lr
+ 706              	.L81:
+ 707              		.align	2
+ 708              	.L80:
+ 709 000c 00ED00E0 		.word	-536810240
+ 710              		.cfi_endproc
+ 711              	.LFE150:
+ 713              		.text
+ 714              	.Letext0:
+ 715              		.file 2 "/usr/lib/gcc/arm-none-eabi/14.2.1/include/stdint.h"
+ 716              		.file 3 "../hal/chipwhisperer-fw-extra/pinata/CMSIS/Include/core_cm4.h"
+ 717              		.file 4 "../hal/chipwhisperer-fw-extra/pinata/CMSIS/Device/ST/STM32F4xx/Include/stm32f417xx.h"
+ 718              		.file 5 "../hal/chipwhisperer-fw-extra/pinata/CMSIS/Device/ST/STM32F4xx/Include/stm32f4xx.h"
+ 719              		.file 6 "../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_pwr.h"
+DEFINED SYMBOLS
+                            *ABS*:00000000 stm32f4xx_hal_pwr.c
+     /tmp/ccWA1iI4.s:19     .text.HAL_PWR_DeInit:00000000 $t
+     /tmp/ccWA1iI4.s:25     .text.HAL_PWR_DeInit:00000000 HAL_PWR_DeInit
+     /tmp/ccWA1iI4.s:46     .text.HAL_PWR_DeInit:00000014 $d
+     /tmp/ccWA1iI4.s:51     .text.HAL_PWR_EnableBkUpAccess:00000000 $t
+     /tmp/ccWA1iI4.s:57     .text.HAL_PWR_EnableBkUpAccess:00000000 HAL_PWR_EnableBkUpAccess
+     /tmp/ccWA1iI4.s:92     .text.HAL_PWR_EnableBkUpAccess:00000014 $d
+     /tmp/ccWA1iI4.s:98     .text.HAL_PWR_DisableBkUpAccess:00000000 $t
+     /tmp/ccWA1iI4.s:104    .text.HAL_PWR_DisableBkUpAccess:00000000 HAL_PWR_DisableBkUpAccess
+     /tmp/ccWA1iI4.s:139    .text.HAL_PWR_DisableBkUpAccess:00000014 $d
+     /tmp/ccWA1iI4.s:145    .text.HAL_PWR_ConfigPVD:00000000 $t
+     /tmp/ccWA1iI4.s:151    .text.HAL_PWR_ConfigPVD:00000000 HAL_PWR_ConfigPVD
+     /tmp/ccWA1iI4.s:227    .text.HAL_PWR_ConfigPVD:00000068 $d
+     /tmp/ccWA1iI4.s:233    .text.HAL_PWR_EnablePVD:00000000 $t
+     /tmp/ccWA1iI4.s:239    .text.HAL_PWR_EnablePVD:00000000 HAL_PWR_EnablePVD
+     /tmp/ccWA1iI4.s:256    .text.HAL_PWR_EnablePVD:00000008 $d
+     /tmp/ccWA1iI4.s:261    .text.HAL_PWR_DisablePVD:00000000 $t
+     /tmp/ccWA1iI4.s:267    .text.HAL_PWR_DisablePVD:00000000 HAL_PWR_DisablePVD
+     /tmp/ccWA1iI4.s:284    .text.HAL_PWR_DisablePVD:00000008 $d
+     /tmp/ccWA1iI4.s:289    .text.HAL_PWR_EnableWakeUpPin:00000000 $t
+     /tmp/ccWA1iI4.s:295    .text.HAL_PWR_EnableWakeUpPin:00000000 HAL_PWR_EnableWakeUpPin
+     /tmp/ccWA1iI4.s:314    .text.HAL_PWR_EnableWakeUpPin:0000000c $d
+     /tmp/ccWA1iI4.s:319    .text.HAL_PWR_DisableWakeUpPin:00000000 $t
+     /tmp/ccWA1iI4.s:325    .text.HAL_PWR_DisableWakeUpPin:00000000 HAL_PWR_DisableWakeUpPin
+     /tmp/ccWA1iI4.s:344    .text.HAL_PWR_DisableWakeUpPin:0000000c $d
+     /tmp/ccWA1iI4.s:349    .text.HAL_PWR_EnterSLEEPMode:00000000 $t
+     /tmp/ccWA1iI4.s:355    .text.HAL_PWR_EnterSLEEPMode:00000000 HAL_PWR_EnterSLEEPMode
+     /tmp/ccWA1iI4.s:414    .text.HAL_PWR_EnterSLEEPMode:00000020 $d
+     /tmp/ccWA1iI4.s:419    .text.HAL_PWR_EnterSTOPMode:00000000 $t
+     /tmp/ccWA1iI4.s:425    .text.HAL_PWR_EnterSTOPMode:00000000 HAL_PWR_EnterSTOPMode
+     /tmp/ccWA1iI4.s:494    .text.HAL_PWR_EnterSTOPMode:00000034 $d
+     /tmp/ccWA1iI4.s:500    .text.HAL_PWR_EnterSTANDBYMode:00000000 $t
+     /tmp/ccWA1iI4.s:506    .text.HAL_PWR_EnterSTANDBYMode:00000000 HAL_PWR_EnterSTANDBYMode
+     /tmp/ccWA1iI4.s:535    .text.HAL_PWR_EnterSTANDBYMode:00000018 $d
+     /tmp/ccWA1iI4.s:541    .text.HAL_PWR_PVDCallback:00000000 $t
+     /tmp/ccWA1iI4.s:547    .text.HAL_PWR_PVDCallback:00000000 HAL_PWR_PVDCallback
+     /tmp/ccWA1iI4.s:560    .text.HAL_PWR_PVD_IRQHandler:00000000 $t
+     /tmp/ccWA1iI4.s:566    .text.HAL_PWR_PVD_IRQHandler:00000000 HAL_PWR_PVD_IRQHandler
+     /tmp/ccWA1iI4.s:597    .text.HAL_PWR_PVD_IRQHandler:00000018 $d
+     /tmp/ccWA1iI4.s:602    .text.HAL_PWR_EnableSleepOnExit:00000000 $t
+     /tmp/ccWA1iI4.s:608    .text.HAL_PWR_EnableSleepOnExit:00000000 HAL_PWR_EnableSleepOnExit
+     /tmp/ccWA1iI4.s:625    .text.HAL_PWR_EnableSleepOnExit:0000000c $d
+     /tmp/ccWA1iI4.s:630    .text.HAL_PWR_DisableSleepOnExit:00000000 $t
+     /tmp/ccWA1iI4.s:636    .text.HAL_PWR_DisableSleepOnExit:00000000 HAL_PWR_DisableSleepOnExit
+     /tmp/ccWA1iI4.s:653    .text.HAL_PWR_DisableSleepOnExit:0000000c $d
+     /tmp/ccWA1iI4.s:658    .text.HAL_PWR_EnableSEVOnPend:00000000 $t
+     /tmp/ccWA1iI4.s:664    .text.HAL_PWR_EnableSEVOnPend:00000000 HAL_PWR_EnableSEVOnPend
+     /tmp/ccWA1iI4.s:681    .text.HAL_PWR_EnableSEVOnPend:0000000c $d
+     /tmp/ccWA1iI4.s:686    .text.HAL_PWR_DisableSEVOnPend:00000000 $t
+     /tmp/ccWA1iI4.s:692    .text.HAL_PWR_DisableSEVOnPend:00000000 HAL_PWR_DisableSEVOnPend
+     /tmp/ccWA1iI4.s:709    .text.HAL_PWR_DisableSEVOnPend:0000000c $d
+
+NO UNDEFINED SYMBOLS

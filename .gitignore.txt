@@ -1,0 +1,15 @@
+# Build-Ordner
+build/
+bin/
+*.exe
+*.o
+*.obj
+*.dll
+*.so
+*.out
+
+# VS-spezifisch
+.vs/
+*.user
+*.suo
+     

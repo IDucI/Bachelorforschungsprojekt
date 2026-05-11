@@ -1,0 +1,1428 @@
+   1              		.cpu cortex-m4
+   2              		.arch armv7e-m
+   3              		.fpu softvfp
+   4              		.eabi_attribute 20, 1
+   5              		.eabi_attribute 21, 1
+   6              		.eabi_attribute 23, 3
+   7              		.eabi_attribute 24, 1
+   8              		.eabi_attribute 25, 1
+   9              		.eabi_attribute 26, 1
+  10              		.eabi_attribute 30, 4
+  11              		.eabi_attribute 34, 1
+  12              		.eabi_attribute 18, 4
+  13              		.file	"stm32f4xx_hal_dma_ex.c"
+  14              		.text
+  15              	.Ltext0:
+  16              		.cfi_sections	.debug_frame
+  17              		.file 1 "../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c"
+  18              		.section	.text.HAL_DMAEx_MultiBufferStart,"ax",%progbits
+  19              		.align	1
+  20              		.global	HAL_DMAEx_MultiBufferStart
+  21              		.syntax unified
+  22              		.thumb
+  23              		.thumb_func
+  25              	HAL_DMAEx_MultiBufferStart:
+  26              	.LVL0:
+  27              	.LFB134:
+   1:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c **** /**
+   2:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****   ******************************************************************************
+   3:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****   * @file    stm32f4xx_hal_dma_ex.c
+   4:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****   * @author  MCD Application Team
+   5:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****   * @brief   DMA Extension HAL module driver
+   6:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****   *         This file provides firmware functions to manage the following 
+   7:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****   *         functionalities of the DMA Extension peripheral:
+   8:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****   *           + Extended features functions
+   9:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****   *
+  10:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****   @verbatim
+  11:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****   ==============================================================================
+  12:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****                         ##### How to use this driver #####
+  13:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****   ==============================================================================
+  14:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****   [..]
+  15:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****   The DMA Extension HAL driver can be used as follows:
+  16:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****    (#) Start a multi buffer transfer using the HAL_DMA_MultiBufferStart() function
+  17:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****        for polling mode or HAL_DMA_MultiBufferStart_IT() for interrupt mode.
+  18:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****                    
+  19:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****      -@-  In Memory-to-Memory transfer mode, Multi (Double) Buffer mode is not allowed.
+  20:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****      -@-  When Multi (Double) Buffer mode is enabled the, transfer is circular by default.
+  21:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****      -@-  In Multi (Double) buffer mode, it is possible to update the base address for 
+  22:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****           the AHB memory port on the fly (DMA_SxM0AR or DMA_SxM1AR) when the stream is enabled. 
+  23:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****   
+  24:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****   @endverbatim
+  25:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****   ******************************************************************************
+  26:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****   * @attention
+  27:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****   *
+  28:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****   * Copyright (c) 2017 STMicroelectronics.
+  29:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****   * All rights reserved.
+  30:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****   *
+  31:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****   * This software is licensed under terms that can be found in the LICENSE file in
+  32:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****   * the root directory of this software component.
+  33:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****   * If no LICENSE file comes with this software, it is provided AS-IS.
+  34:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****   *
+  35:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****   ******************************************************************************
+  36:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****   */
+  37:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c **** 
+  38:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c **** /* Includes ------------------------------------------------------------------*/
+  39:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c **** #include "stm32f4xx_hal.h"
+  40:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c **** 
+  41:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c **** /** @addtogroup STM32F4xx_HAL_Driver
+  42:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****   * @{
+  43:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****   */
+  44:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c **** 
+  45:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c **** /** @defgroup DMAEx DMAEx
+  46:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****   * @brief DMA Extended HAL module driver
+  47:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****   * @{
+  48:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****   */
+  49:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c **** 
+  50:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c **** #ifdef HAL_DMA_MODULE_ENABLED
+  51:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c **** 
+  52:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c **** /* Private types -------------------------------------------------------------*/
+  53:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c **** /* Private variables ---------------------------------------------------------*/
+  54:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c **** /* Private Constants ---------------------------------------------------------*/
+  55:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c **** /* Private macros ------------------------------------------------------------*/
+  56:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c **** /* Private functions ---------------------------------------------------------*/
+  57:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c **** /** @addtogroup DMAEx_Private_Functions
+  58:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****   * @{
+  59:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****   */
+  60:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c **** static void DMA_MultiBufferSetConfig(DMA_HandleTypeDef *hdma, uint32_t SrcAddress, uint32_t DstAddr
+  61:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c **** /**
+  62:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****   * @}
+  63:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****   */
+  64:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c **** 
+  65:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c **** /* Exported functions ---------------------------------------------------------*/
+  66:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c **** 
+  67:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c **** /** @addtogroup DMAEx_Exported_Functions
+  68:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****   * @{
+  69:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****   */
+  70:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c **** 
+  71:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c **** 
+  72:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c **** /** @addtogroup DMAEx_Exported_Functions_Group1
+  73:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****   *
+  74:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c **** @verbatim   
+  75:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****  ===============================================================================
+  76:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****                 #####  Extended features functions  #####
+  77:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****  ===============================================================================  
+  78:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     [..]  This section provides functions allowing to:
+  79:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****       (+) Configure the source, destination address and data length and 
+  80:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****           Start MultiBuffer DMA transfer
+  81:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****       (+) Configure the source, destination address and data length and 
+  82:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****           Start MultiBuffer DMA transfer with interrupt
+  83:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****       (+) Change on the fly the memory0 or memory1 address.
+  84:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****       
+  85:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c **** @endverbatim
+  86:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****   * @{
+  87:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****   */
+  88:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c **** 
+  89:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c **** 
+  90:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c **** /**
+  91:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****   * @brief  Starts the multi_buffer DMA Transfer.
+  92:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****   * @param  hdma       pointer to a DMA_HandleTypeDef structure that contains
+  93:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****   *                     the configuration information for the specified DMA Stream.  
+  94:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****   * @param  SrcAddress The source memory Buffer address
+  95:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****   * @param  DstAddress The destination memory Buffer address
+  96:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****   * @param  SecondMemAddress The second memory Buffer address in case of multi buffer Transfer  
+  97:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****   * @param  DataLength The length of data to be transferred from source to destination
+  98:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****   * @retval HAL status
+  99:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****   */
+ 100:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c **** HAL_StatusTypeDef HAL_DMAEx_MultiBufferStart(DMA_HandleTypeDef *hdma, uint32_t SrcAddress, uint32_t
+ 101:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c **** {
+  28              		.loc 1 101 1 view -0
+  29              		.cfi_startproc
+  30              		@ args = 4, pretend = 0, frame = 0
+  31              		@ frame_needed = 0, uses_anonymous_args = 0
+ 102:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****   HAL_StatusTypeDef status = HAL_OK;
+  32              		.loc 1 102 3 view .LVU1
+ 103:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****   
+ 104:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****   /* Check the parameters */
+ 105:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****   assert_param(IS_DMA_BUFFER_SIZE(DataLength));
+  33              		.loc 1 105 3 view .LVU2
+ 106:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****   
+ 107:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****   /* Memory-to-memory transfer not supported in double buffering mode */
+ 108:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****   if (hdma->Init.Direction == DMA_MEMORY_TO_MEMORY)
+  34              		.loc 1 108 3 view .LVU3
+ 101:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****   HAL_StatusTypeDef status = HAL_OK;
+  35              		.loc 1 101 1 is_stmt 0 view .LVU4
+  36 0000 30B5     		push	{r4, r5, lr}
+  37              	.LCFI0:
+  38              		.cfi_def_cfa_offset 12
+  39              		.cfi_offset 4, -12
+  40              		.cfi_offset 5, -8
+  41              		.cfi_offset 14, -4
+  42              		.loc 1 108 17 view .LVU5
+  43 0002 8568     		ldr	r5, [r0, #8]
+  44              		.loc 1 108 6 view .LVU6
+  45 0004 802D     		cmp	r5, #128
+  46 0006 04D1     		bne	.L2
+ 109:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****   {
+ 110:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     hdma->ErrorCode = HAL_DMA_ERROR_NOT_SUPPORTED;
+  47              		.loc 1 110 5 is_stmt 1 view .LVU7
+  48              		.loc 1 110 21 is_stmt 0 view .LVU8
+  49 0008 4FF48073 		mov	r3, #256
+  50              	.LVL1:
+  51              		.loc 1 110 21 view .LVU9
+  52 000c 4365     		str	r3, [r0, #84]
+ 111:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     status = HAL_ERROR;
+  53              		.loc 1 111 5 is_stmt 1 view .LVU10
+  54              	.LVL2:
+  55              		.loc 1 111 12 is_stmt 0 view .LVU11
+  56 000e 0120     		movs	r0, #1
+  57              	.LVL3:
+  58              	.L3:
+ 112:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****   }
+ 113:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****   else
+ 114:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****   {
+ 115:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     /* Process Locked */
+ 116:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     __HAL_LOCK(hdma);
+ 117:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     
+ 118:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     if(HAL_DMA_STATE_READY == hdma->State)
+ 119:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     {
+ 120:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****       /* Change DMA peripheral state */
+ 121:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****       hdma->State = HAL_DMA_STATE_BUSY; 
+ 122:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****       
+ 123:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****       /* Enable the double buffer mode */
+ 124:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****       hdma->Instance->CR |= (uint32_t)DMA_SxCR_DBM;
+ 125:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****       
+ 126:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****       /* Configure DMA Stream destination address */
+ 127:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****       hdma->Instance->M1AR = SecondMemAddress;
+ 128:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****       
+ 129:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****       /* Configure the source, destination address and the data length */
+ 130:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****       DMA_MultiBufferSetConfig(hdma, SrcAddress, DstAddress, DataLength);
+ 131:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****       
+ 132:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****       /* Enable the peripheral */
+ 133:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****       __HAL_DMA_ENABLE(hdma);
+ 134:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     }
+ 135:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     else
+ 136:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     {
+ 137:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****       /* Return error status */
+ 138:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****       status = HAL_BUSY;
+ 139:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     }
+ 140:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****   }
+ 141:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****   return status;
+ 142:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c **** }
+  59              		.loc 1 142 1 view .LVU12
+  60 0010 30BD     		pop	{r4, r5, pc}
+  61              	.LVL4:
+  62              	.L2:
+ 116:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     
+  63              		.loc 1 116 5 is_stmt 1 view .LVU13
+ 116:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     
+  64              		.loc 1 116 5 view .LVU14
+  65 0012 90F83440 		ldrb	r4, [r0, #52]	@ zero_extendqisi2
+  66 0016 012C     		cmp	r4, #1
+  67 0018 01D1     		bne	.L4
+  68              	.L5:
+ 116:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     
+  69              		.loc 1 116 5 is_stmt 0 discriminator 1 view .LVU15
+  70 001a 0220     		movs	r0, #2
+  71              	.LVL5:
+ 116:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     
+  72              		.loc 1 116 5 discriminator 1 view .LVU16
+  73 001c F8E7     		b	.L3
+  74              	.LVL6:
+  75              	.L4:
+ 116:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     
+  76              		.loc 1 116 5 is_stmt 1 discriminator 2 view .LVU17
+  77 001e 0124     		movs	r4, #1
+  78 0020 80F83440 		strb	r4, [r0, #52]
+ 116:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     
+  79              		.loc 1 116 5 view .LVU18
+ 118:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     {
+  80              		.loc 1 118 5 view .LVU19
+ 118:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     {
+  81              		.loc 1 118 35 is_stmt 0 view .LVU20
+  82 0024 90F83540 		ldrb	r4, [r0, #53]	@ zero_extendqisi2
+ 118:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     {
+  83              		.loc 1 118 7 view .LVU21
+  84 0028 012C     		cmp	r4, #1
+  85 002a F6D1     		bne	.L5
+ 121:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****       
+  86              		.loc 1 121 7 is_stmt 1 view .LVU22
+ 121:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****       
+  87              		.loc 1 121 19 is_stmt 0 view .LVU23
+  88 002c 0224     		movs	r4, #2
+  89 002e 80F83540 		strb	r4, [r0, #53]
+ 124:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****       
+  90              		.loc 1 124 7 is_stmt 1 view .LVU24
+ 124:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****       
+  91              		.loc 1 124 11 is_stmt 0 view .LVU25
+  92 0032 0068     		ldr	r0, [r0]
+  93              	.LVL7:
+ 124:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****       
+  94              		.loc 1 124 21 view .LVU26
+  95 0034 0468     		ldr	r4, [r0]
+ 124:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****       
+  96              		.loc 1 124 26 view .LVU27
+  97 0036 44F48024 		orr	r4, r4, #262144
+  98 003a 0460     		str	r4, [r0]
+ 127:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****       
+  99              		.loc 1 127 7 is_stmt 1 view .LVU28
+ 100              	.LBB4:
+ 101              	.LBB5:
+ 143:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c **** 
+ 144:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c **** /**
+ 145:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****   * @brief  Starts the multi_buffer DMA Transfer with interrupt enabled.
+ 146:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****   * @param  hdma       pointer to a DMA_HandleTypeDef structure that contains
+ 147:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****   *                     the configuration information for the specified DMA Stream.  
+ 148:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****   * @param  SrcAddress The source memory Buffer address
+ 149:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****   * @param  DstAddress The destination memory Buffer address
+ 150:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****   * @param  SecondMemAddress The second memory Buffer address in case of multi buffer Transfer  
+ 151:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****   * @param  DataLength The length of data to be transferred from source to destination
+ 152:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****   * @retval HAL status
+ 153:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****   */
+ 154:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c **** HAL_StatusTypeDef HAL_DMAEx_MultiBufferStart_IT(DMA_HandleTypeDef *hdma, uint32_t SrcAddress, uint3
+ 155:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c **** {
+ 156:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****   HAL_StatusTypeDef status = HAL_OK;
+ 157:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****   
+ 158:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****   /* Check the parameters */
+ 159:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****   assert_param(IS_DMA_BUFFER_SIZE(DataLength));
+ 160:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****   
+ 161:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****   /* Memory-to-memory transfer not supported in double buffering mode */
+ 162:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****   if (hdma->Init.Direction == DMA_MEMORY_TO_MEMORY)
+ 163:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****   {
+ 164:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     hdma->ErrorCode = HAL_DMA_ERROR_NOT_SUPPORTED;
+ 165:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     return HAL_ERROR;
+ 166:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****   }
+ 167:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****   
+ 168:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****   /* Check callback functions */
+ 169:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****   if ((NULL == hdma->XferCpltCallback) || (NULL == hdma->XferM1CpltCallback) || (NULL == hdma->Xfer
+ 170:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****   {
+ 171:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     hdma->ErrorCode = HAL_DMA_ERROR_PARAM;
+ 172:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     return HAL_ERROR;
+ 173:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****   }
+ 174:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****   
+ 175:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****   /* Process locked */
+ 176:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****   __HAL_LOCK(hdma);
+ 177:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****   
+ 178:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****   if(HAL_DMA_STATE_READY == hdma->State)
+ 179:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****   {
+ 180:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     /* Change DMA peripheral state */
+ 181:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     hdma->State = HAL_DMA_STATE_BUSY;
+ 182:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     
+ 183:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     /* Initialize the error code */
+ 184:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     hdma->ErrorCode = HAL_DMA_ERROR_NONE;
+ 185:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     
+ 186:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     /* Enable the Double buffer mode */
+ 187:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     hdma->Instance->CR |= (uint32_t)DMA_SxCR_DBM;
+ 188:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     
+ 189:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     /* Configure DMA Stream destination address */
+ 190:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     hdma->Instance->M1AR = SecondMemAddress;
+ 191:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     
+ 192:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     /* Configure the source, destination address and the data length */
+ 193:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     DMA_MultiBufferSetConfig(hdma, SrcAddress, DstAddress, DataLength); 
+ 194:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     
+ 195:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     /* Clear all flags */
+ 196:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     __HAL_DMA_CLEAR_FLAG (hdma, __HAL_DMA_GET_TC_FLAG_INDEX(hdma));
+ 197:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     __HAL_DMA_CLEAR_FLAG (hdma, __HAL_DMA_GET_HT_FLAG_INDEX(hdma));
+ 198:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     __HAL_DMA_CLEAR_FLAG (hdma, __HAL_DMA_GET_TE_FLAG_INDEX(hdma));
+ 199:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     __HAL_DMA_CLEAR_FLAG (hdma, __HAL_DMA_GET_DME_FLAG_INDEX(hdma));
+ 200:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     __HAL_DMA_CLEAR_FLAG (hdma, __HAL_DMA_GET_FE_FLAG_INDEX(hdma));
+ 201:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c **** 
+ 202:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     /* Enable Common interrupts*/
+ 203:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     hdma->Instance->CR  |= DMA_IT_TC | DMA_IT_TE | DMA_IT_DME;
+ 204:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     hdma->Instance->FCR |= DMA_IT_FE;
+ 205:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     
+ 206:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     if((hdma->XferHalfCpltCallback != NULL) || (hdma->XferM1HalfCpltCallback != NULL))
+ 207:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     {
+ 208:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****       hdma->Instance->CR  |= DMA_IT_HT;
+ 209:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     }
+ 210:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     
+ 211:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     /* Enable the peripheral */
+ 212:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     __HAL_DMA_ENABLE(hdma); 
+ 213:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****   }
+ 214:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****   else
+ 215:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****   {     
+ 216:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     /* Process unlocked */
+ 217:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     __HAL_UNLOCK(hdma);	  
+ 218:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     
+ 219:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     /* Return error status */
+ 220:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     status = HAL_BUSY;
+ 221:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****   }  
+ 222:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****   return status; 
+ 223:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c **** }
+ 224:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c **** 
+ 225:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c **** /**
+ 226:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****   * @brief  Change the memory0 or memory1 address on the fly.
+ 227:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****   * @param  hdma       pointer to a DMA_HandleTypeDef structure that contains
+ 228:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****   *                     the configuration information for the specified DMA Stream.  
+ 229:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****   * @param  Address    The new address
+ 230:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****   * @param  memory     the memory to be changed, This parameter can be one of 
+ 231:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****   *                     the following values:
+ 232:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****   *                      MEMORY0 /
+ 233:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****   *                      MEMORY1
+ 234:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****   * @note   The MEMORY0 address can be changed only when the current transfer use
+ 235:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****   *         MEMORY1 and the MEMORY1 address can be changed only when the current 
+ 236:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****   *         transfer use MEMORY0.
+ 237:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****   * @retval HAL status
+ 238:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****   */
+ 239:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c **** HAL_StatusTypeDef HAL_DMAEx_ChangeMemory(DMA_HandleTypeDef *hdma, uint32_t Address, HAL_DMA_MemoryT
+ 240:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c **** {
+ 241:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****   if(memory == MEMORY0)
+ 242:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****   {
+ 243:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     /* change the memory0 address */
+ 244:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     hdma->Instance->M0AR = Address;
+ 245:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****   }
+ 246:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****   else
+ 247:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****   {
+ 248:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     /* change the memory1 address */
+ 249:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     hdma->Instance->M1AR = Address;
+ 250:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****   }
+ 251:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c **** 
+ 252:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****   return HAL_OK;
+ 253:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c **** }
+ 254:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c **** 
+ 255:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c **** /**
+ 256:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****   * @}
+ 257:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****   */
+ 258:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c **** 
+ 259:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c **** /**
+ 260:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****   * @}
+ 261:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****   */
+ 262:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c **** 
+ 263:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c **** /** @addtogroup DMAEx_Private_Functions
+ 264:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****   * @{
+ 265:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****   */
+ 266:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c **** 
+ 267:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c **** /**
+ 268:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****   * @brief  Set the DMA Transfer parameter.
+ 269:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****   * @param  hdma       pointer to a DMA_HandleTypeDef structure that contains
+ 270:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****   *                     the configuration information for the specified DMA Stream.  
+ 271:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****   * @param  SrcAddress The source memory Buffer address
+ 272:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****   * @param  DstAddress The destination memory Buffer address
+ 273:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****   * @param  DataLength The length of data to be transferred from source to destination
+ 274:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****   * @retval HAL status
+ 275:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****   */
+ 276:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c **** static void DMA_MultiBufferSetConfig(DMA_HandleTypeDef *hdma, uint32_t SrcAddress, uint32_t DstAddr
+ 277:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c **** {  
+ 278:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****   /* Configure DMA Stream data length */
+ 279:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****   hdma->Instance->NDTR = DataLength;
+ 280:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****   
+ 281:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****   /* Peripheral to Memory */
+ 282:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****   if((hdma->Init.Direction) == DMA_MEMORY_TO_PERIPH)
+ 102              		.loc 1 282 5 is_stmt 0 view .LVU29
+ 103 003c 402D     		cmp	r5, #64
+ 104              	.LBE5:
+ 105              	.LBE4:
+ 127:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****       
+ 106              		.loc 1 127 28 view .LVU30
+ 107 003e 0361     		str	r3, [r0, #16]
+ 130:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****       
+ 108              		.loc 1 130 7 is_stmt 1 view .LVU31
+ 109              	.LVL8:
+ 110              	.LBB7:
+ 111              	.LBI4:
+ 276:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c **** {  
+ 112              		.loc 1 276 13 view .LVU32
+ 113              	.LBB6:
+ 279:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****   
+ 114              		.loc 1 279 3 view .LVU33
+ 279:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****   
+ 115              		.loc 1 279 24 is_stmt 0 view .LVU34
+ 116 0040 039B     		ldr	r3, [sp, #12]
+ 117              	.LVL9:
+ 279:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****   
+ 118              		.loc 1 279 24 view .LVU35
+ 119 0042 4360     		str	r3, [r0, #4]
+ 120              	.LVL10:
+ 121              		.loc 1 282 3 is_stmt 1 view .LVU36
+ 283:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****   {   
+ 284:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     /* Configure DMA Stream destination address */
+ 285:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     hdma->Instance->PAR = DstAddress;
+ 122              		.loc 1 285 5 view .LVU37
+ 123              		.loc 1 285 25 is_stmt 0 view .LVU38
+ 124 0044 0BBF     		itete	eq
+ 125 0046 8260     		streq	r2, [r0, #8]
+ 286:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     
+ 287:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     /* Configure DMA Stream source address */
+ 288:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     hdma->Instance->M0AR = SrcAddress;
+ 126              		.loc 1 288 5 is_stmt 1 view .LVU39
+ 289:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****   }
+ 290:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****   /* Memory to Peripheral */
+ 291:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****   else
+ 292:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****   {
+ 293:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     /* Configure DMA Stream source address */
+ 294:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     hdma->Instance->PAR = SrcAddress;
+ 127              		.loc 1 294 25 is_stmt 0 view .LVU40
+ 128 0048 8160     		strne	r1, [r0, #8]
+ 288:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****   }
+ 129              		.loc 1 288 26 view .LVU41
+ 130 004a C160     		streq	r1, [r0, #12]
+ 131              		.loc 1 294 5 is_stmt 1 view .LVU42
+ 295:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     
+ 296:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     /* Configure DMA Stream destination address */
+ 297:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     hdma->Instance->M0AR = DstAddress;
+ 132              		.loc 1 297 5 view .LVU43
+ 133              		.loc 1 297 26 is_stmt 0 view .LVU44
+ 134 004c C260     		strne	r2, [r0, #12]
+ 135              	.LVL11:
+ 136              		.loc 1 297 26 view .LVU45
+ 137              	.LBE6:
+ 138              	.LBE7:
+ 133:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     }
+ 139              		.loc 1 133 7 is_stmt 1 view .LVU46
+ 140 004e 0368     		ldr	r3, [r0]
+ 141 0050 43F00103 		orr	r3, r3, #1
+ 142 0054 0360     		str	r3, [r0]
+ 102:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****   
+ 143              		.loc 1 102 21 is_stmt 0 view .LVU47
+ 144 0056 0020     		movs	r0, #0
+ 145 0058 DAE7     		b	.L3
+ 146              		.cfi_endproc
+ 147              	.LFE134:
+ 149              		.section	.text.HAL_DMAEx_MultiBufferStart_IT,"ax",%progbits
+ 150              		.align	1
+ 151              		.global	HAL_DMAEx_MultiBufferStart_IT
+ 152              		.syntax unified
+ 153              		.thumb
+ 154              		.thumb_func
+ 156              	HAL_DMAEx_MultiBufferStart_IT:
+ 157              	.LVL12:
+ 158              	.LFB135:
+ 155:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****   HAL_StatusTypeDef status = HAL_OK;
+ 159              		.loc 1 155 1 is_stmt 1 view -0
+ 160              		.cfi_startproc
+ 161              		@ args = 4, pretend = 0, frame = 0
+ 162              		@ frame_needed = 0, uses_anonymous_args = 0
+ 156:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****   
+ 163              		.loc 1 156 3 view .LVU49
+ 159:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****   
+ 164              		.loc 1 159 3 view .LVU50
+ 162:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****   {
+ 165              		.loc 1 162 3 view .LVU51
+ 155:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****   HAL_StatusTypeDef status = HAL_OK;
+ 166              		.loc 1 155 1 is_stmt 0 view .LVU52
+ 167 0000 70B5     		push	{r4, r5, r6, lr}
+ 168              	.LCFI1:
+ 169              		.cfi_def_cfa_offset 16
+ 170              		.cfi_offset 4, -16
+ 171              		.cfi_offset 5, -12
+ 172              		.cfi_offset 6, -8
+ 173              		.cfi_offset 14, -4
+ 162:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****   {
+ 174              		.loc 1 162 17 view .LVU53
+ 175 0002 8668     		ldr	r6, [r0, #8]
+ 162:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****   {
+ 176              		.loc 1 162 6 view .LVU54
+ 177 0004 802E     		cmp	r6, #128
+ 178 0006 04D1     		bne	.L9
+ 164:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     return HAL_ERROR;
+ 179              		.loc 1 164 5 is_stmt 1 view .LVU55
+ 164:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     return HAL_ERROR;
+ 180              		.loc 1 164 21 is_stmt 0 view .LVU56
+ 181 0008 4FF48073 		mov	r3, #256
+ 182              	.LVL13:
+ 183              	.L52:
+ 171:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     return HAL_ERROR;
+ 184              		.loc 1 171 21 view .LVU57
+ 185 000c 4365     		str	r3, [r0, #84]
+ 186              	.LVL14:
+ 172:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****   }
+ 187              		.loc 1 172 5 is_stmt 1 view .LVU58
+ 165:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****   }
+ 188              		.loc 1 165 12 is_stmt 0 view .LVU59
+ 189 000e 0120     		movs	r0, #1
+ 190              	.LVL15:
+ 191              	.L13:
+ 223:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c **** 
+ 192              		.loc 1 223 1 view .LVU60
+ 193 0010 70BD     		pop	{r4, r5, r6, pc}
+ 194              	.LVL16:
+ 195              	.L9:
+ 169:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****   {
+ 196              		.loc 1 169 3 is_stmt 1 view .LVU61
+ 169:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****   {
+ 197              		.loc 1 169 6 is_stmt 0 view .LVU62
+ 198 0012 C46B     		ldr	r4, [r0, #60]
+ 199 0014 1CB1     		cbz	r4, .L11
+ 169:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****   {
+ 200              		.loc 1 169 40 discriminator 1 view .LVU63
+ 201 0016 446C     		ldr	r4, [r0, #68]
+ 202 0018 0CB1     		cbz	r4, .L11
+ 169:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****   {
+ 203              		.loc 1 169 78 discriminator 2 view .LVU64
+ 204 001a C46C     		ldr	r4, [r0, #76]
+ 205 001c 0CB9     		cbnz	r4, .L12
+ 206              	.L11:
+ 171:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     return HAL_ERROR;
+ 207              		.loc 1 171 5 is_stmt 1 view .LVU65
+ 171:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     return HAL_ERROR;
+ 208              		.loc 1 171 21 is_stmt 0 view .LVU66
+ 209 001e 4023     		movs	r3, #64
+ 210              	.LVL17:
+ 171:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     return HAL_ERROR;
+ 211              		.loc 1 171 21 view .LVU67
+ 212 0020 F4E7     		b	.L52
+ 213              	.LVL18:
+ 214              	.L12:
+ 176:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****   
+ 215              		.loc 1 176 3 is_stmt 1 view .LVU68
+ 176:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****   
+ 216              		.loc 1 176 3 view .LVU69
+ 217 0022 90F83440 		ldrb	r4, [r0, #52]	@ zero_extendqisi2
+ 218 0026 012C     		cmp	r4, #1
+ 219 0028 00F04581 		beq	.L14
+ 176:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****   
+ 220              		.loc 1 176 3 discriminator 2 view .LVU70
+ 221 002c 0124     		movs	r4, #1
+ 222 002e 80F83440 		strb	r4, [r0, #52]
+ 176:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****   
+ 223              		.loc 1 176 3 view .LVU71
+ 178:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****   {
+ 224              		.loc 1 178 3 view .LVU72
+ 178:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****   {
+ 225              		.loc 1 178 33 is_stmt 0 view .LVU73
+ 226 0032 90F83540 		ldrb	r4, [r0, #53]	@ zero_extendqisi2
+ 178:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****   {
+ 227              		.loc 1 178 5 view .LVU74
+ 228 0036 012C     		cmp	r4, #1
+ 229 0038 4FF00004 		mov	r4, #0
+ 230 003c 40F03981 		bne	.L15
+ 181:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     
+ 231              		.loc 1 181 5 is_stmt 1 view .LVU75
+ 181:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     
+ 232              		.loc 1 181 17 is_stmt 0 view .LVU76
+ 233 0040 0225     		movs	r5, #2
+ 234 0042 80F83550 		strb	r5, [r0, #53]
+ 184:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     
+ 235              		.loc 1 184 5 is_stmt 1 view .LVU77
+ 184:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     
+ 236              		.loc 1 184 21 is_stmt 0 view .LVU78
+ 237 0046 4465     		str	r4, [r0, #84]
+ 187:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     
+ 238              		.loc 1 187 5 is_stmt 1 view .LVU79
+ 187:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     
+ 239              		.loc 1 187 9 is_stmt 0 view .LVU80
+ 240 0048 0468     		ldr	r4, [r0]
+ 187:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     
+ 241              		.loc 1 187 19 view .LVU81
+ 242 004a 2568     		ldr	r5, [r4]
+ 187:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     
+ 243              		.loc 1 187 24 view .LVU82
+ 244 004c 45F48025 		orr	r5, r5, #262144
+ 245 0050 2560     		str	r5, [r4]
+ 190:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     
+ 246              		.loc 1 190 5 is_stmt 1 view .LVU83
+ 190:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     
+ 247              		.loc 1 190 26 is_stmt 0 view .LVU84
+ 248 0052 2361     		str	r3, [r4, #16]
+ 193:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     
+ 249              		.loc 1 193 5 is_stmt 1 view .LVU85
+ 250              	.LVL19:
+ 251              	.LBB10:
+ 252              	.LBI10:
+ 276:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c **** {  
+ 253              		.loc 1 276 13 view .LVU86
+ 254              	.LBB11:
+ 279:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****   
+ 255              		.loc 1 279 3 view .LVU87
+ 279:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****   
+ 256              		.loc 1 279 24 is_stmt 0 view .LVU88
+ 257 0054 049B     		ldr	r3, [sp, #16]
+ 258              	.LVL20:
+ 279:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****   
+ 259              		.loc 1 279 24 view .LVU89
+ 260 0056 6360     		str	r3, [r4, #4]
+ 261              	.LVL21:
+ 282:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****   {   
+ 262              		.loc 1 282 3 is_stmt 1 view .LVU90
+ 263              	.LBE11:
+ 264              	.LBE10:
+ 196:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     __HAL_DMA_CLEAR_FLAG (hdma, __HAL_DMA_GET_HT_FLAG_INDEX(hdma));
+ 265              		.loc 1 196 5 is_stmt 0 view .LVU91
+ 266 0058 984B     		ldr	r3, .L55
+ 267              	.LBB13:
+ 268              	.LBB12:
+ 282:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****   {   
+ 269              		.loc 1 282 5 view .LVU92
+ 270 005a 402E     		cmp	r6, #64
+ 285:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     
+ 271              		.loc 1 285 5 is_stmt 1 view .LVU93
+ 285:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     
+ 272              		.loc 1 285 25 is_stmt 0 view .LVU94
+ 273 005c 0BBF     		itete	eq
+ 274 005e A260     		streq	r2, [r4, #8]
+ 288:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****   }
+ 275              		.loc 1 288 5 is_stmt 1 view .LVU95
+ 294:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     
+ 276              		.loc 1 294 25 is_stmt 0 view .LVU96
+ 277 0060 A160     		strne	r1, [r4, #8]
+ 288:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****   }
+ 278              		.loc 1 288 26 view .LVU97
+ 279 0062 E160     		streq	r1, [r4, #12]
+ 294:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     
+ 280              		.loc 1 294 5 is_stmt 1 view .LVU98
+ 281              		.loc 1 297 5 view .LVU99
+ 282              		.loc 1 297 26 is_stmt 0 view .LVU100
+ 283 0064 E260     		strne	r2, [r4, #12]
+ 284              	.LVL22:
+ 285              		.loc 1 297 26 view .LVU101
+ 286              	.LBE12:
+ 287              	.LBE13:
+ 196:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     __HAL_DMA_CLEAR_FLAG (hdma, __HAL_DMA_GET_HT_FLAG_INDEX(hdma));
+ 288              		.loc 1 196 5 is_stmt 1 view .LVU102
+ 289 0066 9C42     		cmp	r4, r3
+ 290 0068 57D9     		bls	.L18
+ 196:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     __HAL_DMA_CLEAR_FLAG (hdma, __HAL_DMA_GET_HT_FLAG_INDEX(hdma));
+ 291              		.loc 1 196 5 is_stmt 0 discriminator 7 view .LVU103
+ 292 006a 1833     		adds	r3, r3, #24
+ 293 006c 9C42     		cmp	r4, r3
+ 294 006e A3F17003 		sub	r3, r3, #112
+ 295 0072 20D1     		bne	.L19
+ 196:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     __HAL_DMA_CLEAR_FLAG (hdma, __HAL_DMA_GET_HT_FLAG_INDEX(hdma));
+ 296              		.loc 1 196 5 discriminator 50 view .LVU104
+ 297 0074 2022     		movs	r2, #32
+ 298              	.LVL23:
+ 196:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     __HAL_DMA_CLEAR_FLAG (hdma, __HAL_DMA_GET_HT_FLAG_INDEX(hdma));
+ 299              		.loc 1 196 5 discriminator 50 view .LVU105
+ 300 0076 DA60     		str	r2, [r3, #12]
+ 301              	.LVL24:
+ 197:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     __HAL_DMA_CLEAR_FLAG (hdma, __HAL_DMA_GET_TE_FLAG_INDEX(hdma));
+ 302              		.loc 1 197 5 is_stmt 1 view .LVU106
+ 197:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     __HAL_DMA_CLEAR_FLAG (hdma, __HAL_DMA_GET_TE_FLAG_INDEX(hdma));
+ 303              		.loc 1 197 5 is_stmt 0 discriminator 50 view .LVU107
+ 304 0078 1022     		movs	r2, #16
+ 305 007a DA60     		str	r2, [r3, #12]
+ 198:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     __HAL_DMA_CLEAR_FLAG (hdma, __HAL_DMA_GET_DME_FLAG_INDEX(hdma));
+ 306              		.loc 1 198 5 is_stmt 1 view .LVU108
+ 198:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     __HAL_DMA_CLEAR_FLAG (hdma, __HAL_DMA_GET_DME_FLAG_INDEX(hdma));
+ 307              		.loc 1 198 5 is_stmt 0 discriminator 50 view .LVU109
+ 308 007c 0822     		movs	r2, #8
+ 309 007e DA60     		str	r2, [r3, #12]
+ 199:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     __HAL_DMA_CLEAR_FLAG (hdma, __HAL_DMA_GET_FE_FLAG_INDEX(hdma));
+ 310              		.loc 1 199 5 is_stmt 1 view .LVU110
+ 199:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     __HAL_DMA_CLEAR_FLAG (hdma, __HAL_DMA_GET_FE_FLAG_INDEX(hdma));
+ 311              		.loc 1 199 5 is_stmt 0 discriminator 50 view .LVU111
+ 312 0080 0422     		movs	r2, #4
+ 313 0082 DA60     		str	r2, [r3, #12]
+ 200:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c **** 
+ 314              		.loc 1 200 5 is_stmt 1 view .LVU112
+ 200:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c **** 
+ 315              		.loc 1 200 5 is_stmt 0 discriminator 10 view .LVU113
+ 316 0084 0123     		movs	r3, #1
+ 317              	.L20:
+ 200:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c **** 
+ 318              		.loc 1 200 5 discriminator 50 view .LVU114
+ 319 0086 8E4A     		ldr	r2, .L55+4
+ 320              	.L54:
+ 200:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c **** 
+ 321              		.loc 1 200 5 discriminator 151 view .LVU115
+ 322 0088 D360     		str	r3, [r2, #12]
+ 323              	.L37:
+ 203:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     hdma->Instance->FCR |= DMA_IT_FE;
+ 324              		.loc 1 203 5 is_stmt 1 view .LVU116
+ 203:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     hdma->Instance->FCR |= DMA_IT_FE;
+ 325              		.loc 1 203 19 is_stmt 0 view .LVU117
+ 326 008a 2368     		ldr	r3, [r4]
+ 203:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     hdma->Instance->FCR |= DMA_IT_FE;
+ 327              		.loc 1 203 25 view .LVU118
+ 328 008c 43F01603 		orr	r3, r3, #22
+ 329 0090 2360     		str	r3, [r4]
+ 204:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     
+ 330              		.loc 1 204 5 is_stmt 1 view .LVU119
+ 204:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     
+ 331              		.loc 1 204 19 is_stmt 0 view .LVU120
+ 332 0092 6369     		ldr	r3, [r4, #20]
+ 204:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     
+ 333              		.loc 1 204 25 view .LVU121
+ 334 0094 43F08003 		orr	r3, r3, #128
+ 335 0098 6361     		str	r3, [r4, #20]
+ 206:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     {
+ 336              		.loc 1 206 5 is_stmt 1 view .LVU122
+ 206:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     {
+ 337              		.loc 1 206 7 is_stmt 0 view .LVU123
+ 338 009a 036C     		ldr	r3, [r0, #64]
+ 339 009c 0BB9     		cbnz	r3, .L38
+ 206:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     {
+ 340              		.loc 1 206 45 discriminator 1 view .LVU124
+ 341 009e 836C     		ldr	r3, [r0, #72]
+ 342 00a0 1BB1     		cbz	r3, .L39
+ 343              	.L38:
+ 208:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     }
+ 344              		.loc 1 208 7 is_stmt 1 view .LVU125
+ 208:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     }
+ 345              		.loc 1 208 21 is_stmt 0 view .LVU126
+ 346 00a2 2368     		ldr	r3, [r4]
+ 208:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     }
+ 347              		.loc 1 208 27 view .LVU127
+ 348 00a4 43F00803 		orr	r3, r3, #8
+ 349 00a8 2360     		str	r3, [r4]
+ 350              	.L39:
+ 212:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****   }
+ 351              		.loc 1 212 5 is_stmt 1 view .LVU128
+ 352 00aa 2368     		ldr	r3, [r4]
+ 353 00ac 43F00103 		orr	r3, r3, #1
+ 354 00b0 2360     		str	r3, [r4]
+ 156:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****   
+ 355              		.loc 1 156 21 is_stmt 0 view .LVU129
+ 356 00b2 0020     		movs	r0, #0
+ 357              	.LVL25:
+ 156:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****   
+ 358              		.loc 1 156 21 view .LVU130
+ 359 00b4 ACE7     		b	.L13
+ 360              	.LVL26:
+ 361              	.L19:
+ 196:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     __HAL_DMA_CLEAR_FLAG (hdma, __HAL_DMA_GET_HT_FLAG_INDEX(hdma));
+ 362              		.loc 1 196 5 discriminator 15 view .LVU131
+ 363 00b6 834A     		ldr	r2, .L55+8
+ 364              	.LVL27:
+ 196:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     __HAL_DMA_CLEAR_FLAG (hdma, __HAL_DMA_GET_HT_FLAG_INDEX(hdma));
+ 365              		.loc 1 196 5 discriminator 15 view .LVU132
+ 366 00b8 9442     		cmp	r4, r2
+ 367 00ba 0DD1     		bne	.L21
+ 196:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     __HAL_DMA_CLEAR_FLAG (hdma, __HAL_DMA_GET_HT_FLAG_INDEX(hdma));
+ 368              		.loc 1 196 5 discriminator 50 view .LVU133
+ 369 00bc 4FF40062 		mov	r2, #2048
+ 370 00c0 DA60     		str	r2, [r3, #12]
+ 371              	.LVL28:
+ 197:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     __HAL_DMA_CLEAR_FLAG (hdma, __HAL_DMA_GET_TE_FLAG_INDEX(hdma));
+ 372              		.loc 1 197 5 is_stmt 1 view .LVU134
+ 197:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     __HAL_DMA_CLEAR_FLAG (hdma, __HAL_DMA_GET_TE_FLAG_INDEX(hdma));
+ 373              		.loc 1 197 5 is_stmt 0 discriminator 50 view .LVU135
+ 374 00c2 4FF48062 		mov	r2, #1024
+ 375 00c6 DA60     		str	r2, [r3, #12]
+ 198:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     __HAL_DMA_CLEAR_FLAG (hdma, __HAL_DMA_GET_DME_FLAG_INDEX(hdma));
+ 376              		.loc 1 198 5 is_stmt 1 view .LVU136
+ 198:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     __HAL_DMA_CLEAR_FLAG (hdma, __HAL_DMA_GET_DME_FLAG_INDEX(hdma));
+ 377              		.loc 1 198 5 is_stmt 0 discriminator 50 view .LVU137
+ 378 00c8 4FF40072 		mov	r2, #512
+ 379 00cc DA60     		str	r2, [r3, #12]
+ 199:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     __HAL_DMA_CLEAR_FLAG (hdma, __HAL_DMA_GET_FE_FLAG_INDEX(hdma));
+ 380              		.loc 1 199 5 is_stmt 1 view .LVU138
+ 199:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     __HAL_DMA_CLEAR_FLAG (hdma, __HAL_DMA_GET_FE_FLAG_INDEX(hdma));
+ 381              		.loc 1 199 5 is_stmt 0 discriminator 50 view .LVU139
+ 382 00ce 4FF48072 		mov	r2, #256
+ 383 00d2 DA60     		str	r2, [r3, #12]
+ 200:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c **** 
+ 384              		.loc 1 200 5 is_stmt 1 view .LVU140
+ 200:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c **** 
+ 385              		.loc 1 200 5 is_stmt 0 discriminator 18 view .LVU141
+ 386 00d4 4023     		movs	r3, #64
+ 387 00d6 D6E7     		b	.L20
+ 388              	.LVL29:
+ 389              	.L21:
+ 196:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     __HAL_DMA_CLEAR_FLAG (hdma, __HAL_DMA_GET_HT_FLAG_INDEX(hdma));
+ 390              		.loc 1 196 5 discriminator 23 view .LVU142
+ 391 00d8 7B4A     		ldr	r2, .L55+12
+ 392 00da 9442     		cmp	r4, r2
+ 393 00dc 0ED1     		bne	.L22
+ 196:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     __HAL_DMA_CLEAR_FLAG (hdma, __HAL_DMA_GET_HT_FLAG_INDEX(hdma));
+ 394              		.loc 1 196 5 discriminator 50 view .LVU143
+ 395 00de 4FF40012 		mov	r2, #2097152
+ 396 00e2 DA60     		str	r2, [r3, #12]
+ 397              	.LVL30:
+ 197:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     __HAL_DMA_CLEAR_FLAG (hdma, __HAL_DMA_GET_TE_FLAG_INDEX(hdma));
+ 398              		.loc 1 197 5 is_stmt 1 view .LVU144
+ 197:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     __HAL_DMA_CLEAR_FLAG (hdma, __HAL_DMA_GET_TE_FLAG_INDEX(hdma));
+ 399              		.loc 1 197 5 is_stmt 0 discriminator 50 view .LVU145
+ 400 00e4 4FF48012 		mov	r2, #1048576
+ 401 00e8 DA60     		str	r2, [r3, #12]
+ 198:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     __HAL_DMA_CLEAR_FLAG (hdma, __HAL_DMA_GET_DME_FLAG_INDEX(hdma));
+ 402              		.loc 1 198 5 is_stmt 1 view .LVU146
+ 198:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     __HAL_DMA_CLEAR_FLAG (hdma, __HAL_DMA_GET_DME_FLAG_INDEX(hdma));
+ 403              		.loc 1 198 5 is_stmt 0 discriminator 50 view .LVU147
+ 404 00ea 4FF40022 		mov	r2, #524288
+ 405 00ee DA60     		str	r2, [r3, #12]
+ 199:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     __HAL_DMA_CLEAR_FLAG (hdma, __HAL_DMA_GET_FE_FLAG_INDEX(hdma));
+ 406              		.loc 1 199 5 is_stmt 1 view .LVU148
+ 199:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     __HAL_DMA_CLEAR_FLAG (hdma, __HAL_DMA_GET_FE_FLAG_INDEX(hdma));
+ 407              		.loc 1 199 5 is_stmt 0 discriminator 50 view .LVU149
+ 408 00f0 4FF48022 		mov	r2, #262144
+ 409 00f4 DA60     		str	r2, [r3, #12]
+ 200:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c **** 
+ 410              		.loc 1 200 5 is_stmt 1 view .LVU150
+ 200:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c **** 
+ 411              		.loc 1 200 5 is_stmt 0 discriminator 25 view .LVU151
+ 412 00f6 4FF48033 		mov	r3, #65536
+ 413 00fa C4E7     		b	.L20
+ 414              	.LVL31:
+ 415              	.L22:
+ 196:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     __HAL_DMA_CLEAR_FLAG (hdma, __HAL_DMA_GET_HT_FLAG_INDEX(hdma));
+ 416              		.loc 1 196 5 discriminator 50 view .LVU152
+ 417 00fc 4FF00062 		mov	r2, #134217728
+ 418 0100 DA60     		str	r2, [r3, #12]
+ 419              	.LVL32:
+ 197:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     __HAL_DMA_CLEAR_FLAG (hdma, __HAL_DMA_GET_TE_FLAG_INDEX(hdma));
+ 420              		.loc 1 197 5 is_stmt 1 view .LVU153
+ 197:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     __HAL_DMA_CLEAR_FLAG (hdma, __HAL_DMA_GET_TE_FLAG_INDEX(hdma));
+ 421              		.loc 1 197 5 is_stmt 0 discriminator 50 view .LVU154
+ 422 0102 4FF08062 		mov	r2, #67108864
+ 423 0106 DA60     		str	r2, [r3, #12]
+ 198:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     __HAL_DMA_CLEAR_FLAG (hdma, __HAL_DMA_GET_DME_FLAG_INDEX(hdma));
+ 424              		.loc 1 198 5 is_stmt 1 view .LVU155
+ 198:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     __HAL_DMA_CLEAR_FLAG (hdma, __HAL_DMA_GET_DME_FLAG_INDEX(hdma));
+ 425              		.loc 1 198 5 is_stmt 0 discriminator 50 view .LVU156
+ 426 0108 4FF00072 		mov	r2, #33554432
+ 427 010c DA60     		str	r2, [r3, #12]
+ 199:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     __HAL_DMA_CLEAR_FLAG (hdma, __HAL_DMA_GET_FE_FLAG_INDEX(hdma));
+ 428              		.loc 1 199 5 is_stmt 1 view .LVU157
+ 199:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     __HAL_DMA_CLEAR_FLAG (hdma, __HAL_DMA_GET_FE_FLAG_INDEX(hdma));
+ 429              		.loc 1 199 5 is_stmt 0 discriminator 50 view .LVU158
+ 430 010e 4FF08072 		mov	r2, #16777216
+ 431 0112 DA60     		str	r2, [r3, #12]
+ 200:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c **** 
+ 432              		.loc 1 200 5 is_stmt 1 view .LVU159
+ 200:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c **** 
+ 433              		.loc 1 200 5 is_stmt 0 discriminator 26 view .LVU160
+ 434 0114 4FF48003 		mov	r3, #4194304
+ 435 0118 B5E7     		b	.L20
+ 436              	.LVL33:
+ 437              	.L18:
+ 196:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     __HAL_DMA_CLEAR_FLAG (hdma, __HAL_DMA_GET_HT_FLAG_INDEX(hdma));
+ 438              		.loc 1 196 5 discriminator 2 view .LVU161
+ 439 011a 6C4B     		ldr	r3, .L55+16
+ 440 011c 9C42     		cmp	r4, r3
+ 441 011e 43D9     		bls	.L23
+ 196:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     __HAL_DMA_CLEAR_FLAG (hdma, __HAL_DMA_GET_HT_FLAG_INDEX(hdma));
+ 442              		.loc 1 196 5 discriminator 53 view .LVU162
+ 443 0120 03F55673 		add	r3, r3, #856
+ 444 0124 9C42     		cmp	r4, r3
+ 445 0126 A3F11003 		sub	r3, r3, #16
+ 446 012a 0BD1     		bne	.L24
+ 196:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     __HAL_DMA_CLEAR_FLAG (hdma, __HAL_DMA_GET_HT_FLAG_INDEX(hdma));
+ 447              		.loc 1 196 5 discriminator 100 view .LVU163
+ 448 012c 2022     		movs	r2, #32
+ 449              	.LVL34:
+ 196:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     __HAL_DMA_CLEAR_FLAG (hdma, __HAL_DMA_GET_HT_FLAG_INDEX(hdma));
+ 450              		.loc 1 196 5 discriminator 100 view .LVU164
+ 451 012e 9A60     		str	r2, [r3, #8]
+ 452              	.LVL35:
+ 197:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     __HAL_DMA_CLEAR_FLAG (hdma, __HAL_DMA_GET_TE_FLAG_INDEX(hdma));
+ 453              		.loc 1 197 5 is_stmt 1 view .LVU165
+ 197:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     __HAL_DMA_CLEAR_FLAG (hdma, __HAL_DMA_GET_TE_FLAG_INDEX(hdma));
+ 454              		.loc 1 197 5 is_stmt 0 discriminator 100 view .LVU166
+ 455 0130 1022     		movs	r2, #16
+ 456 0132 9A60     		str	r2, [r3, #8]
+ 198:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     __HAL_DMA_CLEAR_FLAG (hdma, __HAL_DMA_GET_DME_FLAG_INDEX(hdma));
+ 457              		.loc 1 198 5 is_stmt 1 view .LVU167
+ 198:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     __HAL_DMA_CLEAR_FLAG (hdma, __HAL_DMA_GET_DME_FLAG_INDEX(hdma));
+ 458              		.loc 1 198 5 is_stmt 0 discriminator 100 view .LVU168
+ 459 0134 0822     		movs	r2, #8
+ 460 0136 9A60     		str	r2, [r3, #8]
+ 199:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     __HAL_DMA_CLEAR_FLAG (hdma, __HAL_DMA_GET_FE_FLAG_INDEX(hdma));
+ 461              		.loc 1 199 5 is_stmt 1 view .LVU169
+ 199:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     __HAL_DMA_CLEAR_FLAG (hdma, __HAL_DMA_GET_FE_FLAG_INDEX(hdma));
+ 462              		.loc 1 199 5 is_stmt 0 discriminator 100 view .LVU170
+ 463 0138 0422     		movs	r2, #4
+ 464 013a 9A60     		str	r2, [r3, #8]
+ 200:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c **** 
+ 465              		.loc 1 200 5 is_stmt 1 view .LVU171
+ 200:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c **** 
+ 466              		.loc 1 200 5 is_stmt 0 discriminator 56 view .LVU172
+ 467 013c 0123     		movs	r3, #1
+ 468              	.L25:
+ 200:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c **** 
+ 469              		.loc 1 200 5 discriminator 100 view .LVU173
+ 470 013e 604A     		ldr	r2, .L55+4
+ 471              	.L53:
+ 200:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c **** 
+ 472              		.loc 1 200 5 discriminator 200 view .LVU174
+ 473 0140 9360     		str	r3, [r2, #8]
+ 474 0142 A2E7     		b	.L37
+ 475              	.LVL36:
+ 476              	.L24:
+ 196:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     __HAL_DMA_CLEAR_FLAG (hdma, __HAL_DMA_GET_HT_FLAG_INDEX(hdma));
+ 477              		.loc 1 196 5 discriminator 61 view .LVU175
+ 478 0144 624A     		ldr	r2, .L55+20
+ 479              	.LVL37:
+ 196:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     __HAL_DMA_CLEAR_FLAG (hdma, __HAL_DMA_GET_HT_FLAG_INDEX(hdma));
+ 480              		.loc 1 196 5 discriminator 61 view .LVU176
+ 481 0146 9442     		cmp	r4, r2
+ 482 0148 0DD1     		bne	.L26
+ 196:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     __HAL_DMA_CLEAR_FLAG (hdma, __HAL_DMA_GET_HT_FLAG_INDEX(hdma));
+ 483              		.loc 1 196 5 discriminator 100 view .LVU177
+ 484 014a 4FF40062 		mov	r2, #2048
+ 485 014e 9A60     		str	r2, [r3, #8]
+ 486              	.LVL38:
+ 197:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     __HAL_DMA_CLEAR_FLAG (hdma, __HAL_DMA_GET_TE_FLAG_INDEX(hdma));
+ 487              		.loc 1 197 5 is_stmt 1 view .LVU178
+ 197:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     __HAL_DMA_CLEAR_FLAG (hdma, __HAL_DMA_GET_TE_FLAG_INDEX(hdma));
+ 488              		.loc 1 197 5 is_stmt 0 discriminator 100 view .LVU179
+ 489 0150 4FF48062 		mov	r2, #1024
+ 490 0154 9A60     		str	r2, [r3, #8]
+ 198:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     __HAL_DMA_CLEAR_FLAG (hdma, __HAL_DMA_GET_DME_FLAG_INDEX(hdma));
+ 491              		.loc 1 198 5 is_stmt 1 view .LVU180
+ 198:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     __HAL_DMA_CLEAR_FLAG (hdma, __HAL_DMA_GET_DME_FLAG_INDEX(hdma));
+ 492              		.loc 1 198 5 is_stmt 0 discriminator 100 view .LVU181
+ 493 0156 4FF40072 		mov	r2, #512
+ 494 015a 9A60     		str	r2, [r3, #8]
+ 199:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     __HAL_DMA_CLEAR_FLAG (hdma, __HAL_DMA_GET_FE_FLAG_INDEX(hdma));
+ 495              		.loc 1 199 5 is_stmt 1 view .LVU182
+ 199:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     __HAL_DMA_CLEAR_FLAG (hdma, __HAL_DMA_GET_FE_FLAG_INDEX(hdma));
+ 496              		.loc 1 199 5 is_stmt 0 discriminator 100 view .LVU183
+ 497 015c 4FF48072 		mov	r2, #256
+ 498 0160 9A60     		str	r2, [r3, #8]
+ 200:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c **** 
+ 499              		.loc 1 200 5 is_stmt 1 view .LVU184
+ 200:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c **** 
+ 500              		.loc 1 200 5 is_stmt 0 discriminator 64 view .LVU185
+ 501 0162 4023     		movs	r3, #64
+ 502 0164 EBE7     		b	.L25
+ 503              	.LVL39:
+ 504              	.L26:
+ 196:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     __HAL_DMA_CLEAR_FLAG (hdma, __HAL_DMA_GET_HT_FLAG_INDEX(hdma));
+ 505              		.loc 1 196 5 discriminator 69 view .LVU186
+ 506 0166 5B4A     		ldr	r2, .L55+24
+ 507 0168 9442     		cmp	r4, r2
+ 508 016a 0ED1     		bne	.L27
+ 196:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     __HAL_DMA_CLEAR_FLAG (hdma, __HAL_DMA_GET_HT_FLAG_INDEX(hdma));
+ 509              		.loc 1 196 5 discriminator 100 view .LVU187
+ 510 016c 4FF40012 		mov	r2, #2097152
+ 511 0170 9A60     		str	r2, [r3, #8]
+ 512              	.LVL40:
+ 197:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     __HAL_DMA_CLEAR_FLAG (hdma, __HAL_DMA_GET_TE_FLAG_INDEX(hdma));
+ 513              		.loc 1 197 5 is_stmt 1 view .LVU188
+ 197:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     __HAL_DMA_CLEAR_FLAG (hdma, __HAL_DMA_GET_TE_FLAG_INDEX(hdma));
+ 514              		.loc 1 197 5 is_stmt 0 discriminator 100 view .LVU189
+ 515 0172 4FF48012 		mov	r2, #1048576
+ 516 0176 9A60     		str	r2, [r3, #8]
+ 198:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     __HAL_DMA_CLEAR_FLAG (hdma, __HAL_DMA_GET_DME_FLAG_INDEX(hdma));
+ 517              		.loc 1 198 5 is_stmt 1 view .LVU190
+ 198:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     __HAL_DMA_CLEAR_FLAG (hdma, __HAL_DMA_GET_DME_FLAG_INDEX(hdma));
+ 518              		.loc 1 198 5 is_stmt 0 discriminator 100 view .LVU191
+ 519 0178 4FF40022 		mov	r2, #524288
+ 520 017c 9A60     		str	r2, [r3, #8]
+ 199:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     __HAL_DMA_CLEAR_FLAG (hdma, __HAL_DMA_GET_FE_FLAG_INDEX(hdma));
+ 521              		.loc 1 199 5 is_stmt 1 view .LVU192
+ 199:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     __HAL_DMA_CLEAR_FLAG (hdma, __HAL_DMA_GET_FE_FLAG_INDEX(hdma));
+ 522              		.loc 1 199 5 is_stmt 0 discriminator 100 view .LVU193
+ 523 017e 4FF48022 		mov	r2, #262144
+ 524 0182 9A60     		str	r2, [r3, #8]
+ 200:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c **** 
+ 525              		.loc 1 200 5 is_stmt 1 view .LVU194
+ 200:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c **** 
+ 526              		.loc 1 200 5 is_stmt 0 discriminator 72 view .LVU195
+ 527 0184 4FF48033 		mov	r3, #65536
+ 528 0188 D9E7     		b	.L25
+ 529              	.LVL41:
+ 530              	.L27:
+ 196:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     __HAL_DMA_CLEAR_FLAG (hdma, __HAL_DMA_GET_HT_FLAG_INDEX(hdma));
+ 531              		.loc 1 196 5 discriminator 100 view .LVU196
+ 532 018a 4FF00062 		mov	r2, #134217728
+ 533 018e 9A60     		str	r2, [r3, #8]
+ 534              	.LVL42:
+ 197:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     __HAL_DMA_CLEAR_FLAG (hdma, __HAL_DMA_GET_TE_FLAG_INDEX(hdma));
+ 535              		.loc 1 197 5 is_stmt 1 view .LVU197
+ 197:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     __HAL_DMA_CLEAR_FLAG (hdma, __HAL_DMA_GET_TE_FLAG_INDEX(hdma));
+ 536              		.loc 1 197 5 is_stmt 0 discriminator 100 view .LVU198
+ 537 0190 4FF08062 		mov	r2, #67108864
+ 538 0194 9A60     		str	r2, [r3, #8]
+ 198:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     __HAL_DMA_CLEAR_FLAG (hdma, __HAL_DMA_GET_DME_FLAG_INDEX(hdma));
+ 539              		.loc 1 198 5 is_stmt 1 view .LVU199
+ 198:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     __HAL_DMA_CLEAR_FLAG (hdma, __HAL_DMA_GET_DME_FLAG_INDEX(hdma));
+ 540              		.loc 1 198 5 is_stmt 0 discriminator 100 view .LVU200
+ 541 0196 4FF00072 		mov	r2, #33554432
+ 542 019a 9A60     		str	r2, [r3, #8]
+ 199:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     __HAL_DMA_CLEAR_FLAG (hdma, __HAL_DMA_GET_FE_FLAG_INDEX(hdma));
+ 543              		.loc 1 199 5 is_stmt 1 view .LVU201
+ 199:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     __HAL_DMA_CLEAR_FLAG (hdma, __HAL_DMA_GET_FE_FLAG_INDEX(hdma));
+ 544              		.loc 1 199 5 is_stmt 0 discriminator 100 view .LVU202
+ 545 019c 4FF08072 		mov	r2, #16777216
+ 546 01a0 9A60     		str	r2, [r3, #8]
+ 200:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c **** 
+ 547              		.loc 1 200 5 is_stmt 1 view .LVU203
+ 200:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c **** 
+ 548              		.loc 1 200 5 is_stmt 0 discriminator 80 view .LVU204
+ 549 01a2 4FF48003 		mov	r3, #4194304
+ 550 01a6 CAE7     		b	.L25
+ 551              	.LVL43:
+ 552              	.L23:
+ 196:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     __HAL_DMA_CLEAR_FLAG (hdma, __HAL_DMA_GET_HT_FLAG_INDEX(hdma));
+ 553              		.loc 1 196 5 discriminator 52 view .LVU205
+ 554 01a8 4B4B     		ldr	r3, .L55+28
+ 555 01aa 9C42     		cmp	r4, r3
+ 556 01ac A3F15803 		sub	r3, r3, #88
+ 557 01b0 3FD9     		bls	.L28
+ 196:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     __HAL_DMA_CLEAR_FLAG (hdma, __HAL_DMA_GET_HT_FLAG_INDEX(hdma));
+ 558              		.loc 1 196 5 discriminator 106 view .LVU206
+ 559 01b2 4A4A     		ldr	r2, .L55+32
+ 560              	.LVL44:
+ 196:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     __HAL_DMA_CLEAR_FLAG (hdma, __HAL_DMA_GET_HT_FLAG_INDEX(hdma));
+ 561              		.loc 1 196 5 discriminator 106 view .LVU207
+ 562 01b4 9442     		cmp	r4, r2
+ 563 01b6 0AD1     		bne	.L29
+ 196:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     __HAL_DMA_CLEAR_FLAG (hdma, __HAL_DMA_GET_HT_FLAG_INDEX(hdma));
+ 564              		.loc 1 196 5 discriminator 151 view .LVU208
+ 565 01b8 2022     		movs	r2, #32
+ 566 01ba DA60     		str	r2, [r3, #12]
+ 567              	.LVL45:
+ 197:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     __HAL_DMA_CLEAR_FLAG (hdma, __HAL_DMA_GET_TE_FLAG_INDEX(hdma));
+ 568              		.loc 1 197 5 is_stmt 1 view .LVU209
+ 197:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     __HAL_DMA_CLEAR_FLAG (hdma, __HAL_DMA_GET_TE_FLAG_INDEX(hdma));
+ 569              		.loc 1 197 5 is_stmt 0 discriminator 151 view .LVU210
+ 570 01bc 1022     		movs	r2, #16
+ 571 01be DA60     		str	r2, [r3, #12]
+ 198:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     __HAL_DMA_CLEAR_FLAG (hdma, __HAL_DMA_GET_DME_FLAG_INDEX(hdma));
+ 572              		.loc 1 198 5 is_stmt 1 view .LVU211
+ 198:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     __HAL_DMA_CLEAR_FLAG (hdma, __HAL_DMA_GET_DME_FLAG_INDEX(hdma));
+ 573              		.loc 1 198 5 is_stmt 0 discriminator 151 view .LVU212
+ 574 01c0 0822     		movs	r2, #8
+ 575 01c2 DA60     		str	r2, [r3, #12]
+ 199:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     __HAL_DMA_CLEAR_FLAG (hdma, __HAL_DMA_GET_FE_FLAG_INDEX(hdma));
+ 576              		.loc 1 199 5 is_stmt 1 view .LVU213
+ 199:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     __HAL_DMA_CLEAR_FLAG (hdma, __HAL_DMA_GET_FE_FLAG_INDEX(hdma));
+ 577              		.loc 1 199 5 is_stmt 0 discriminator 151 view .LVU214
+ 578 01c4 0422     		movs	r2, #4
+ 579 01c6 DA60     		str	r2, [r3, #12]
+ 200:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c **** 
+ 580              		.loc 1 200 5 is_stmt 1 view .LVU215
+ 200:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c **** 
+ 581              		.loc 1 200 5 is_stmt 0 discriminator 109 view .LVU216
+ 582 01c8 0123     		movs	r3, #1
+ 583              	.L30:
+ 200:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c **** 
+ 584              		.loc 1 200 5 discriminator 151 view .LVU217
+ 585 01ca 454A     		ldr	r2, .L55+36
+ 586 01cc 5CE7     		b	.L54
+ 587              	.LVL46:
+ 588              	.L29:
+ 196:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     __HAL_DMA_CLEAR_FLAG (hdma, __HAL_DMA_GET_HT_FLAG_INDEX(hdma));
+ 589              		.loc 1 196 5 discriminator 114 view .LVU218
+ 590 01ce 454A     		ldr	r2, .L55+40
+ 591 01d0 9442     		cmp	r4, r2
+ 592 01d2 0DD1     		bne	.L31
+ 196:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     __HAL_DMA_CLEAR_FLAG (hdma, __HAL_DMA_GET_HT_FLAG_INDEX(hdma));
+ 593              		.loc 1 196 5 discriminator 151 view .LVU219
+ 594 01d4 4FF40062 		mov	r2, #2048
+ 595 01d8 DA60     		str	r2, [r3, #12]
+ 596              	.LVL47:
+ 197:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     __HAL_DMA_CLEAR_FLAG (hdma, __HAL_DMA_GET_TE_FLAG_INDEX(hdma));
+ 597              		.loc 1 197 5 is_stmt 1 view .LVU220
+ 197:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     __HAL_DMA_CLEAR_FLAG (hdma, __HAL_DMA_GET_TE_FLAG_INDEX(hdma));
+ 598              		.loc 1 197 5 is_stmt 0 discriminator 151 view .LVU221
+ 599 01da 4FF48062 		mov	r2, #1024
+ 600 01de DA60     		str	r2, [r3, #12]
+ 198:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     __HAL_DMA_CLEAR_FLAG (hdma, __HAL_DMA_GET_DME_FLAG_INDEX(hdma));
+ 601              		.loc 1 198 5 is_stmt 1 view .LVU222
+ 198:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     __HAL_DMA_CLEAR_FLAG (hdma, __HAL_DMA_GET_DME_FLAG_INDEX(hdma));
+ 602              		.loc 1 198 5 is_stmt 0 discriminator 151 view .LVU223
+ 603 01e0 4FF40072 		mov	r2, #512
+ 604 01e4 DA60     		str	r2, [r3, #12]
+ 199:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     __HAL_DMA_CLEAR_FLAG (hdma, __HAL_DMA_GET_FE_FLAG_INDEX(hdma));
+ 605              		.loc 1 199 5 is_stmt 1 view .LVU224
+ 199:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     __HAL_DMA_CLEAR_FLAG (hdma, __HAL_DMA_GET_FE_FLAG_INDEX(hdma));
+ 606              		.loc 1 199 5 is_stmt 0 discriminator 151 view .LVU225
+ 607 01e6 4FF48072 		mov	r2, #256
+ 608 01ea DA60     		str	r2, [r3, #12]
+ 200:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c **** 
+ 609              		.loc 1 200 5 is_stmt 1 view .LVU226
+ 200:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c **** 
+ 610              		.loc 1 200 5 is_stmt 0 discriminator 117 view .LVU227
+ 611 01ec 4023     		movs	r3, #64
+ 612 01ee ECE7     		b	.L30
+ 613              	.LVL48:
+ 614              	.L31:
+ 196:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     __HAL_DMA_CLEAR_FLAG (hdma, __HAL_DMA_GET_HT_FLAG_INDEX(hdma));
+ 615              		.loc 1 196 5 discriminator 122 view .LVU228
+ 616 01f0 3D4A     		ldr	r2, .L55+44
+ 617 01f2 9442     		cmp	r4, r2
+ 618 01f4 0ED1     		bne	.L32
+ 196:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     __HAL_DMA_CLEAR_FLAG (hdma, __HAL_DMA_GET_HT_FLAG_INDEX(hdma));
+ 619              		.loc 1 196 5 discriminator 151 view .LVU229
+ 620 01f6 4FF40012 		mov	r2, #2097152
+ 621 01fa DA60     		str	r2, [r3, #12]
+ 622              	.LVL49:
+ 197:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     __HAL_DMA_CLEAR_FLAG (hdma, __HAL_DMA_GET_TE_FLAG_INDEX(hdma));
+ 623              		.loc 1 197 5 is_stmt 1 view .LVU230
+ 197:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     __HAL_DMA_CLEAR_FLAG (hdma, __HAL_DMA_GET_TE_FLAG_INDEX(hdma));
+ 624              		.loc 1 197 5 is_stmt 0 discriminator 151 view .LVU231
+ 625 01fc 4FF48012 		mov	r2, #1048576
+ 626 0200 DA60     		str	r2, [r3, #12]
+ 198:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     __HAL_DMA_CLEAR_FLAG (hdma, __HAL_DMA_GET_DME_FLAG_INDEX(hdma));
+ 627              		.loc 1 198 5 is_stmt 1 view .LVU232
+ 198:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     __HAL_DMA_CLEAR_FLAG (hdma, __HAL_DMA_GET_DME_FLAG_INDEX(hdma));
+ 628              		.loc 1 198 5 is_stmt 0 discriminator 151 view .LVU233
+ 629 0202 4FF40022 		mov	r2, #524288
+ 630 0206 DA60     		str	r2, [r3, #12]
+ 199:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     __HAL_DMA_CLEAR_FLAG (hdma, __HAL_DMA_GET_FE_FLAG_INDEX(hdma));
+ 631              		.loc 1 199 5 is_stmt 1 view .LVU234
+ 199:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     __HAL_DMA_CLEAR_FLAG (hdma, __HAL_DMA_GET_FE_FLAG_INDEX(hdma));
+ 632              		.loc 1 199 5 is_stmt 0 discriminator 151 view .LVU235
+ 633 0208 4FF48022 		mov	r2, #262144
+ 634 020c DA60     		str	r2, [r3, #12]
+ 200:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c **** 
+ 635              		.loc 1 200 5 is_stmt 1 view .LVU236
+ 200:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c **** 
+ 636              		.loc 1 200 5 is_stmt 0 discriminator 125 view .LVU237
+ 637 020e 4FF48033 		mov	r3, #65536
+ 638 0212 DAE7     		b	.L30
+ 639              	.LVL50:
+ 640              	.L32:
+ 196:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     __HAL_DMA_CLEAR_FLAG (hdma, __HAL_DMA_GET_HT_FLAG_INDEX(hdma));
+ 641              		.loc 1 196 5 discriminator 151 view .LVU238
+ 642 0214 4FF00062 		mov	r2, #134217728
+ 643 0218 DA60     		str	r2, [r3, #12]
+ 644              	.LVL51:
+ 197:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     __HAL_DMA_CLEAR_FLAG (hdma, __HAL_DMA_GET_TE_FLAG_INDEX(hdma));
+ 645              		.loc 1 197 5 is_stmt 1 view .LVU239
+ 197:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     __HAL_DMA_CLEAR_FLAG (hdma, __HAL_DMA_GET_TE_FLAG_INDEX(hdma));
+ 646              		.loc 1 197 5 is_stmt 0 discriminator 151 view .LVU240
+ 647 021a 4FF08062 		mov	r2, #67108864
+ 648 021e DA60     		str	r2, [r3, #12]
+ 198:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     __HAL_DMA_CLEAR_FLAG (hdma, __HAL_DMA_GET_DME_FLAG_INDEX(hdma));
+ 649              		.loc 1 198 5 is_stmt 1 view .LVU241
+ 198:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     __HAL_DMA_CLEAR_FLAG (hdma, __HAL_DMA_GET_DME_FLAG_INDEX(hdma));
+ 650              		.loc 1 198 5 is_stmt 0 discriminator 151 view .LVU242
+ 651 0220 4FF00072 		mov	r2, #33554432
+ 652 0224 DA60     		str	r2, [r3, #12]
+ 199:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     __HAL_DMA_CLEAR_FLAG (hdma, __HAL_DMA_GET_FE_FLAG_INDEX(hdma));
+ 653              		.loc 1 199 5 is_stmt 1 view .LVU243
+ 199:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     __HAL_DMA_CLEAR_FLAG (hdma, __HAL_DMA_GET_FE_FLAG_INDEX(hdma));
+ 654              		.loc 1 199 5 is_stmt 0 discriminator 151 view .LVU244
+ 655 0226 4FF08072 		mov	r2, #16777216
+ 656 022a DA60     		str	r2, [r3, #12]
+ 200:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c **** 
+ 657              		.loc 1 200 5 is_stmt 1 view .LVU245
+ 200:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c **** 
+ 658              		.loc 1 200 5 is_stmt 0 discriminator 129 view .LVU246
+ 659 022c 4FF48003 		mov	r3, #4194304
+ 660 0230 CBE7     		b	.L30
+ 661              	.LVL52:
+ 662              	.L28:
+ 196:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     __HAL_DMA_CLEAR_FLAG (hdma, __HAL_DMA_GET_HT_FLAG_INDEX(hdma));
+ 663              		.loc 1 196 5 discriminator 103 view .LVU247
+ 664 0232 2E4A     		ldr	r2, .L55+48
+ 665              	.LVL53:
+ 196:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     __HAL_DMA_CLEAR_FLAG (hdma, __HAL_DMA_GET_HT_FLAG_INDEX(hdma));
+ 666              		.loc 1 196 5 discriminator 103 view .LVU248
+ 667 0234 9442     		cmp	r4, r2
+ 668 0236 0AD1     		bne	.L33
+ 196:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     __HAL_DMA_CLEAR_FLAG (hdma, __HAL_DMA_GET_HT_FLAG_INDEX(hdma));
+ 669              		.loc 1 196 5 discriminator 200 view .LVU249
+ 670 0238 2022     		movs	r2, #32
+ 671 023a 9A60     		str	r2, [r3, #8]
+ 672              	.LVL54:
+ 197:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     __HAL_DMA_CLEAR_FLAG (hdma, __HAL_DMA_GET_TE_FLAG_INDEX(hdma));
+ 673              		.loc 1 197 5 is_stmt 1 view .LVU250
+ 197:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     __HAL_DMA_CLEAR_FLAG (hdma, __HAL_DMA_GET_TE_FLAG_INDEX(hdma));
+ 674              		.loc 1 197 5 is_stmt 0 discriminator 200 view .LVU251
+ 675 023c 1022     		movs	r2, #16
+ 676 023e 9A60     		str	r2, [r3, #8]
+ 198:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     __HAL_DMA_CLEAR_FLAG (hdma, __HAL_DMA_GET_DME_FLAG_INDEX(hdma));
+ 677              		.loc 1 198 5 is_stmt 1 view .LVU252
+ 198:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     __HAL_DMA_CLEAR_FLAG (hdma, __HAL_DMA_GET_DME_FLAG_INDEX(hdma));
+ 678              		.loc 1 198 5 is_stmt 0 discriminator 200 view .LVU253
+ 679 0240 0822     		movs	r2, #8
+ 680 0242 9A60     		str	r2, [r3, #8]
+ 199:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     __HAL_DMA_CLEAR_FLAG (hdma, __HAL_DMA_GET_FE_FLAG_INDEX(hdma));
+ 681              		.loc 1 199 5 is_stmt 1 view .LVU254
+ 199:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     __HAL_DMA_CLEAR_FLAG (hdma, __HAL_DMA_GET_FE_FLAG_INDEX(hdma));
+ 682              		.loc 1 199 5 is_stmt 0 discriminator 200 view .LVU255
+ 683 0244 0422     		movs	r2, #4
+ 684 0246 9A60     		str	r2, [r3, #8]
+ 200:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c **** 
+ 685              		.loc 1 200 5 is_stmt 1 view .LVU256
+ 200:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c **** 
+ 686              		.loc 1 200 5 is_stmt 0 discriminator 154 view .LVU257
+ 687 0248 0123     		movs	r3, #1
+ 688              	.L34:
+ 200:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c **** 
+ 689              		.loc 1 200 5 discriminator 200 view .LVU258
+ 690 024a 254A     		ldr	r2, .L55+36
+ 691 024c 78E7     		b	.L53
+ 692              	.LVL55:
+ 693              	.L33:
+ 196:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     __HAL_DMA_CLEAR_FLAG (hdma, __HAL_DMA_GET_HT_FLAG_INDEX(hdma));
+ 694              		.loc 1 196 5 discriminator 159 view .LVU259
+ 695 024e 284A     		ldr	r2, .L55+52
+ 696 0250 9442     		cmp	r4, r2
+ 697 0252 0DD1     		bne	.L35
+ 196:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     __HAL_DMA_CLEAR_FLAG (hdma, __HAL_DMA_GET_HT_FLAG_INDEX(hdma));
+ 698              		.loc 1 196 5 discriminator 200 view .LVU260
+ 699 0254 4FF40062 		mov	r2, #2048
+ 700 0258 9A60     		str	r2, [r3, #8]
+ 701              	.LVL56:
+ 197:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     __HAL_DMA_CLEAR_FLAG (hdma, __HAL_DMA_GET_TE_FLAG_INDEX(hdma));
+ 702              		.loc 1 197 5 is_stmt 1 view .LVU261
+ 197:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     __HAL_DMA_CLEAR_FLAG (hdma, __HAL_DMA_GET_TE_FLAG_INDEX(hdma));
+ 703              		.loc 1 197 5 is_stmt 0 discriminator 200 view .LVU262
+ 704 025a 4FF48062 		mov	r2, #1024
+ 705 025e 9A60     		str	r2, [r3, #8]
+ 198:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     __HAL_DMA_CLEAR_FLAG (hdma, __HAL_DMA_GET_DME_FLAG_INDEX(hdma));
+ 706              		.loc 1 198 5 is_stmt 1 view .LVU263
+ 198:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     __HAL_DMA_CLEAR_FLAG (hdma, __HAL_DMA_GET_DME_FLAG_INDEX(hdma));
+ 707              		.loc 1 198 5 is_stmt 0 discriminator 200 view .LVU264
+ 708 0260 4FF40072 		mov	r2, #512
+ 709 0264 9A60     		str	r2, [r3, #8]
+ 199:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     __HAL_DMA_CLEAR_FLAG (hdma, __HAL_DMA_GET_FE_FLAG_INDEX(hdma));
+ 710              		.loc 1 199 5 is_stmt 1 view .LVU265
+ 199:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     __HAL_DMA_CLEAR_FLAG (hdma, __HAL_DMA_GET_FE_FLAG_INDEX(hdma));
+ 711              		.loc 1 199 5 is_stmt 0 discriminator 200 view .LVU266
+ 712 0266 4FF48072 		mov	r2, #256
+ 713 026a 9A60     		str	r2, [r3, #8]
+ 200:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c **** 
+ 714              		.loc 1 200 5 is_stmt 1 view .LVU267
+ 200:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c **** 
+ 715              		.loc 1 200 5 is_stmt 0 discriminator 162 view .LVU268
+ 716 026c 4023     		movs	r3, #64
+ 717 026e ECE7     		b	.L34
+ 718              	.LVL57:
+ 719              	.L35:
+ 196:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     __HAL_DMA_CLEAR_FLAG (hdma, __HAL_DMA_GET_HT_FLAG_INDEX(hdma));
+ 720              		.loc 1 196 5 discriminator 167 view .LVU269
+ 721 0270 204A     		ldr	r2, .L55+56
+ 722 0272 9442     		cmp	r4, r2
+ 723 0274 0ED1     		bne	.L36
+ 196:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     __HAL_DMA_CLEAR_FLAG (hdma, __HAL_DMA_GET_HT_FLAG_INDEX(hdma));
+ 724              		.loc 1 196 5 discriminator 200 view .LVU270
+ 725 0276 4FF40012 		mov	r2, #2097152
+ 726 027a 9A60     		str	r2, [r3, #8]
+ 727              	.LVL58:
+ 197:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     __HAL_DMA_CLEAR_FLAG (hdma, __HAL_DMA_GET_TE_FLAG_INDEX(hdma));
+ 728              		.loc 1 197 5 is_stmt 1 view .LVU271
+ 197:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     __HAL_DMA_CLEAR_FLAG (hdma, __HAL_DMA_GET_TE_FLAG_INDEX(hdma));
+ 729              		.loc 1 197 5 is_stmt 0 discriminator 200 view .LVU272
+ 730 027c 4FF48012 		mov	r2, #1048576
+ 731 0280 9A60     		str	r2, [r3, #8]
+ 198:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     __HAL_DMA_CLEAR_FLAG (hdma, __HAL_DMA_GET_DME_FLAG_INDEX(hdma));
+ 732              		.loc 1 198 5 is_stmt 1 view .LVU273
+ 198:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     __HAL_DMA_CLEAR_FLAG (hdma, __HAL_DMA_GET_DME_FLAG_INDEX(hdma));
+ 733              		.loc 1 198 5 is_stmt 0 discriminator 200 view .LVU274
+ 734 0282 4FF40022 		mov	r2, #524288
+ 735 0286 9A60     		str	r2, [r3, #8]
+ 199:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     __HAL_DMA_CLEAR_FLAG (hdma, __HAL_DMA_GET_FE_FLAG_INDEX(hdma));
+ 736              		.loc 1 199 5 is_stmt 1 view .LVU275
+ 199:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     __HAL_DMA_CLEAR_FLAG (hdma, __HAL_DMA_GET_FE_FLAG_INDEX(hdma));
+ 737              		.loc 1 199 5 is_stmt 0 discriminator 200 view .LVU276
+ 738 0288 4FF48022 		mov	r2, #262144
+ 739 028c 9A60     		str	r2, [r3, #8]
+ 200:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c **** 
+ 740              		.loc 1 200 5 is_stmt 1 view .LVU277
+ 200:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c **** 
+ 741              		.loc 1 200 5 is_stmt 0 discriminator 170 view .LVU278
+ 742 028e 4FF48033 		mov	r3, #65536
+ 743 0292 DAE7     		b	.L34
+ 744              	.LVL59:
+ 745              	.L36:
+ 196:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     __HAL_DMA_CLEAR_FLAG (hdma, __HAL_DMA_GET_HT_FLAG_INDEX(hdma));
+ 746              		.loc 1 196 5 discriminator 200 view .LVU279
+ 747 0294 4FF00062 		mov	r2, #134217728
+ 748 0298 9A60     		str	r2, [r3, #8]
+ 749              	.LVL60:
+ 197:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     __HAL_DMA_CLEAR_FLAG (hdma, __HAL_DMA_GET_TE_FLAG_INDEX(hdma));
+ 750              		.loc 1 197 5 is_stmt 1 view .LVU280
+ 197:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     __HAL_DMA_CLEAR_FLAG (hdma, __HAL_DMA_GET_TE_FLAG_INDEX(hdma));
+ 751              		.loc 1 197 5 is_stmt 0 discriminator 200 view .LVU281
+ 752 029a 4FF08062 		mov	r2, #67108864
+ 753 029e 9A60     		str	r2, [r3, #8]
+ 198:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     __HAL_DMA_CLEAR_FLAG (hdma, __HAL_DMA_GET_DME_FLAG_INDEX(hdma));
+ 754              		.loc 1 198 5 is_stmt 1 view .LVU282
+ 198:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     __HAL_DMA_CLEAR_FLAG (hdma, __HAL_DMA_GET_DME_FLAG_INDEX(hdma));
+ 755              		.loc 1 198 5 is_stmt 0 discriminator 200 view .LVU283
+ 756 02a0 4FF00072 		mov	r2, #33554432
+ 757 02a4 9A60     		str	r2, [r3, #8]
+ 199:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     __HAL_DMA_CLEAR_FLAG (hdma, __HAL_DMA_GET_FE_FLAG_INDEX(hdma));
+ 758              		.loc 1 199 5 is_stmt 1 view .LVU284
+ 199:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     __HAL_DMA_CLEAR_FLAG (hdma, __HAL_DMA_GET_FE_FLAG_INDEX(hdma));
+ 759              		.loc 1 199 5 is_stmt 0 discriminator 200 view .LVU285
+ 760 02a6 4FF08072 		mov	r2, #16777216
+ 761 02aa 9A60     		str	r2, [r3, #8]
+ 200:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c **** 
+ 762              		.loc 1 200 5 is_stmt 1 view .LVU286
+ 200:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c **** 
+ 763              		.loc 1 200 5 is_stmt 0 discriminator 182 view .LVU287
+ 764 02ac 4FF48003 		mov	r3, #4194304
+ 765 02b0 CBE7     		b	.L34
+ 766              	.LVL61:
+ 767              	.L15:
+ 217:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     
+ 768              		.loc 1 217 5 is_stmt 1 view .LVU288
+ 217:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     
+ 769              		.loc 1 217 5 view .LVU289
+ 770 02b2 80F83440 		strb	r4, [r0, #52]
+ 217:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****     
+ 771              		.loc 1 217 5 view .LVU290
+ 220:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****   }  
+ 772              		.loc 1 220 5 view .LVU291
+ 773              	.LVL62:
+ 774              	.L14:
+ 176:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****   
+ 775              		.loc 1 176 3 is_stmt 0 discriminator 1 view .LVU292
+ 776 02b6 0220     		movs	r0, #2
+ 777              	.LVL63:
+ 176:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****   
+ 778              		.loc 1 176 3 discriminator 1 view .LVU293
+ 779 02b8 AAE6     		b	.L13
+ 780              	.L56:
+ 781 02ba 00BF     		.align	2
+ 782              	.L55:
+ 783 02bc 58640240 		.word	1073898584
+ 784 02c0 00640240 		.word	1073898496
+ 785 02c4 88640240 		.word	1073898632
+ 786 02c8 A0640240 		.word	1073898656
+ 787 02cc B8600240 		.word	1073897656
+ 788 02d0 28640240 		.word	1073898536
+ 789 02d4 40640240 		.word	1073898560
+ 790 02d8 58600240 		.word	1073897560
+ 791 02dc 70600240 		.word	1073897584
+ 792 02e0 00600240 		.word	1073897472
+ 793 02e4 88600240 		.word	1073897608
+ 794 02e8 A0600240 		.word	1073897632
+ 795 02ec 10600240 		.word	1073897488
+ 796 02f0 28600240 		.word	1073897512
+ 797 02f4 40600240 		.word	1073897536
+ 798              		.cfi_endproc
+ 799              	.LFE135:
+ 801              		.section	.text.HAL_DMAEx_ChangeMemory,"ax",%progbits
+ 802              		.align	1
+ 803              		.global	HAL_DMAEx_ChangeMemory
+ 804              		.syntax unified
+ 805              		.thumb
+ 806              		.thumb_func
+ 808              	HAL_DMAEx_ChangeMemory:
+ 809              	.LVL64:
+ 810              	.LFB136:
+ 240:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****   if(memory == MEMORY0)
+ 811              		.loc 1 240 1 is_stmt 1 view -0
+ 812              		.cfi_startproc
+ 813              		@ args = 0, pretend = 0, frame = 0
+ 814              		@ frame_needed = 0, uses_anonymous_args = 0
+ 815              		@ link register save eliminated.
+ 241:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****   {
+ 816              		.loc 1 241 3 view .LVU295
+ 244:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****   }
+ 817              		.loc 1 244 9 is_stmt 0 view .LVU296
+ 818 0000 0368     		ldr	r3, [r0]
+ 241:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****   {
+ 819              		.loc 1 241 5 view .LVU297
+ 820 0002 12B9     		cbnz	r2, .L58
+ 244:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****   }
+ 821              		.loc 1 244 5 is_stmt 1 view .LVU298
+ 244:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****   }
+ 822              		.loc 1 244 26 is_stmt 0 view .LVU299
+ 823 0004 D960     		str	r1, [r3, #12]
+ 824              	.L59:
+ 252:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c **** }
+ 825              		.loc 1 252 3 is_stmt 1 view .LVU300
+ 253:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c **** 
+ 826              		.loc 1 253 1 is_stmt 0 view .LVU301
+ 827 0006 0020     		movs	r0, #0
+ 828              	.LVL65:
+ 253:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c **** 
+ 829              		.loc 1 253 1 view .LVU302
+ 830 0008 7047     		bx	lr
+ 831              	.LVL66:
+ 832              	.L58:
+ 249:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****   }
+ 833              		.loc 1 249 5 is_stmt 1 view .LVU303
+ 249:../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c ****   }
+ 834              		.loc 1 249 26 is_stmt 0 view .LVU304
+ 835 000a 1961     		str	r1, [r3, #16]
+ 836 000c FBE7     		b	.L59
+ 837              		.cfi_endproc
+ 838              	.LFE136:
+ 840              		.text
+ 841              	.Letext0:
+ 842              		.file 2 "../hal/chipwhisperer-fw-extra/pinata/CMSIS/Device/ST/STM32F4xx/Include/stm32f417xx.h"
+ 843              		.file 3 "/usr/lib/gcc/arm-none-eabi/14.2.1/include/stdint.h"
+ 844              		.file 4 "../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_def.h"
+ 845              		.file 5 "../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_dma.h"
+ 846              		.file 6 "../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_dma_ex.h"
+DEFINED SYMBOLS
+                            *ABS*:00000000 stm32f4xx_hal_dma_ex.c
+     /tmp/ccZTrhm5.s:19     .text.HAL_DMAEx_MultiBufferStart:00000000 $t
+     /tmp/ccZTrhm5.s:25     .text.HAL_DMAEx_MultiBufferStart:00000000 HAL_DMAEx_MultiBufferStart
+     /tmp/ccZTrhm5.s:150    .text.HAL_DMAEx_MultiBufferStart_IT:00000000 $t
+     /tmp/ccZTrhm5.s:156    .text.HAL_DMAEx_MultiBufferStart_IT:00000000 HAL_DMAEx_MultiBufferStart_IT
+     /tmp/ccZTrhm5.s:783    .text.HAL_DMAEx_MultiBufferStart_IT:000002bc $d
+     /tmp/ccZTrhm5.s:802    .text.HAL_DMAEx_ChangeMemory:00000000 $t
+     /tmp/ccZTrhm5.s:808    .text.HAL_DMAEx_ChangeMemory:00000000 HAL_DMAEx_ChangeMemory
+
+NO UNDEFINED SYMBOLS

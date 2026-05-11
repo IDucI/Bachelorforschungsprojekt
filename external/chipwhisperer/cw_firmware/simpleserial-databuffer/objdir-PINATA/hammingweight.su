@@ -1,0 +1,2 @@
+hammingweight.c:3:9:was_optimized	4	static
+hammingweight.c:15:10:triggered_getHammingWeight	32	static

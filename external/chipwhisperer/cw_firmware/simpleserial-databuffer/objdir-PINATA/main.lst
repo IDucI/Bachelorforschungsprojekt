@@ -1,0 +1,505 @@
+   1              		.cpu cortex-m4
+   2              		.arch armv7e-m
+   3              		.fpu softvfp
+   4              		.eabi_attribute 20, 1
+   5              		.eabi_attribute 21, 1
+   6              		.eabi_attribute 23, 3
+   7              		.eabi_attribute 24, 1
+   8              		.eabi_attribute 25, 1
+   9              		.eabi_attribute 26, 1
+  10              		.eabi_attribute 30, 4
+  11              		.eabi_attribute 34, 1
+  12              		.eabi_attribute 18, 4
+  13              		.file	"main.c"
+  14              		.text
+  15              	.Ltext0:
+  16              		.cfi_sections	.debug_frame
+  17              		.file 1 "main.c"
+  18              		.section	.text.subroutines,"ax",%progbits
+  19              		.align	1
+  20              		.global	subroutines
+  21              		.syntax unified
+  22              		.thumb
+  23              		.thumb_func
+  25              	subroutines:
+  26              	.LVL0:
+  27              	.LFB0:
+   1:main.c        **** #include "hal.h"
+   2:main.c        **** // #if defined(CW308_SAM308)
+   3:main.c        **** #if HAL_TYPE == HAL_pinata
+   4:main.c        **** // #include ""
+   5:main.c        **** // platform specific includes
+   6:main.c        **** #else
+   7:main.c        **** #error "incorrect platform targeted"
+   8:main.c        **** #endif
+   9:main.c        **** 
+  10:main.c        **** // #if HAL_TYPE == HAL_pinata
+  11:main.c        **** #if PLATFORM == PINATA
+  12:main.c        **** #define allocation __attribute__((section(".ccmram")))
+  13:main.c        **** #else
+  14:main.c        **** #define allocation
+  15:main.c        **** #endif
+  16:main.c        **** 
+  17:main.c        **** #include <stdint.h>
+  18:main.c        **** #include <stdlib.h>
+  19:main.c        **** #include <string.h>
+  20:main.c        **** 
+  21:main.c        **** #include "simpleserial.h"
+  22:main.c        **** 
+  23:main.c        **** #include "ledz.h"
+  24:main.c        **** 
+  25:main.c        **** #include "hammingweight.h"
+  26:main.c        **** 
+  27:main.c        **** // clang-format off
+  28:main.c        **** static uint8_t databuffer[R_BITS] allocation;
+  29:main.c        **** // clang-format on
+  30:main.c        **** 
+  31:main.c        **** #define SUBROUTINE_HW 0x03
+  32:main.c        **** 
+  33:main.c        **** uint8_t subroutines(uint8_t cmd, uint8_t scmd, uint8_t len, uint8_t *x) {
+  28              		.loc 1 33 73 view -0
+  29              		.cfi_startproc
+  30              		@ args = 0, pretend = 0, frame = 8
+  31              		@ frame_needed = 0, uses_anonymous_args = 0
+  34:main.c        ****   uint8_t output[4] = {};
+  32              		.loc 1 34 3 view .LVU1
+  35:main.c        ****   uint32_t val = 0;
+  33              		.loc 1 35 3 view .LVU2
+  33:main.c        ****   uint8_t output[4] = {};
+  34              		.loc 1 33 73 is_stmt 0 view .LVU3
+  35 0000 13B5     		push	{r0, r1, r4, lr}
+  36              	.LCFI0:
+  37              		.cfi_def_cfa_offset 16
+  38              		.cfi_offset 4, -8
+  39              		.cfi_offset 14, -4
+  36:main.c        ****   switch (scmd) {
+  40              		.loc 1 36 3 view .LVU4
+  41 0002 0329     		cmp	r1, #3
+  35:main.c        ****   uint32_t val = 0;
+  42              		.loc 1 35 12 view .LVU5
+  43 0004 4FF00004 		mov	r4, #0
+  44 0008 0194     		str	r4, [sp, #4]
+  45              		.loc 1 36 3 is_stmt 1 view .LVU6
+  46 000a 10D1     		bne	.L3
+  37:main.c        ****   case SUBROUTINE_HW: {
+  38:main.c        ****     led2_on();
+  47              		.loc 1 38 5 view .LVU7
+  48 000c FFF7FEFF 		bl	led2_on
+  49              	.LVL1:
+  39:main.c        **** 
+  40:main.c        ****     val = triggered_getHammingWeight(databuffer, (uint32_t)R_BITS);
+  50              		.loc 1 40 5 view .LVU8
+  51              		.loc 1 40 11 is_stmt 0 view .LVU9
+  52 0010 A021     		movs	r1, #160
+  53 0012 0848     		ldr	r0, .L4
+  54 0014 FFF7FEFF 		bl	triggered_getHammingWeight
+  55              	.LVL2:
+  41:main.c        ****     
+  42:main.c        ****     simpleserial_put('r', 4, (uint8_t*)&val);
+  56              		.loc 1 42 5 view .LVU10
+  57 0018 01AA     		add	r2, sp, #4
+  40:main.c        ****     
+  58              		.loc 1 40 9 discriminator 1 view .LVU11
+  59 001a 0190     		str	r0, [sp, #4]
+  60              		.loc 1 42 5 is_stmt 1 view .LVU12
+  61 001c 0421     		movs	r1, #4
+  62 001e 7220     		movs	r0, #114
+  63 0020 FFF7FEFF 		bl	simpleserial_put
+  64              	.LVL3:
+  43:main.c        ****     led2_off();
+  65              		.loc 1 43 5 view .LVU13
+  66 0024 FFF7FEFF 		bl	led2_off
+  67              	.LVL4:
+  44:main.c        ****     return SS_ERR_OK;
+  68              		.loc 1 44 5 view .LVU14
+  69              		.loc 1 44 12 is_stmt 0 view .LVU15
+  70 0028 2046     		mov	r0, r4
+  71              	.L2:
+  45:main.c        ****   }
+  46:main.c        ****   default:
+  47:main.c        ****     return SS_ERR_CMD;
+  48:main.c        ****   }
+  49:main.c        **** 
+  50:main.c        ****   return SS_ERR_CMD;
+  51:main.c        **** }
+  72              		.loc 1 51 1 view .LVU16
+  73 002a 02B0     		add	sp, sp, #8
+  74              	.LCFI1:
+  75              		.cfi_remember_state
+  76              		.cfi_def_cfa_offset 8
+  77              		@ sp needed
+  78 002c 10BD     		pop	{r4, pc}
+  79              	.LVL5:
+  80              	.L3:
+  81              	.LCFI2:
+  82              		.cfi_restore_state
+  47:main.c        ****   }
+  83              		.loc 1 47 12 view .LVU17
+  84 002e 0120     		movs	r0, #1
+  85              	.LVL6:
+  47:main.c        ****   }
+  86              		.loc 1 47 12 view .LVU18
+  87 0030 FBE7     		b	.L2
+  88              	.L5:
+  89 0032 00BF     		.align	2
+  90              	.L4:
+  91 0034 00000000 		.word	.LANCHOR0
+  92              		.cfi_endproc
+  93              	.LFE0:
+  95              		.section	.text.metainfo,"ax",%progbits
+  96              		.align	1
+  97              		.global	metainfo
+  98              		.syntax unified
+  99              		.thumb
+ 100              		.thumb_func
+ 102              	metainfo:
+ 103              	.LVL7:
+ 104              	.LFB1:
+  52:main.c        **** 
+  53:main.c        **** uint8_t hwinfo[3] = {};
+  54:main.c        **** 
+  55:main.c        **** uint8_t metainfo(uint8_t cmd, uint8_t scmd, uint8_t len, uint8_t *x) {
+ 105              		.loc 1 55 70 is_stmt 1 view -0
+ 106              		.cfi_startproc
+ 107              		@ args = 0, pretend = 0, frame = 0
+ 108              		@ frame_needed = 0, uses_anonymous_args = 0
+  56:main.c        ****   // if (len != 3) {
+  57:main.c        ****   //   return SS_ERR_LEN;
+  58:main.c        ****   // }
+  59:main.c        ****   // x[0] = hwinfo[0];
+  60:main.c        ****   // x[1] = hwinfo[1];
+  61:main.c        **** 
+  62:main.c        ****   hwinfo[2] = was_optimized();
+ 109              		.loc 1 62 3 view .LVU20
+  55:main.c        ****   // if (len != 3) {
+ 110              		.loc 1 55 70 is_stmt 0 view .LVU21
+ 111 0000 08B5     		push	{r3, lr}
+ 112              	.LCFI3:
+ 113              		.cfi_def_cfa_offset 8
+ 114              		.cfi_offset 3, -8
+ 115              		.cfi_offset 14, -4
+ 116              		.loc 1 62 15 view .LVU22
+ 117 0002 FFF7FEFF 		bl	was_optimized
+ 118              	.LVL8:
+ 119              		.loc 1 62 13 discriminator 1 view .LVU23
+ 120 0006 044A     		ldr	r2, .L7
+  63:main.c        ****   simpleserial_put('r', 3, hwinfo);
+ 121              		.loc 1 63 3 view .LVU24
+ 122 0008 0321     		movs	r1, #3
+  62:main.c        ****   simpleserial_put('r', 3, hwinfo);
+ 123              		.loc 1 62 13 discriminator 1 view .LVU25
+ 124 000a 9070     		strb	r0, [r2, #2]
+ 125              		.loc 1 63 3 is_stmt 1 view .LVU26
+ 126 000c 7220     		movs	r0, #114
+ 127 000e FFF7FEFF 		bl	simpleserial_put
+ 128              	.LVL9:
+  64:main.c        **** 
+  65:main.c        ****   return SS_ERR_OK;
+ 129              		.loc 1 65 3 view .LVU27
+  66:main.c        **** }
+ 130              		.loc 1 66 1 is_stmt 0 view .LVU28
+ 131 0012 0020     		movs	r0, #0
+ 132 0014 08BD     		pop	{r3, pc}
+ 133              	.L8:
+ 134 0016 00BF     		.align	2
+ 135              	.L7:
+ 136 0018 00000000 		.word	.LANCHOR1
+ 137              		.cfi_endproc
+ 138              	.LFE1:
+ 140              		.section	.text.set_value,"ax",%progbits
+ 141              		.align	1
+ 142              		.global	set_value
+ 143              		.syntax unified
+ 144              		.thumb
+ 145              		.thumb_func
+ 147              	set_value:
+ 148              	.LVL10:
+ 149              	.LFB2:
+  67:main.c        **** 
+  68:main.c        **** // little endian
+  69:main.c        **** // V2 max data packet 249 bytes. USB buffer is 200.
+  70:main.c        **** #define USB_PACKET_DATABUFFER_SIZE 160
+  71:main.c        **** uint8_t set_value(uint8_t cmd, uint8_t scmd, uint8_t len, uint8_t *x) {
+ 150              		.loc 1 71 71 is_stmt 1 view -0
+ 151              		.cfi_startproc
+ 152              		@ args = 0, pretend = 0, frame = 0
+ 153              		@ frame_needed = 0, uses_anonymous_args = 0
+  72:main.c        ****   led1_on();
+ 154              		.loc 1 72 3 view .LVU30
+  71:main.c        ****   led1_on();
+ 155              		.loc 1 71 71 is_stmt 0 view .LVU31
+ 156 0000 F8B5     		push	{r3, r4, r5, r6, r7, lr}
+ 157              	.LCFI4:
+ 158              		.cfi_def_cfa_offset 24
+ 159              		.cfi_offset 3, -24
+ 160              		.cfi_offset 4, -20
+ 161              		.cfi_offset 5, -16
+ 162              		.cfi_offset 6, -12
+ 163              		.cfi_offset 7, -8
+ 164              		.cfi_offset 14, -4
+  71:main.c        ****   led1_on();
+ 165              		.loc 1 71 71 view .LVU32
+ 166 0002 1446     		mov	r4, r2
+ 167 0004 0E46     		mov	r6, r1
+ 168 0006 1F46     		mov	r7, r3
+ 169              		.loc 1 72 3 view .LVU33
+ 170 0008 FFF7FEFF 		bl	led1_on
+ 171              	.LVL11:
+  73:main.c        **** 
+  74:main.c        ****   if (len != USB_PACKET_DATABUFFER_SIZE && len != 3) {
+ 172              		.loc 1 74 3 is_stmt 1 view .LVU34
+ 173              		.loc 1 74 6 is_stmt 0 view .LVU35
+ 174 000c A02C     		cmp	r4, #160
+ 175 000e 01D0     		beq	.L10
+ 176              		.loc 1 74 41 discriminator 1 view .LVU36
+ 177 0010 032C     		cmp	r4, #3
+ 178 0012 15D1     		bne	.L13
+ 179              	.L10:
+  75:main.c        ****     return SS_ERR_LEN;
+  76:main.c        ****   }
+  77:main.c        **** 
+  78:main.c        ****   uint32_t index = scmd & 0x7F; // uint_fast16_t
+ 180              		.loc 1 78 3 is_stmt 1 view .LVU37
+ 181              	.LVL12:
+  79:main.c        **** 
+  80:main.c        ****   uint8_t read_back = (scmd & 0x80) == 0x80;
+ 182              		.loc 1 80 3 view .LVU38
+  81:main.c        **** 
+  82:main.c        ****   memcpy(databuffer + (index * USB_PACKET_DATABUFFER_SIZE), x, len);
+ 183              		.loc 1 82 3 view .LVU39
+ 184 0014 0B4D     		ldr	r5, .L17
+  78:main.c        **** 
+ 185              		.loc 1 78 12 is_stmt 0 view .LVU40
+ 186 0016 06F07F03 		and	r3, r6, #127
+ 187              		.loc 1 82 3 view .LVU41
+ 188 001a A022     		movs	r2, #160
+ 189 001c 02FB0355 		mla	r5, r2, r3, r5
+ 190 0020 3946     		mov	r1, r7
+ 191 0022 2246     		mov	r2, r4
+ 192 0024 2846     		mov	r0, r5
+ 193 0026 FFF7FEFF 		bl	memcpy
+ 194              	.LVL13:
+  83:main.c        **** 
+  84:main.c        ****   if (read_back) {
+ 195              		.loc 1 84 3 is_stmt 1 view .LVU42
+ 196              		.loc 1 84 6 is_stmt 0 view .LVU43
+ 197 002a 3306     		lsls	r3, r6, #24
+ 198 002c 04D5     		bpl	.L12
+  85:main.c        ****     simpleserial_put('r', len, databuffer + (index * USB_PACKET_DATABUFFER_SIZE));
+ 199              		.loc 1 85 5 is_stmt 1 view .LVU44
+ 200 002e 2A46     		mov	r2, r5
+ 201 0030 2146     		mov	r1, r4
+ 202 0032 7220     		movs	r0, #114
+ 203 0034 FFF7FEFF 		bl	simpleserial_put
+ 204              	.LVL14:
+ 205              	.L12:
+  86:main.c        ****   }
+  87:main.c        ****   led1_off();
+ 206              		.loc 1 87 3 view .LVU45
+ 207 0038 FFF7FEFF 		bl	led1_off
+ 208              	.LVL15:
+  88:main.c        ****   return SS_ERR_OK;
+ 209              		.loc 1 88 3 view .LVU46
+ 210              		.loc 1 88 10 is_stmt 0 view .LVU47
+ 211 003c 0020     		movs	r0, #0
+ 212              	.LVL16:
+ 213              	.L11:
+  89:main.c        **** }
+ 214              		.loc 1 89 1 view .LVU48
+ 215 003e F8BD     		pop	{r3, r4, r5, r6, r7, pc}
+ 216              	.LVL17:
+ 217              	.L13:
+  75:main.c        ****   }
+ 218              		.loc 1 75 12 view .LVU49
+ 219 0040 0420     		movs	r0, #4
+ 220 0042 FCE7     		b	.L11
+ 221              	.L18:
+ 222              		.align	2
+ 223              	.L17:
+ 224 0044 00000000 		.word	.LANCHOR0
+ 225              		.cfi_endproc
+ 226              	.LFE2:
+ 228              		.section	.text.startup.main,"ax",%progbits
+ 229              		.align	1
+ 230              		.global	main
+ 231              		.syntax unified
+ 232              		.thumb
+ 233              		.thumb_func
+ 235              	main:
+ 236              	.LFB3:
+  90:main.c        **** 
+  91:main.c        **** int main(void) {
+ 237              		.loc 1 91 16 is_stmt 1 view -0
+ 238              		.cfi_startproc
+ 239              		@ Volatile: function does not return.
+ 240              		@ args = 0, pretend = 0, frame = 0
+ 241              		@ frame_needed = 0, uses_anonymous_args = 0
+  92:main.c        ****   platform_init();
+ 242              		.loc 1 92 3 view .LVU51
+  91:main.c        ****   platform_init();
+ 243              		.loc 1 91 16 is_stmt 0 view .LVU52
+ 244 0000 08B5     		push	{r3, lr}
+ 245              	.LCFI5:
+ 246              		.cfi_def_cfa_offset 8
+ 247              		.cfi_offset 3, -8
+ 248              		.cfi_offset 14, -4
+ 249              		.loc 1 92 3 view .LVU53
+ 250 0002 FFF7FEFF 		bl	platform_init
+ 251              	.LVL18:
+  93:main.c        **** 
+  94:main.c        ****   init_uart();
+ 252              		.loc 1 94 3 is_stmt 1 view .LVU54
+ 253 0006 FFF7FEFF 		bl	init_uart
+ 254              	.LVL19:
+  95:main.c        **** 
+  96:main.c        ****   trigger_setup();
+ 255              		.loc 1 96 3 view .LVU55
+ 256 000a FFF7FEFF 		bl	trigger_setup
+ 257              	.LVL20:
+  97:main.c        **** 
+  98:main.c        ****   simpleserial_init();
+ 258              		.loc 1 98 3 view .LVU56
+ 259 000e FFF7FEFF 		bl	simpleserial_init
+ 260              	.LVL21:
+  99:main.c        **** 
+ 100:main.c        ****   ledz_init();
+ 261              		.loc 1 100 3 view .LVU57
+ 262 0012 FFF7FEFF 		bl	ledz_init
+ 263              	.LVL22:
+ 101:main.c        **** 
+ 102:main.c        ****   led1_init();
+ 264              		.loc 1 102 3 view .LVU58
+ 265 0016 FFF7FEFF 		bl	led1_init
+ 266              	.LVL23:
+ 103:main.c        ****   led2_init();
+ 267              		.loc 1 103 3 view .LVU59
+ 268 001a FFF7FEFF 		bl	led2_init
+ 269              	.LVL24:
+ 104:main.c        ****   led3_init();
+ 270              		.loc 1 104 3 view .LVU60
+ 271 001e FFF7FEFF 		bl	led3_init
+ 272              	.LVL25:
+ 105:main.c        ****   led1_off();
+ 273              		.loc 1 105 3 view .LVU61
+ 274 0022 FFF7FEFF 		bl	led1_off
+ 275              	.LVL26:
+ 106:main.c        ****   led2_off();
+ 276              		.loc 1 106 3 view .LVU62
+ 277 0026 FFF7FEFF 		bl	led2_off
+ 278              	.LVL27:
+ 107:main.c        ****   led3_off();
+ 279              		.loc 1 107 3 view .LVU63
+ 280 002a FFF7FEFF 		bl	led3_off
+ 281              	.LVL28:
+ 108:main.c        **** 
+ 109:main.c        **** #if SS_VER == SS_VER_2_1
+ 110:main.c        ****   // io functions
+ 111:main.c        ****   simpleserial_addcmd('s', USB_PACKET_DATABUFFER_SIZE, set_value);
+ 282              		.loc 1 111 3 view .LVU64
+ 283 002e 094A     		ldr	r2, .L21
+ 284 0030 A021     		movs	r1, #160
+ 285 0032 7320     		movs	r0, #115
+ 286 0034 FFF7FEFF 		bl	simpleserial_addcmd
+ 287              	.LVL29:
+ 112:main.c        **** 
+ 113:main.c        ****   // victim function
+ 114:main.c        ****   simpleserial_addcmd('b', 0, subroutines);
+ 288              		.loc 1 114 3 view .LVU65
+ 289 0038 074A     		ldr	r2, .L21+4
+ 290 003a 0021     		movs	r1, #0
+ 291 003c 6220     		movs	r0, #98
+ 292 003e FFF7FEFF 		bl	simpleserial_addcmd
+ 293              	.LVL30:
+ 115:main.c        **** 
+ 116:main.c        ****   // victim metadata readout
+ 117:main.c        ****   simpleserial_addcmd('m', 0, metainfo);
+ 294              		.loc 1 117 3 view .LVU66
+ 295 0042 064A     		ldr	r2, .L21+8
+ 296 0044 0021     		movs	r1, #0
+ 297 0046 6D20     		movs	r0, #109
+ 298 0048 FFF7FEFF 		bl	simpleserial_addcmd
+ 299              	.LVL31:
+ 300              	.L20:
+ 118:main.c        **** #else
+ 119:main.c        **** #error "no SS_VER_1_1 for this"
+ 120:main.c        **** #endif
+ 121:main.c        **** 
+ 122:main.c        ****   while (1) {
+ 301              		.loc 1 122 3 view .LVU67
+ 123:main.c        ****     simpleserial_get();
+ 302              		.loc 1 123 5 discriminator 1 view .LVU68
+ 303 004c FFF7FEFF 		bl	simpleserial_get
+ 304              	.LVL32:
+ 122:main.c        ****     simpleserial_get();
+ 305              		.loc 1 122 9 view .LVU69
+ 306 0050 FCE7     		b	.L20
+ 307              	.L22:
+ 308 0052 00BF     		.align	2
+ 309              	.L21:
+ 310 0054 00000000 		.word	set_value
+ 311 0058 00000000 		.word	subroutines
+ 312 005c 00000000 		.word	metainfo
+ 313              		.cfi_endproc
+ 314              	.LFE3:
+ 316              		.global	hwinfo
+ 317              		.bss
+ 318              		.set	.LANCHOR1,. + 0
+ 321              	hwinfo:
+ 322 0000 000000   		.space	3
+ 323              		.section	.ccmram,"aw"
+ 324              		.set	.LANCHOR0,. + 0
+ 327              	databuffer:
+ 328 0000 00000000 		.space	160
+ 328      00000000 
+ 328      00000000 
+ 328      00000000 
+ 328      00000000 
+ 329              		.text
+ 330              	.Letext0:
+ 331              		.file 2 "/usr/lib/gcc/arm-none-eabi/14.2.1/include/stdint.h"
+ 332              		.file 3 "ledz.h"
+ 333              		.file 4 "../simpleserial/simpleserial.h"
+ 334              		.file 5 "../hal/chipwhisperer-fw-extra/pinata/pinata_hal.h"
+ 335              		.file 6 "../hal/hal.h"
+ 336              		.file 7 "/usr/include/newlib/string.h"
+ 337              		.file 8 "hammingweight.h"
+ 338              		.file 9 "<built-in>"
+DEFINED SYMBOLS
+                            *ABS*:00000000 main.c
+     /tmp/ccRDrYdG.s:19     .text.subroutines:00000000 $t
+     /tmp/ccRDrYdG.s:25     .text.subroutines:00000000 subroutines
+     /tmp/ccRDrYdG.s:91     .text.subroutines:00000034 $d
+     /tmp/ccRDrYdG.s:96     .text.metainfo:00000000 $t
+     /tmp/ccRDrYdG.s:102    .text.metainfo:00000000 metainfo
+     /tmp/ccRDrYdG.s:136    .text.metainfo:00000018 $d
+     /tmp/ccRDrYdG.s:141    .text.set_value:00000000 $t
+     /tmp/ccRDrYdG.s:147    .text.set_value:00000000 set_value
+     /tmp/ccRDrYdG.s:224    .text.set_value:00000044 $d
+     /tmp/ccRDrYdG.s:229    .text.startup.main:00000000 $t
+     /tmp/ccRDrYdG.s:235    .text.startup.main:00000000 main
+     /tmp/ccRDrYdG.s:310    .text.startup.main:00000054 $d
+     /tmp/ccRDrYdG.s:321    .bss:00000000 hwinfo
+     /tmp/ccRDrYdG.s:322    .bss:00000000 $d
+     /tmp/ccRDrYdG.s:327    .ccmram:00000000 databuffer
+     /tmp/ccRDrYdG.s:328    .ccmram:00000000 $d
+
+UNDEFINED SYMBOLS
+led2_on
+triggered_getHammingWeight
+simpleserial_put
+led2_off
+was_optimized
+led1_on
+memcpy
+led1_off
+platform_init
+init_uart
+trigger_setup
+simpleserial_init
+ledz_init
+led1_init
+led2_init
+led3_init
+led3_off
+simpleserial_addcmd
+simpleserial_get
