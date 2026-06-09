@@ -1,0 +1,393 @@
+   1              		.cpu cortex-m4
+   2              		.arch armv7e-m
+   3              		.fpu softvfp
+   4              		.eabi_attribute 20, 1
+   5              		.eabi_attribute 21, 1
+   6              		.eabi_attribute 23, 3
+   7              		.eabi_attribute 24, 1
+   8              		.eabi_attribute 25, 1
+   9              		.eabi_attribute 26, 1
+  10              		.eabi_attribute 30, 4
+  11              		.eabi_attribute 34, 1
+  12              		.eabi_attribute 18, 4
+  13              		.file	"ledz.c"
+  14              		.text
+  15              	.Ltext0:
+  16              		.cfi_sections	.debug_frame
+  17              		.file 1 "ledz.c"
+  18              		.section	.text.ledz_init,"ax",%progbits
+  19              		.align	1
+  20              		.global	ledz_init
+  21              		.syntax unified
+  22              		.thumb
+  23              		.thumb_func
+  25              	ledz_init:
+  26              	.LFB134:
+   1:ledz.c        **** #include "ledz.h"
+   2:ledz.c        **** // #define XSTR(x) STR(x)
+   3:ledz.c        **** // #define STR(x) #x
+   4:ledz.c        **** // #error "waarom" XSTR(HAL_TYPE)
+   5:ledz.c        **** // #pragma message "The alue " XSTR(HAL_TYPE)
+   6:ledz.c        **** 
+   7:ledz.c        **** #include <hal.h>
+   8:ledz.c        **** #if HAL_TYPE == HAL_sam4s
+   9:ledz.c        **** #include "sam4s_hal.h"
+  10:ledz.c        **** #include <asf.h>
+  11:ledz.c        **** #elif HAL_TYPE == HAL_k82f
+  12:ledz.c        **** #include "fsl_gpio.h"
+  13:ledz.c        **** #include "fsl_port.h"
+  14:ledz.c        **** #include "k82f_hal.h"
+  15:ledz.c        **** #elif HAL_TYPE == HAL_pinata
+  16:ledz.c        **** #include "stm32f4xx_hal.h"
+  17:ledz.c        **** #else
+  18:ledz.c        **** #error "incorrect platform targeted"
+  19:ledz.c        **** #endif
+  20:ledz.c        **** 
+  21:ledz.c        **** void ledz_init() {
+  27              		.loc 1 21 18 view -0
+  28              		.cfi_startproc
+  29              		@ args = 0, pretend = 0, frame = 0
+  30              		@ frame_needed = 0, uses_anonymous_args = 0
+  31              		@ link register save eliminated.
+  22:ledz.c        **** #if HAL_TYPE == HAL_sam4s
+  23:ledz.c        **** 
+  24:ledz.c        **** #elif HAL_TYPE == HAL_k82f
+  25:ledz.c        ****   CLOCK_EnableClock(kCLOCK_PortE);
+  26:ledz.c        **** #endif
+  27:ledz.c        **** }
+  32              		.loc 1 27 1 view .LVU1
+  33 0000 7047     		bx	lr
+  34              		.cfi_endproc
+  35              	.LFE134:
+  37              		.section	.text.led1_init,"ax",%progbits
+  38              		.align	1
+  39              		.global	led1_init
+  40              		.syntax unified
+  41              		.thumb
+  42              		.thumb_func
+  44              	led1_init:
+  45              	.LFB148:
+  46              		.cfi_startproc
+  28:ledz.c        **** 
+  29:ledz.c        **** void led1_init() {
+  47              		.loc 1 29 6 view -0
+  48              		@ args = 0, pretend = 0, frame = 0
+  49              		@ frame_needed = 0, uses_anonymous_args = 0
+  50              		@ link register save eliminated.
+  51 0000 7047     		bx	lr
+  52              		.cfi_endproc
+  53              	.LFE148:
+  55              		.section	.text.led1_off,"ax",%progbits
+  56              		.align	1
+  57              		.global	led1_off
+  58              		.syntax unified
+  59              		.thumb
+  60              		.thumb_func
+  62              	led1_off:
+  63              	.LFB150:
+  64              		.cfi_startproc
+  30:ledz.c        **** #if HAL_TYPE == HAL_sam4s
+  31:ledz.c        ****   gpio_configure_pin(PIO_PA16_IDX, PIO_OUTPUT_0 | PIO_DEFAULT);
+  32:ledz.c        **** #elif HAL_TYPE == HAL_k82f
+  33:ledz.c        ****   PORT_SetPinMux(PORTE, 2, kPORT_MuxAsGpio);
+  34:ledz.c        ****   gpio_pin_config_t trigconf = {kGPIO_DigitalOutput, 1};
+  35:ledz.c        **** 
+  36:ledz.c        ****   GPIO_PinInit(GPIOE, 2, &trigconf);
+  37:ledz.c        ****   GPIO_WritePinOutput(GPIOE, 2, 0);
+  38:ledz.c        **** #endif
+  39:ledz.c        **** }
+  40:ledz.c        **** 
+  41:ledz.c        **** void led1_off() {
+  65              		.loc 1 41 6 view -0
+  66              		@ args = 0, pretend = 0, frame = 0
+  67              		@ frame_needed = 0, uses_anonymous_args = 0
+  68              		@ link register save eliminated.
+  69 0000 7047     		bx	lr
+  70              		.cfi_endproc
+  71              	.LFE150:
+  73              		.section	.text.led1_on,"ax",%progbits
+  74              		.align	1
+  75              		.global	led1_on
+  76              		.syntax unified
+  77              		.thumb
+  78              		.thumb_func
+  80              	led1_on:
+  81              	.LFB152:
+  82              		.cfi_startproc
+  42:ledz.c        **** #if HAL_TYPE == HAL_sam4s
+  43:ledz.c        ****   gpio_set_pin_low(PIO_PA16_IDX);
+  44:ledz.c        ****   // gpio_configure_pin(PIO_PA16_IDX, PIO_OUTPUT_0 | PIO_DEFAULT);
+  45:ledz.c        **** #elif HAL_TYPE == HAL_k82f
+  46:ledz.c        ****   GPIO_WritePinOutput(GPIOE, 2, 0);
+  47:ledz.c        **** #endif
+  48:ledz.c        **** }
+  49:ledz.c        **** 
+  50:ledz.c        **** void led1_on() {
+  83              		.loc 1 50 6 view -0
+  84              		@ args = 0, pretend = 0, frame = 0
+  85              		@ frame_needed = 0, uses_anonymous_args = 0
+  86              		@ link register save eliminated.
+  87 0000 7047     		bx	lr
+  88              		.cfi_endproc
+  89              	.LFE152:
+  91              		.section	.text.led1_toggle,"ax",%progbits
+  92              		.align	1
+  93              		.global	led1_toggle
+  94              		.syntax unified
+  95              		.thumb
+  96              		.thumb_func
+  98              	led1_toggle:
+  99              	.LFB154:
+ 100              		.cfi_startproc
+  51:ledz.c        **** #if HAL_TYPE == HAL_sam4s
+  52:ledz.c        ****   gpio_set_pin_high(PIO_PA16_IDX);
+  53:ledz.c        ****   // gpio_configure_pin(PIO_PA16_IDX, PIO_OUTPUT_1 | PIO_DEFAULT);
+  54:ledz.c        **** #elif HAL_TYPE == HAL_k82f
+  55:ledz.c        ****   GPIO_WritePinOutput(GPIOE, 2, 1);
+  56:ledz.c        **** #endif
+  57:ledz.c        **** }
+  58:ledz.c        **** 
+  59:ledz.c        **** void led1_toggle() {
+ 101              		.loc 1 59 6 view -0
+ 102              		@ args = 0, pretend = 0, frame = 0
+ 103              		@ frame_needed = 0, uses_anonymous_args = 0
+ 104              		@ link register save eliminated.
+ 105 0000 7047     		bx	lr
+ 106              		.cfi_endproc
+ 107              	.LFE154:
+ 109              		.section	.text.led2_init,"ax",%progbits
+ 110              		.align	1
+ 111              		.global	led2_init
+ 112              		.syntax unified
+ 113              		.thumb
+ 114              		.thumb_func
+ 116              	led2_init:
+ 117              	.LFB156:
+ 118              		.cfi_startproc
+  60:ledz.c        **** #if HAL_TYPE == HAL_sam4s
+  61:ledz.c        ****   gpio_toggle_pin(PIO_PA16_IDX);
+  62:ledz.c        ****   // gpio_configure_pin(PIO_PA16_IDX, PIO_OUTPUT_1 | PIO_DEFAULT);
+  63:ledz.c        **** #elif HAL_TYPE == HAL_k82f
+  64:ledz.c        **** #endif
+  65:ledz.c        **** }
+  66:ledz.c        **** 
+  67:ledz.c        **** void led2_init() {
+ 119              		.loc 1 67 6 view -0
+ 120              		@ args = 0, pretend = 0, frame = 0
+ 121              		@ frame_needed = 0, uses_anonymous_args = 0
+ 122              		@ link register save eliminated.
+ 123 0000 7047     		bx	lr
+ 124              		.cfi_endproc
+ 125              	.LFE156:
+ 127              		.section	.text.led2_off,"ax",%progbits
+ 128              		.align	1
+ 129              		.global	led2_off
+ 130              		.syntax unified
+ 131              		.thumb
+ 132              		.thumb_func
+ 134              	led2_off:
+ 135              	.LFB158:
+ 136              		.cfi_startproc
+  68:ledz.c        **** #if HAL_TYPE == HAL_sam4s
+  69:ledz.c        ****   gpio_configure_pin(PIO_PA15_IDX, PIO_OUTPUT_0 | PIO_DEFAULT);
+  70:ledz.c        **** #elif HAL_TYPE == HAL_k82f
+  71:ledz.c        ****   PORT_SetPinMux(PORTE, 1, kPORT_MuxAsGpio);
+  72:ledz.c        ****   gpio_pin_config_t trigconf = {kGPIO_DigitalOutput, 1};
+  73:ledz.c        **** 
+  74:ledz.c        ****   GPIO_PinInit(GPIOE, 1, &trigconf);
+  75:ledz.c        ****   GPIO_WritePinOutput(GPIOE, 1, 0);
+  76:ledz.c        **** #endif
+  77:ledz.c        **** }
+  78:ledz.c        **** 
+  79:ledz.c        **** void led2_off() {
+ 137              		.loc 1 79 6 view -0
+ 138              		@ args = 0, pretend = 0, frame = 0
+ 139              		@ frame_needed = 0, uses_anonymous_args = 0
+ 140              		@ link register save eliminated.
+ 141 0000 7047     		bx	lr
+ 142              		.cfi_endproc
+ 143              	.LFE158:
+ 145              		.section	.text.led2_on,"ax",%progbits
+ 146              		.align	1
+ 147              		.global	led2_on
+ 148              		.syntax unified
+ 149              		.thumb
+ 150              		.thumb_func
+ 152              	led2_on:
+ 153              	.LFB160:
+ 154              		.cfi_startproc
+  80:ledz.c        **** #if HAL_TYPE == HAL_sam4s
+  81:ledz.c        ****   gpio_set_pin_low(PIO_PA15_IDX);
+  82:ledz.c        ****   // gpio_configure_pin(PIO_PA16_IDX, PIO_OUTPUT_0 | PIO_DEFAULT);
+  83:ledz.c        **** #elif HAL_TYPE == HAL_k82f
+  84:ledz.c        **** GPIO_WritePinOutput(GPIOE, 1, 0);
+  85:ledz.c        **** #endif
+  86:ledz.c        **** }
+  87:ledz.c        **** 
+  88:ledz.c        **** void led2_on() {
+ 155              		.loc 1 88 6 view -0
+ 156              		@ args = 0, pretend = 0, frame = 0
+ 157              		@ frame_needed = 0, uses_anonymous_args = 0
+ 158              		@ link register save eliminated.
+ 159 0000 7047     		bx	lr
+ 160              		.cfi_endproc
+ 161              	.LFE160:
+ 163              		.section	.text.led2_toggle,"ax",%progbits
+ 164              		.align	1
+ 165              		.global	led2_toggle
+ 166              		.syntax unified
+ 167              		.thumb
+ 168              		.thumb_func
+ 170              	led2_toggle:
+ 171              	.LFB162:
+ 172              		.cfi_startproc
+  89:ledz.c        **** #if HAL_TYPE == HAL_sam4s
+  90:ledz.c        ****   gpio_set_pin_high(PIO_PA15_IDX);
+  91:ledz.c        ****   // gpio_configure_pin(PIO_PA16_IDX, PIO_OUTPUT_1 | PIO_DEFAULT);
+  92:ledz.c        **** #elif HAL_TYPE == HAL_k82f
+  93:ledz.c        **** GPIO_WritePinOutput(GPIOE, 1, 1);
+  94:ledz.c        **** #endif
+  95:ledz.c        **** }
+  96:ledz.c        **** 
+  97:ledz.c        **** void led2_toggle() {
+ 173              		.loc 1 97 6 view -0
+ 174              		@ args = 0, pretend = 0, frame = 0
+ 175              		@ frame_needed = 0, uses_anonymous_args = 0
+ 176              		@ link register save eliminated.
+ 177 0000 7047     		bx	lr
+ 178              		.cfi_endproc
+ 179              	.LFE162:
+ 181              		.section	.text.led3_init,"ax",%progbits
+ 182              		.align	1
+ 183              		.global	led3_init
+ 184              		.syntax unified
+ 185              		.thumb
+ 186              		.thumb_func
+ 188              	led3_init:
+ 189              	.LFB164:
+ 190              		.cfi_startproc
+  98:ledz.c        **** #if HAL_TYPE == HAL_sam4s
+  99:ledz.c        ****   gpio_toggle_pin(PIO_PA15_IDX);
+ 100:ledz.c        ****   // gpio_configure_pin(PIO_PA16_IDX, PIO_OUTPUT_1 | PIO_DEFAULT);
+ 101:ledz.c        **** #elif HAL_TYPE == HAL_k82f
+ 102:ledz.c        **** #endif
+ 103:ledz.c        **** }
+ 104:ledz.c        **** 
+ 105:ledz.c        **** void led3_init() {
+ 191              		.loc 1 105 6 view -0
+ 192              		@ args = 0, pretend = 0, frame = 0
+ 193              		@ frame_needed = 0, uses_anonymous_args = 0
+ 194              		@ link register save eliminated.
+ 195 0000 7047     		bx	lr
+ 196              		.cfi_endproc
+ 197              	.LFE164:
+ 199              		.section	.text.led3_off,"ax",%progbits
+ 200              		.align	1
+ 201              		.global	led3_off
+ 202              		.syntax unified
+ 203              		.thumb
+ 204              		.thumb_func
+ 206              	led3_off:
+ 207              	.LFB166:
+ 208              		.cfi_startproc
+ 106:ledz.c        **** #if HAL_TYPE == HAL_sam4s
+ 107:ledz.c        ****   gpio_configure_pin(PIO_PA14_IDX, PIO_OUTPUT_0 | PIO_DEFAULT);
+ 108:ledz.c        **** #elif HAL_TYPE == HAL_k82f
+ 109:ledz.c        ****   PORT_SetPinMux(PORTE, 0, kPORT_MuxAsGpio);
+ 110:ledz.c        ****   gpio_pin_config_t trigconf = {kGPIO_DigitalOutput, 1};
+ 111:ledz.c        **** 
+ 112:ledz.c        ****   GPIO_PinInit(GPIOE, 0, &trigconf);
+ 113:ledz.c        ****   GPIO_WritePinOutput(GPIOE, 0, 0);
+ 114:ledz.c        **** #endif
+ 115:ledz.c        **** }
+ 116:ledz.c        **** 
+ 117:ledz.c        **** void led3_off() {
+ 209              		.loc 1 117 6 view -0
+ 210              		@ args = 0, pretend = 0, frame = 0
+ 211              		@ frame_needed = 0, uses_anonymous_args = 0
+ 212              		@ link register save eliminated.
+ 213 0000 7047     		bx	lr
+ 214              		.cfi_endproc
+ 215              	.LFE166:
+ 217              		.section	.text.led3_on,"ax",%progbits
+ 218              		.align	1
+ 219              		.global	led3_on
+ 220              		.syntax unified
+ 221              		.thumb
+ 222              		.thumb_func
+ 224              	led3_on:
+ 225              	.LFB168:
+ 226              		.cfi_startproc
+ 118:ledz.c        **** #if HAL_TYPE == HAL_sam4s
+ 119:ledz.c        ****   gpio_set_pin_low(PIO_PA14_IDX);
+ 120:ledz.c        ****   // gpio_configure_pin(PIO_PA16_IDX, PIO_OUTPUT_0 | PIO_DEFAULT);
+ 121:ledz.c        **** #elif HAL_TYPE == HAL_k82f
+ 122:ledz.c        **** GPIO_WritePinOutput(GPIOE, 0, 0);
+ 123:ledz.c        **** #endif
+ 124:ledz.c        **** }
+ 125:ledz.c        **** 
+ 126:ledz.c        **** void led3_on() {
+ 227              		.loc 1 126 6 view -0
+ 228              		@ args = 0, pretend = 0, frame = 0
+ 229              		@ frame_needed = 0, uses_anonymous_args = 0
+ 230              		@ link register save eliminated.
+ 231 0000 7047     		bx	lr
+ 232              		.cfi_endproc
+ 233              	.LFE168:
+ 235              		.section	.text.led3_toggle,"ax",%progbits
+ 236              		.align	1
+ 237              		.global	led3_toggle
+ 238              		.syntax unified
+ 239              		.thumb
+ 240              		.thumb_func
+ 242              	led3_toggle:
+ 243              	.LFB170:
+ 244              		.cfi_startproc
+ 127:ledz.c        **** #if HAL_TYPE == HAL_sam4s
+ 128:ledz.c        ****   gpio_set_pin_high(PIO_PA14_IDX);
+ 129:ledz.c        ****   // gpio_configure_pin(PIO_PA16_IDX, PIO_OUTPUT_1 | PIO_DEFAULT);
+ 130:ledz.c        **** #elif HAL_TYPE == HAL_k82f
+ 131:ledz.c        **** GPIO_WritePinOutput(GPIOE, 0, 1);
+ 132:ledz.c        **** #endif
+ 133:ledz.c        **** }
+ 134:ledz.c        **** 
+ 135:ledz.c        **** void led3_toggle() {
+ 245              		.loc 1 135 6 view -0
+ 246              		@ args = 0, pretend = 0, frame = 0
+ 247              		@ frame_needed = 0, uses_anonymous_args = 0
+ 248              		@ link register save eliminated.
+ 249 0000 7047     		bx	lr
+ 250              		.cfi_endproc
+ 251              	.LFE170:
+ 253              		.text
+ 254              	.Letext0:
+DEFINED SYMBOLS
+                            *ABS*:00000000 ledz.c
+     /tmp/ccu4HKEF.s:19     .text.ledz_init:00000000 $t
+     /tmp/ccu4HKEF.s:25     .text.ledz_init:00000000 ledz_init
+     /tmp/ccu4HKEF.s:38     .text.led1_init:00000000 $t
+     /tmp/ccu4HKEF.s:44     .text.led1_init:00000000 led1_init
+     /tmp/ccu4HKEF.s:56     .text.led1_off:00000000 $t
+     /tmp/ccu4HKEF.s:62     .text.led1_off:00000000 led1_off
+     /tmp/ccu4HKEF.s:74     .text.led1_on:00000000 $t
+     /tmp/ccu4HKEF.s:80     .text.led1_on:00000000 led1_on
+     /tmp/ccu4HKEF.s:92     .text.led1_toggle:00000000 $t
+     /tmp/ccu4HKEF.s:98     .text.led1_toggle:00000000 led1_toggle
+     /tmp/ccu4HKEF.s:110    .text.led2_init:00000000 $t
+     /tmp/ccu4HKEF.s:116    .text.led2_init:00000000 led2_init
+     /tmp/ccu4HKEF.s:128    .text.led2_off:00000000 $t
+     /tmp/ccu4HKEF.s:134    .text.led2_off:00000000 led2_off
+     /tmp/ccu4HKEF.s:146    .text.led2_on:00000000 $t
+     /tmp/ccu4HKEF.s:152    .text.led2_on:00000000 led2_on
+     /tmp/ccu4HKEF.s:164    .text.led2_toggle:00000000 $t
+     /tmp/ccu4HKEF.s:170    .text.led2_toggle:00000000 led2_toggle
+     /tmp/ccu4HKEF.s:182    .text.led3_init:00000000 $t
+     /tmp/ccu4HKEF.s:188    .text.led3_init:00000000 led3_init
+     /tmp/ccu4HKEF.s:200    .text.led3_off:00000000 $t
+     /tmp/ccu4HKEF.s:206    .text.led3_off:00000000 led3_off
+     /tmp/ccu4HKEF.s:218    .text.led3_on:00000000 $t
+     /tmp/ccu4HKEF.s:224    .text.led3_on:00000000 led3_on
+     /tmp/ccu4HKEF.s:236    .text.led3_toggle:00000000 $t
+     /tmp/ccu4HKEF.s:242    .text.led3_toggle:00000000 led3_toggle
+
+NO UNDEFINED SYMBOLS

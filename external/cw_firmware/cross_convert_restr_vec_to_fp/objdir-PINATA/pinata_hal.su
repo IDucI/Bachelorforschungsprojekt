@@ -1,0 +1,10 @@
+../hal/chipwhisperer-fw-extra/pinata/pinata_hal.c:55:6:init_uart	8	static
+../hal/chipwhisperer-fw-extra/pinata/pinata_hal.c:77:6:Error_Handler	0	static
+../hal/chipwhisperer-fw-extra/pinata/pinata_hal.c:89:6:HSE_SystemClock_Config	96	static
+../hal/chipwhisperer-fw-extra/pinata/pinata_hal.c:18:6:platform_init	56	static
+../hal/chipwhisperer-fw-extra/pinata/pinata_hal.c:124:6:HSI_SystemClock_Config	96	static
+../hal/chipwhisperer-fw-extra/pinata/pinata_hal.c:161:6:trigger_setup	40	static
+../hal/chipwhisperer-fw-extra/pinata/pinata_hal.c:175:6:trigger_high	0	static
+../hal/chipwhisperer-fw-extra/pinata/pinata_hal.c:179:6:trigger_low	0	static
+../hal/chipwhisperer-fw-extra/pinata/pinata_hal.c:182:6:getch	16	static
+../hal/chipwhisperer-fw-extra/pinata/pinata_hal.c:189:6:putch	16	static

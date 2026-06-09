@@ -1,0 +1,427 @@
+   1              		.cpu cortex-m4
+   2              		.arch armv7e-m
+   3              		.fpu softvfp
+   4              		.eabi_attribute 20, 1
+   5              		.eabi_attribute 21, 1
+   6              		.eabi_attribute 23, 3
+   7              		.eabi_attribute 24, 1
+   8              		.eabi_attribute 25, 1
+   9              		.eabi_attribute 26, 1
+  10              		.eabi_attribute 30, 4
+  11              		.eabi_attribute 34, 1
+  12              		.eabi_attribute 18, 4
+  13              		.file	"stm32f4xx_hal_msp.c"
+  14              		.text
+  15              	.Ltext0:
+  16              		.cfi_sections	.debug_frame
+  17              		.file 1 "../hal/chipwhisperer-fw-extra/pinata/Src/stm32f4xx_hal_msp.c"
+  18              		.section	.text.HAL_MspInit,"ax",%progbits
+  19              		.align	1
+  20              		.global	HAL_MspInit
+  21              		.syntax unified
+  22              		.thumb
+  23              		.thumb_func
+  25              	HAL_MspInit:
+  26              	.LFB134:
+   1:../hal/chipwhisperer-fw-extra/pinata/Src/stm32f4xx_hal_msp.c **** /* USER CODE BEGIN Header */
+   2:../hal/chipwhisperer-fw-extra/pinata/Src/stm32f4xx_hal_msp.c **** /**
+   3:../hal/chipwhisperer-fw-extra/pinata/Src/stm32f4xx_hal_msp.c ****   ******************************************************************************
+   4:../hal/chipwhisperer-fw-extra/pinata/Src/stm32f4xx_hal_msp.c ****   * @file         stm32f4xx_hal_msp.c
+   5:../hal/chipwhisperer-fw-extra/pinata/Src/stm32f4xx_hal_msp.c ****   * @brief        This file provides code for the MSP Initialization
+   6:../hal/chipwhisperer-fw-extra/pinata/Src/stm32f4xx_hal_msp.c ****   *               and de-Initialization codes.
+   7:../hal/chipwhisperer-fw-extra/pinata/Src/stm32f4xx_hal_msp.c ****   ******************************************************************************
+   8:../hal/chipwhisperer-fw-extra/pinata/Src/stm32f4xx_hal_msp.c ****   * @attention
+   9:../hal/chipwhisperer-fw-extra/pinata/Src/stm32f4xx_hal_msp.c ****   *
+  10:../hal/chipwhisperer-fw-extra/pinata/Src/stm32f4xx_hal_msp.c ****   * Copyright (c) 2025 STMicroelectronics.
+  11:../hal/chipwhisperer-fw-extra/pinata/Src/stm32f4xx_hal_msp.c ****   * All rights reserved.
+  12:../hal/chipwhisperer-fw-extra/pinata/Src/stm32f4xx_hal_msp.c ****   *
+  13:../hal/chipwhisperer-fw-extra/pinata/Src/stm32f4xx_hal_msp.c ****   * This software is licensed under terms that can be found in the LICENSE file
+  14:../hal/chipwhisperer-fw-extra/pinata/Src/stm32f4xx_hal_msp.c ****   * in the root directory of this software component.
+  15:../hal/chipwhisperer-fw-extra/pinata/Src/stm32f4xx_hal_msp.c ****   * If no LICENSE file comes with this software, it is provided AS-IS.
+  16:../hal/chipwhisperer-fw-extra/pinata/Src/stm32f4xx_hal_msp.c ****   *
+  17:../hal/chipwhisperer-fw-extra/pinata/Src/stm32f4xx_hal_msp.c ****   ******************************************************************************
+  18:../hal/chipwhisperer-fw-extra/pinata/Src/stm32f4xx_hal_msp.c ****   */
+  19:../hal/chipwhisperer-fw-extra/pinata/Src/stm32f4xx_hal_msp.c **** /* USER CODE END Header */
+  20:../hal/chipwhisperer-fw-extra/pinata/Src/stm32f4xx_hal_msp.c **** 
+  21:../hal/chipwhisperer-fw-extra/pinata/Src/stm32f4xx_hal_msp.c **** /* Includes ------------------------------------------------------------------*/
+  22:../hal/chipwhisperer-fw-extra/pinata/Src/stm32f4xx_hal_msp.c **** // #include "main.h"
+  23:../hal/chipwhisperer-fw-extra/pinata/Src/stm32f4xx_hal_msp.c **** #include "stm32f4xx_hal.h"
+  24:../hal/chipwhisperer-fw-extra/pinata/Src/stm32f4xx_hal_msp.c **** /* USER CODE BEGIN Includes */
+  25:../hal/chipwhisperer-fw-extra/pinata/Src/stm32f4xx_hal_msp.c **** 
+  26:../hal/chipwhisperer-fw-extra/pinata/Src/stm32f4xx_hal_msp.c **** /* USER CODE END Includes */
+  27:../hal/chipwhisperer-fw-extra/pinata/Src/stm32f4xx_hal_msp.c **** 
+  28:../hal/chipwhisperer-fw-extra/pinata/Src/stm32f4xx_hal_msp.c **** /* Private typedef -----------------------------------------------------------*/
+  29:../hal/chipwhisperer-fw-extra/pinata/Src/stm32f4xx_hal_msp.c **** /* USER CODE BEGIN TD */
+  30:../hal/chipwhisperer-fw-extra/pinata/Src/stm32f4xx_hal_msp.c **** 
+  31:../hal/chipwhisperer-fw-extra/pinata/Src/stm32f4xx_hal_msp.c **** /* USER CODE END TD */
+  32:../hal/chipwhisperer-fw-extra/pinata/Src/stm32f4xx_hal_msp.c **** 
+  33:../hal/chipwhisperer-fw-extra/pinata/Src/stm32f4xx_hal_msp.c **** /* Private define ------------------------------------------------------------*/
+  34:../hal/chipwhisperer-fw-extra/pinata/Src/stm32f4xx_hal_msp.c **** /* USER CODE BEGIN Define */
+  35:../hal/chipwhisperer-fw-extra/pinata/Src/stm32f4xx_hal_msp.c **** 
+  36:../hal/chipwhisperer-fw-extra/pinata/Src/stm32f4xx_hal_msp.c **** /* USER CODE END Define */
+  37:../hal/chipwhisperer-fw-extra/pinata/Src/stm32f4xx_hal_msp.c **** 
+  38:../hal/chipwhisperer-fw-extra/pinata/Src/stm32f4xx_hal_msp.c **** /* Private macro -------------------------------------------------------------*/
+  39:../hal/chipwhisperer-fw-extra/pinata/Src/stm32f4xx_hal_msp.c **** /* USER CODE BEGIN Macro */
+  40:../hal/chipwhisperer-fw-extra/pinata/Src/stm32f4xx_hal_msp.c **** 
+  41:../hal/chipwhisperer-fw-extra/pinata/Src/stm32f4xx_hal_msp.c **** /* USER CODE END Macro */
+  42:../hal/chipwhisperer-fw-extra/pinata/Src/stm32f4xx_hal_msp.c **** 
+  43:../hal/chipwhisperer-fw-extra/pinata/Src/stm32f4xx_hal_msp.c **** /* Private variables ---------------------------------------------------------*/
+  44:../hal/chipwhisperer-fw-extra/pinata/Src/stm32f4xx_hal_msp.c **** /* USER CODE BEGIN PV */
+  45:../hal/chipwhisperer-fw-extra/pinata/Src/stm32f4xx_hal_msp.c **** 
+  46:../hal/chipwhisperer-fw-extra/pinata/Src/stm32f4xx_hal_msp.c **** /* USER CODE END PV */
+  47:../hal/chipwhisperer-fw-extra/pinata/Src/stm32f4xx_hal_msp.c **** 
+  48:../hal/chipwhisperer-fw-extra/pinata/Src/stm32f4xx_hal_msp.c **** /* Private function prototypes -----------------------------------------------*/
+  49:../hal/chipwhisperer-fw-extra/pinata/Src/stm32f4xx_hal_msp.c **** /* USER CODE BEGIN PFP */
+  50:../hal/chipwhisperer-fw-extra/pinata/Src/stm32f4xx_hal_msp.c **** 
+  51:../hal/chipwhisperer-fw-extra/pinata/Src/stm32f4xx_hal_msp.c **** /* USER CODE END PFP */
+  52:../hal/chipwhisperer-fw-extra/pinata/Src/stm32f4xx_hal_msp.c **** 
+  53:../hal/chipwhisperer-fw-extra/pinata/Src/stm32f4xx_hal_msp.c **** /* External functions --------------------------------------------------------*/
+  54:../hal/chipwhisperer-fw-extra/pinata/Src/stm32f4xx_hal_msp.c **** /* USER CODE BEGIN ExternalFunctions */
+  55:../hal/chipwhisperer-fw-extra/pinata/Src/stm32f4xx_hal_msp.c **** 
+  56:../hal/chipwhisperer-fw-extra/pinata/Src/stm32f4xx_hal_msp.c **** /* USER CODE END ExternalFunctions */
+  57:../hal/chipwhisperer-fw-extra/pinata/Src/stm32f4xx_hal_msp.c **** 
+  58:../hal/chipwhisperer-fw-extra/pinata/Src/stm32f4xx_hal_msp.c **** /* USER CODE BEGIN 0 */
+  59:../hal/chipwhisperer-fw-extra/pinata/Src/stm32f4xx_hal_msp.c **** 
+  60:../hal/chipwhisperer-fw-extra/pinata/Src/stm32f4xx_hal_msp.c **** /* USER CODE END 0 */
+  61:../hal/chipwhisperer-fw-extra/pinata/Src/stm32f4xx_hal_msp.c **** /**
+  62:../hal/chipwhisperer-fw-extra/pinata/Src/stm32f4xx_hal_msp.c ****   * Initializes the Global MSP.
+  63:../hal/chipwhisperer-fw-extra/pinata/Src/stm32f4xx_hal_msp.c ****   */
+  64:../hal/chipwhisperer-fw-extra/pinata/Src/stm32f4xx_hal_msp.c **** void HAL_MspInit(void)
+  65:../hal/chipwhisperer-fw-extra/pinata/Src/stm32f4xx_hal_msp.c **** {
+  27              		.loc 1 65 1 view -0
+  28              		.cfi_startproc
+  29              		@ args = 0, pretend = 0, frame = 8
+  30              		@ frame_needed = 0, uses_anonymous_args = 0
+  31              		@ link register save eliminated.
+  66:../hal/chipwhisperer-fw-extra/pinata/Src/stm32f4xx_hal_msp.c **** 
+  67:../hal/chipwhisperer-fw-extra/pinata/Src/stm32f4xx_hal_msp.c ****   /* USER CODE BEGIN MspInit 0 */
+  68:../hal/chipwhisperer-fw-extra/pinata/Src/stm32f4xx_hal_msp.c **** 
+  69:../hal/chipwhisperer-fw-extra/pinata/Src/stm32f4xx_hal_msp.c ****   /* USER CODE END MspInit 0 */
+  70:../hal/chipwhisperer-fw-extra/pinata/Src/stm32f4xx_hal_msp.c **** 
+  71:../hal/chipwhisperer-fw-extra/pinata/Src/stm32f4xx_hal_msp.c ****   __HAL_RCC_SYSCFG_CLK_ENABLE();
+  32              		.loc 1 71 3 view .LVU1
+  33              	.LBB2:
+  34              		.loc 1 71 3 view .LVU2
+  35              	.LBE2:
+  65:../hal/chipwhisperer-fw-extra/pinata/Src/stm32f4xx_hal_msp.c **** 
+  36              		.loc 1 65 1 is_stmt 0 view .LVU3
+  37 0000 82B0     		sub	sp, sp, #8
+  38              	.LCFI0:
+  39              		.cfi_def_cfa_offset 8
+  40              	.LBB3:
+  41              		.loc 1 71 3 view .LVU4
+  42 0002 0C4B     		ldr	r3, .L2
+  43 0004 0021     		movs	r1, #0
+  44 0006 0091     		str	r1, [sp]
+  45              		.loc 1 71 3 is_stmt 1 view .LVU5
+  46 0008 5A6C     		ldr	r2, [r3, #68]
+  47 000a 42F48042 		orr	r2, r2, #16384
+  48 000e 5A64     		str	r2, [r3, #68]
+  49              		.loc 1 71 3 view .LVU6
+  50 0010 5A6C     		ldr	r2, [r3, #68]
+  51 0012 02F48042 		and	r2, r2, #16384
+  52 0016 0092     		str	r2, [sp]
+  53              		.loc 1 71 3 view .LVU7
+  54 0018 009A     		ldr	r2, [sp]
+  55              	.LBE3:
+  56              		.loc 1 71 3 view .LVU8
+  72:../hal/chipwhisperer-fw-extra/pinata/Src/stm32f4xx_hal_msp.c ****   __HAL_RCC_PWR_CLK_ENABLE();
+  57              		.loc 1 72 3 view .LVU9
+  58              	.LBB4:
+  59              		.loc 1 72 3 view .LVU10
+  60 001a 0191     		str	r1, [sp, #4]
+  61              		.loc 1 72 3 view .LVU11
+  62 001c 1A6C     		ldr	r2, [r3, #64]
+  63 001e 42F08052 		orr	r2, r2, #268435456
+  64 0022 1A64     		str	r2, [r3, #64]
+  65              		.loc 1 72 3 view .LVU12
+  66 0024 1B6C     		ldr	r3, [r3, #64]
+  67 0026 03F08053 		and	r3, r3, #268435456
+  68 002a 0193     		str	r3, [sp, #4]
+  69              		.loc 1 72 3 view .LVU13
+  70 002c 019B     		ldr	r3, [sp, #4]
+  71              	.LBE4:
+  72              		.loc 1 72 3 view .LVU14
+  73:../hal/chipwhisperer-fw-extra/pinata/Src/stm32f4xx_hal_msp.c **** 
+  74:../hal/chipwhisperer-fw-extra/pinata/Src/stm32f4xx_hal_msp.c ****   /* System interrupt init*/
+  75:../hal/chipwhisperer-fw-extra/pinata/Src/stm32f4xx_hal_msp.c **** 
+  76:../hal/chipwhisperer-fw-extra/pinata/Src/stm32f4xx_hal_msp.c ****   /* USER CODE BEGIN MspInit 1 */
+  77:../hal/chipwhisperer-fw-extra/pinata/Src/stm32f4xx_hal_msp.c **** 
+  78:../hal/chipwhisperer-fw-extra/pinata/Src/stm32f4xx_hal_msp.c ****   /* USER CODE END MspInit 1 */
+  79:../hal/chipwhisperer-fw-extra/pinata/Src/stm32f4xx_hal_msp.c **** }
+  73              		.loc 1 79 1 is_stmt 0 view .LVU15
+  74 002e 02B0     		add	sp, sp, #8
+  75              	.LCFI1:
+  76              		.cfi_def_cfa_offset 0
+  77              		@ sp needed
+  78 0030 7047     		bx	lr
+  79              	.L3:
+  80 0032 00BF     		.align	2
+  81              	.L2:
+  82 0034 00380240 		.word	1073887232
+  83              		.cfi_endproc
+  84              	.LFE134:
+  86              		.section	.text.HAL_UART_MspInit,"ax",%progbits
+  87              		.align	1
+  88              		.global	HAL_UART_MspInit
+  89              		.syntax unified
+  90              		.thumb
+  91              		.thumb_func
+  93              	HAL_UART_MspInit:
+  94              	.LVL0:
+  95              	.LFB135:
+  80:../hal/chipwhisperer-fw-extra/pinata/Src/stm32f4xx_hal_msp.c **** 
+  81:../hal/chipwhisperer-fw-extra/pinata/Src/stm32f4xx_hal_msp.c **** /**
+  82:../hal/chipwhisperer-fw-extra/pinata/Src/stm32f4xx_hal_msp.c ****   * @brief UART MSP Initialization
+  83:../hal/chipwhisperer-fw-extra/pinata/Src/stm32f4xx_hal_msp.c ****   * This function configures the hardware resources used in this example
+  84:../hal/chipwhisperer-fw-extra/pinata/Src/stm32f4xx_hal_msp.c ****   * @param huart: UART handle pointer
+  85:../hal/chipwhisperer-fw-extra/pinata/Src/stm32f4xx_hal_msp.c ****   * @retval None
+  86:../hal/chipwhisperer-fw-extra/pinata/Src/stm32f4xx_hal_msp.c ****   */
+  87:../hal/chipwhisperer-fw-extra/pinata/Src/stm32f4xx_hal_msp.c **** void HAL_UART_MspInit(UART_HandleTypeDef* huart)
+  88:../hal/chipwhisperer-fw-extra/pinata/Src/stm32f4xx_hal_msp.c **** {
+  96              		.loc 1 88 1 is_stmt 1 view -0
+  97              		.cfi_startproc
+  98              		@ args = 0, pretend = 0, frame = 32
+  99              		@ frame_needed = 0, uses_anonymous_args = 0
+  89:../hal/chipwhisperer-fw-extra/pinata/Src/stm32f4xx_hal_msp.c ****   GPIO_InitTypeDef GPIO_InitStruct = {0};
+ 100              		.loc 1 89 3 view .LVU17
+  88:../hal/chipwhisperer-fw-extra/pinata/Src/stm32f4xx_hal_msp.c ****   GPIO_InitTypeDef GPIO_InitStruct = {0};
+ 101              		.loc 1 88 1 is_stmt 0 view .LVU18
+ 102 0000 10B5     		push	{r4, lr}
+ 103              	.LCFI2:
+ 104              		.cfi_def_cfa_offset 8
+ 105              		.cfi_offset 4, -8
+ 106              		.cfi_offset 14, -4
+ 107 0002 0446     		mov	r4, r0
+ 108 0004 88B0     		sub	sp, sp, #32
+ 109              	.LCFI3:
+ 110              		.cfi_def_cfa_offset 40
+ 111              		.loc 1 89 20 view .LVU19
+ 112 0006 1422     		movs	r2, #20
+ 113 0008 0021     		movs	r1, #0
+ 114 000a 03A8     		add	r0, sp, #12
+ 115              	.LVL1:
+ 116              		.loc 1 89 20 view .LVU20
+ 117 000c FFF7FEFF 		bl	memset
+ 118              	.LVL2:
+  90:../hal/chipwhisperer-fw-extra/pinata/Src/stm32f4xx_hal_msp.c ****   if(huart->Instance==UART4)
+ 119              		.loc 1 90 3 is_stmt 1 view .LVU21
+ 120              		.loc 1 90 5 is_stmt 0 view .LVU22
+ 121 0010 2268     		ldr	r2, [r4]
+ 122 0012 144B     		ldr	r3, .L6
+ 123 0014 9A42     		cmp	r2, r3
+ 124 0016 23D1     		bne	.L4
+  91:../hal/chipwhisperer-fw-extra/pinata/Src/stm32f4xx_hal_msp.c ****   {
+  92:../hal/chipwhisperer-fw-extra/pinata/Src/stm32f4xx_hal_msp.c ****     /* USER CODE BEGIN UART4_MspInit 0 */
+  93:../hal/chipwhisperer-fw-extra/pinata/Src/stm32f4xx_hal_msp.c **** 
+  94:../hal/chipwhisperer-fw-extra/pinata/Src/stm32f4xx_hal_msp.c ****     /* USER CODE END UART4_MspInit 0 */
+  95:../hal/chipwhisperer-fw-extra/pinata/Src/stm32f4xx_hal_msp.c ****     /* Peripheral clock enable */
+  96:../hal/chipwhisperer-fw-extra/pinata/Src/stm32f4xx_hal_msp.c ****     __HAL_RCC_UART4_CLK_ENABLE();
+ 125              		.loc 1 96 5 is_stmt 1 view .LVU23
+ 126              	.LBB5:
+ 127              		.loc 1 96 5 view .LVU24
+ 128 0018 03F5F633 		add	r3, r3, #125952
+ 129 001c 0021     		movs	r1, #0
+ 130 001e 0191     		str	r1, [sp, #4]
+ 131              		.loc 1 96 5 view .LVU25
+ 132 0020 1A6C     		ldr	r2, [r3, #64]
+ 133              	.LBE5:
+  97:../hal/chipwhisperer-fw-extra/pinata/Src/stm32f4xx_hal_msp.c **** 
+  98:../hal/chipwhisperer-fw-extra/pinata/Src/stm32f4xx_hal_msp.c ****     __HAL_RCC_GPIOC_CLK_ENABLE();
+  99:../hal/chipwhisperer-fw-extra/pinata/Src/stm32f4xx_hal_msp.c ****     /**UART4 GPIO Configuration
+ 100:../hal/chipwhisperer-fw-extra/pinata/Src/stm32f4xx_hal_msp.c ****     PC10     ------> UART4_TX
+ 101:../hal/chipwhisperer-fw-extra/pinata/Src/stm32f4xx_hal_msp.c ****     PC11     ------> UART4_RX
+ 102:../hal/chipwhisperer-fw-extra/pinata/Src/stm32f4xx_hal_msp.c ****     */
+ 103:../hal/chipwhisperer-fw-extra/pinata/Src/stm32f4xx_hal_msp.c ****     GPIO_InitStruct.Pin = GPIO_PIN_10|GPIO_PIN_11;
+ 104:../hal/chipwhisperer-fw-extra/pinata/Src/stm32f4xx_hal_msp.c ****     GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+ 105:../hal/chipwhisperer-fw-extra/pinata/Src/stm32f4xx_hal_msp.c ****     GPIO_InitStruct.Pull = GPIO_NOPULL;
+ 106:../hal/chipwhisperer-fw-extra/pinata/Src/stm32f4xx_hal_msp.c ****     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
+ 107:../hal/chipwhisperer-fw-extra/pinata/Src/stm32f4xx_hal_msp.c ****     GPIO_InitStruct.Alternate = GPIO_AF8_UART4;
+ 108:../hal/chipwhisperer-fw-extra/pinata/Src/stm32f4xx_hal_msp.c ****     HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+ 134              		.loc 1 108 5 is_stmt 0 view .LVU26
+ 135 0022 1148     		ldr	r0, .L6+4
+ 136              	.LBB6:
+  96:../hal/chipwhisperer-fw-extra/pinata/Src/stm32f4xx_hal_msp.c **** 
+ 137              		.loc 1 96 5 view .LVU27
+ 138 0024 42F40022 		orr	r2, r2, #524288
+ 139 0028 1A64     		str	r2, [r3, #64]
+  96:../hal/chipwhisperer-fw-extra/pinata/Src/stm32f4xx_hal_msp.c **** 
+ 140              		.loc 1 96 5 is_stmt 1 view .LVU28
+ 141 002a 1A6C     		ldr	r2, [r3, #64]
+ 142 002c 02F40022 		and	r2, r2, #524288
+ 143 0030 0192     		str	r2, [sp, #4]
+  96:../hal/chipwhisperer-fw-extra/pinata/Src/stm32f4xx_hal_msp.c **** 
+ 144              		.loc 1 96 5 view .LVU29
+ 145 0032 019A     		ldr	r2, [sp, #4]
+ 146              	.LBE6:
+  96:../hal/chipwhisperer-fw-extra/pinata/Src/stm32f4xx_hal_msp.c **** 
+ 147              		.loc 1 96 5 view .LVU30
+  98:../hal/chipwhisperer-fw-extra/pinata/Src/stm32f4xx_hal_msp.c ****     /**UART4 GPIO Configuration
+ 148              		.loc 1 98 5 view .LVU31
+ 149              	.LBB7:
+  98:../hal/chipwhisperer-fw-extra/pinata/Src/stm32f4xx_hal_msp.c ****     /**UART4 GPIO Configuration
+ 150              		.loc 1 98 5 view .LVU32
+ 151 0034 0291     		str	r1, [sp, #8]
+  98:../hal/chipwhisperer-fw-extra/pinata/Src/stm32f4xx_hal_msp.c ****     /**UART4 GPIO Configuration
+ 152              		.loc 1 98 5 view .LVU33
+ 153 0036 1A6B     		ldr	r2, [r3, #48]
+ 154 0038 42F00402 		orr	r2, r2, #4
+ 155 003c 1A63     		str	r2, [r3, #48]
+  98:../hal/chipwhisperer-fw-extra/pinata/Src/stm32f4xx_hal_msp.c ****     /**UART4 GPIO Configuration
+ 156              		.loc 1 98 5 view .LVU34
+ 157 003e 1B6B     		ldr	r3, [r3, #48]
+ 158 0040 03F00403 		and	r3, r3, #4
+ 159 0044 0293     		str	r3, [sp, #8]
+  98:../hal/chipwhisperer-fw-extra/pinata/Src/stm32f4xx_hal_msp.c ****     /**UART4 GPIO Configuration
+ 160              		.loc 1 98 5 view .LVU35
+ 161 0046 029B     		ldr	r3, [sp, #8]
+ 162              	.LBE7:
+  98:../hal/chipwhisperer-fw-extra/pinata/Src/stm32f4xx_hal_msp.c ****     /**UART4 GPIO Configuration
+ 163              		.loc 1 98 5 view .LVU36
+ 103:../hal/chipwhisperer-fw-extra/pinata/Src/stm32f4xx_hal_msp.c ****     GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+ 164              		.loc 1 103 5 view .LVU37
+ 104:../hal/chipwhisperer-fw-extra/pinata/Src/stm32f4xx_hal_msp.c ****     GPIO_InitStruct.Pull = GPIO_NOPULL;
+ 165              		.loc 1 104 26 is_stmt 0 view .LVU38
+ 166 0048 4FF44062 		mov	r2, #3072
+ 167 004c 0223     		movs	r3, #2
+ 107:../hal/chipwhisperer-fw-extra/pinata/Src/stm32f4xx_hal_msp.c ****     HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+ 168              		.loc 1 107 31 view .LVU39
+ 169 004e 0321     		movs	r1, #3
+ 104:../hal/chipwhisperer-fw-extra/pinata/Src/stm32f4xx_hal_msp.c ****     GPIO_InitStruct.Pull = GPIO_NOPULL;
+ 170              		.loc 1 104 26 view .LVU40
+ 171 0050 CDE90323 		strd	r2, r3, [sp, #12]
+ 105:../hal/chipwhisperer-fw-extra/pinata/Src/stm32f4xx_hal_msp.c ****     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
+ 172              		.loc 1 105 5 is_stmt 1 view .LVU41
+ 106:../hal/chipwhisperer-fw-extra/pinata/Src/stm32f4xx_hal_msp.c ****     GPIO_InitStruct.Alternate = GPIO_AF8_UART4;
+ 173              		.loc 1 106 5 view .LVU42
+ 107:../hal/chipwhisperer-fw-extra/pinata/Src/stm32f4xx_hal_msp.c ****     HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+ 174              		.loc 1 107 31 is_stmt 0 view .LVU43
+ 175 0054 0823     		movs	r3, #8
+ 176 0056 CDE90613 		strd	r1, r3, [sp, #24]
+ 177              		.loc 1 108 5 is_stmt 1 view .LVU44
+ 178 005a 03A9     		add	r1, sp, #12
+ 179 005c FFF7FEFF 		bl	HAL_GPIO_Init
+ 180              	.LVL3:
+ 181              	.L4:
+ 109:../hal/chipwhisperer-fw-extra/pinata/Src/stm32f4xx_hal_msp.c **** 
+ 110:../hal/chipwhisperer-fw-extra/pinata/Src/stm32f4xx_hal_msp.c ****     /* USER CODE BEGIN UART4_MspInit 1 */
+ 111:../hal/chipwhisperer-fw-extra/pinata/Src/stm32f4xx_hal_msp.c **** 
+ 112:../hal/chipwhisperer-fw-extra/pinata/Src/stm32f4xx_hal_msp.c ****     /* USER CODE END UART4_MspInit 1 */
+ 113:../hal/chipwhisperer-fw-extra/pinata/Src/stm32f4xx_hal_msp.c **** 
+ 114:../hal/chipwhisperer-fw-extra/pinata/Src/stm32f4xx_hal_msp.c ****   }
+ 115:../hal/chipwhisperer-fw-extra/pinata/Src/stm32f4xx_hal_msp.c **** 
+ 116:../hal/chipwhisperer-fw-extra/pinata/Src/stm32f4xx_hal_msp.c **** }
+ 182              		.loc 1 116 1 is_stmt 0 view .LVU45
+ 183 0060 08B0     		add	sp, sp, #32
+ 184              	.LCFI4:
+ 185              		.cfi_def_cfa_offset 8
+ 186              		@ sp needed
+ 187 0062 10BD     		pop	{r4, pc}
+ 188              	.LVL4:
+ 189              	.L7:
+ 190              		.loc 1 116 1 view .LVU46
+ 191              		.align	2
+ 192              	.L6:
+ 193 0064 004C0040 		.word	1073761280
+ 194 0068 00080240 		.word	1073874944
+ 195              		.cfi_endproc
+ 196              	.LFE135:
+ 198              		.section	.text.HAL_UART_MspDeInit,"ax",%progbits
+ 199              		.align	1
+ 200              		.global	HAL_UART_MspDeInit
+ 201              		.syntax unified
+ 202              		.thumb
+ 203              		.thumb_func
+ 205              	HAL_UART_MspDeInit:
+ 206              	.LVL5:
+ 207              	.LFB136:
+ 117:../hal/chipwhisperer-fw-extra/pinata/Src/stm32f4xx_hal_msp.c **** 
+ 118:../hal/chipwhisperer-fw-extra/pinata/Src/stm32f4xx_hal_msp.c **** /**
+ 119:../hal/chipwhisperer-fw-extra/pinata/Src/stm32f4xx_hal_msp.c ****   * @brief UART MSP De-Initialization
+ 120:../hal/chipwhisperer-fw-extra/pinata/Src/stm32f4xx_hal_msp.c ****   * This function freeze the hardware resources used in this example
+ 121:../hal/chipwhisperer-fw-extra/pinata/Src/stm32f4xx_hal_msp.c ****   * @param huart: UART handle pointer
+ 122:../hal/chipwhisperer-fw-extra/pinata/Src/stm32f4xx_hal_msp.c ****   * @retval None
+ 123:../hal/chipwhisperer-fw-extra/pinata/Src/stm32f4xx_hal_msp.c ****   */
+ 124:../hal/chipwhisperer-fw-extra/pinata/Src/stm32f4xx_hal_msp.c **** void HAL_UART_MspDeInit(UART_HandleTypeDef* huart)
+ 125:../hal/chipwhisperer-fw-extra/pinata/Src/stm32f4xx_hal_msp.c **** {
+ 208              		.loc 1 125 1 is_stmt 1 view -0
+ 209              		.cfi_startproc
+ 210              		@ args = 0, pretend = 0, frame = 0
+ 211              		@ frame_needed = 0, uses_anonymous_args = 0
+ 212              		@ link register save eliminated.
+ 126:../hal/chipwhisperer-fw-extra/pinata/Src/stm32f4xx_hal_msp.c ****   if(huart->Instance==UART4)
+ 213              		.loc 1 126 3 view .LVU48
+ 214              		.loc 1 126 5 is_stmt 0 view .LVU49
+ 215 0000 0268     		ldr	r2, [r0]
+ 216 0002 074B     		ldr	r3, .L10
+ 217 0004 9A42     		cmp	r2, r3
+ 218 0006 09D1     		bne	.L8
+ 127:../hal/chipwhisperer-fw-extra/pinata/Src/stm32f4xx_hal_msp.c ****   {
+ 128:../hal/chipwhisperer-fw-extra/pinata/Src/stm32f4xx_hal_msp.c ****     /* USER CODE BEGIN UART4_MspDeInit 0 */
+ 129:../hal/chipwhisperer-fw-extra/pinata/Src/stm32f4xx_hal_msp.c **** 
+ 130:../hal/chipwhisperer-fw-extra/pinata/Src/stm32f4xx_hal_msp.c ****     /* USER CODE END UART4_MspDeInit 0 */
+ 131:../hal/chipwhisperer-fw-extra/pinata/Src/stm32f4xx_hal_msp.c ****     /* Peripheral clock disable */
+ 132:../hal/chipwhisperer-fw-extra/pinata/Src/stm32f4xx_hal_msp.c ****     __HAL_RCC_UART4_CLK_DISABLE();
+ 219              		.loc 1 132 5 is_stmt 1 view .LVU50
+ 220 0008 064A     		ldr	r2, .L10+4
+ 133:../hal/chipwhisperer-fw-extra/pinata/Src/stm32f4xx_hal_msp.c **** 
+ 134:../hal/chipwhisperer-fw-extra/pinata/Src/stm32f4xx_hal_msp.c ****     /**UART4 GPIO Configuration
+ 135:../hal/chipwhisperer-fw-extra/pinata/Src/stm32f4xx_hal_msp.c ****     PC10     ------> UART4_TX
+ 136:../hal/chipwhisperer-fw-extra/pinata/Src/stm32f4xx_hal_msp.c ****     PC11     ------> UART4_RX
+ 137:../hal/chipwhisperer-fw-extra/pinata/Src/stm32f4xx_hal_msp.c ****     */
+ 138:../hal/chipwhisperer-fw-extra/pinata/Src/stm32f4xx_hal_msp.c ****     HAL_GPIO_DeInit(GPIOC, GPIO_PIN_10|GPIO_PIN_11);
+ 221              		.loc 1 138 5 is_stmt 0 view .LVU51
+ 222 000a 0748     		ldr	r0, .L10+8
+ 223              	.LVL6:
+ 132:../hal/chipwhisperer-fw-extra/pinata/Src/stm32f4xx_hal_msp.c **** 
+ 224              		.loc 1 132 5 view .LVU52
+ 225 000c 136C     		ldr	r3, [r2, #64]
+ 226 000e 23F40023 		bic	r3, r3, #524288
+ 227 0012 1364     		str	r3, [r2, #64]
+ 228              		.loc 1 138 5 is_stmt 1 view .LVU53
+ 229 0014 4FF44061 		mov	r1, #3072
+ 230 0018 FFF7FEBF 		b	HAL_GPIO_DeInit
+ 231              	.LVL7:
+ 232              	.L8:
+ 139:../hal/chipwhisperer-fw-extra/pinata/Src/stm32f4xx_hal_msp.c **** 
+ 140:../hal/chipwhisperer-fw-extra/pinata/Src/stm32f4xx_hal_msp.c ****     /* USER CODE BEGIN UART4_MspDeInit 1 */
+ 141:../hal/chipwhisperer-fw-extra/pinata/Src/stm32f4xx_hal_msp.c **** 
+ 142:../hal/chipwhisperer-fw-extra/pinata/Src/stm32f4xx_hal_msp.c ****     /* USER CODE END UART4_MspDeInit 1 */
+ 143:../hal/chipwhisperer-fw-extra/pinata/Src/stm32f4xx_hal_msp.c ****   }
+ 144:../hal/chipwhisperer-fw-extra/pinata/Src/stm32f4xx_hal_msp.c **** 
+ 145:../hal/chipwhisperer-fw-extra/pinata/Src/stm32f4xx_hal_msp.c **** }
+ 233              		.loc 1 145 1 is_stmt 0 view .LVU54
+ 234 001c 7047     		bx	lr
+ 235              	.L11:
+ 236 001e 00BF     		.align	2
+ 237              	.L10:
+ 238 0020 004C0040 		.word	1073761280
+ 239 0024 00380240 		.word	1073887232
+ 240 0028 00080240 		.word	1073874944
+ 241              		.cfi_endproc
+ 242              	.LFE136:
+ 244              		.text
+ 245              	.Letext0:
+ 246              		.file 2 "/usr/lib/gcc/arm-none-eabi/13.2.1/include/stdint.h"
+ 247              		.file 3 "../hal/chipwhisperer-fw-extra/pinata/CMSIS/Device/ST/STM32F4xx/Include/stm32f417xx.h"
+ 248              		.file 4 "../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_def.h"
+ 249              		.file 5 "../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_gpio.h"
+ 250              		.file 6 "../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_dma.h"
+ 251              		.file 7 "../hal/chipwhisperer-fw-extra/pinata/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_uart.h"
+ 252              		.file 8 "<built-in>"
+DEFINED SYMBOLS
+                            *ABS*:00000000 stm32f4xx_hal_msp.c
+     /tmp/ccdhhiNS.s:19     .text.HAL_MspInit:00000000 $t
+     /tmp/ccdhhiNS.s:25     .text.HAL_MspInit:00000000 HAL_MspInit
+     /tmp/ccdhhiNS.s:82     .text.HAL_MspInit:00000034 $d
+     /tmp/ccdhhiNS.s:87     .text.HAL_UART_MspInit:00000000 $t
+     /tmp/ccdhhiNS.s:93     .text.HAL_UART_MspInit:00000000 HAL_UART_MspInit
+     /tmp/ccdhhiNS.s:193    .text.HAL_UART_MspInit:00000064 $d
+     /tmp/ccdhhiNS.s:199    .text.HAL_UART_MspDeInit:00000000 $t
+     /tmp/ccdhhiNS.s:205    .text.HAL_UART_MspDeInit:00000000 HAL_UART_MspDeInit
+     /tmp/ccdhhiNS.s:238    .text.HAL_UART_MspDeInit:00000020 $d
+
+UNDEFINED SYMBOLS
+memset
+HAL_GPIO_Init
+HAL_GPIO_DeInit
