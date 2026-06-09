@@ -1,6 +1,8 @@
 # Prerequisites
 *.d
 
+
+
 # Compiled Object files
 *.slo
 *.lo
@@ -45,9 +47,21 @@
 *.log
 *.kate-swp
 
+build/
 variants_old/
 configured.dat
 *.code-workspace
-build/lib/
 test.*
 tmp.*
+
+# cw_firmware build artifacts
+objdir-*/
+*.su
+*.lst
+*.elf
+*.hex
+*.bin
+*.eep
+*.lss
+*.map
+*.sym
