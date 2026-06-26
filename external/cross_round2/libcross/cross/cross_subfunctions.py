@@ -28,3 +28,30 @@ class CrossSubfunctions:
         self.cross.c_cross.cross_convert_restr_vec_to_fp(c_output, c_input)
 
         return list(c_output)
+    
+    def restr_vec_by_fp_matrix(self, vector: List[int], matrix: List[int]) -> List[int]:
+        if len(vector) != self.n:
+            raise ValueError(f"Expected vector length {self.n}, got {len(vector)}")
+        # M is a flat list of size K * (N-K)
+        matrix_size = self.k * (self.n - self.k)
+        if len(matrix) != matrix_size:
+            raise ValueError(f"Expected matrix size {matrix_size}, got {len(matrix)}")
+
+        c_vector = (c_uint8 * self.n)(*vector)
+        c_matrix = (c_uint8 * matrix_size)(*matrix)
+        c_result = (c_uint8 * (self.n - self.k))()
+
+        self.cross.c_cross.cross_restr_vec_by_fp_matrix(c_result, c_vector, c_matrix)
+        return list(c_result)
+
+    def fp_vec_by_fp_vec_pointwise():
+        pass
+
+    def fp_vec_by_fp_matrix():
+        pass
+
+    def fz_vec_sub_n():
+        pass
+
+    def expand_sk():
+        pass

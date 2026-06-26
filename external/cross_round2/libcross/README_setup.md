@@ -14,6 +14,11 @@ Currently supported variant:
 Currently exposed subroutine:
 
 - `cross_convert_restr_vec_to_fp`
+- `restr_vec_by_fp_matrix` 
+- `fp_vec_by_fp_vec_pointwise`
+- `fp_vec_by_fp_matrix`
+- `fz_vec_sub_n`
+- `expand_sk`
 
 
 ### Important files
