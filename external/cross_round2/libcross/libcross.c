@@ -48,8 +48,6 @@ extern "C" {
         c_expand_sk(e_bar, V_tr, seed_sk);
     }
 
-
-
 #ifdef __cplusplus
 }
 #endif
