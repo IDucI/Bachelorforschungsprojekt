@@ -19,7 +19,10 @@ Currently exposed subroutine:
 - `fp_vec_by_fp_matrix`
 - `fz_vec_sub_n`
 - `expand_sk`
-
+- `csprng_fz_inf_w`
+- `fz_inf_w_by_fz_matrix`
+- `fz_dz_norm_n`
+- `fz_vec_sub_m` Ist useless wahrscheinlich wegen RSDP(G)
 
 ### Important files
 

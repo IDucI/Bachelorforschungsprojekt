@@ -7,7 +7,7 @@ void expand_sk(uint8_t e_bar[N], uint8_t V_tr[K][N-K], const uint8_t seed_sk[KEY
 
 // Initialize the function pointers (Outside of guards)
 // Change from extern to static, because of name conflict problem with the original function to fix the problem, use static, 
-// because static it encapsulates the internal pointers so that the original crypto code and the Python bridge don't disturb each other during compilation!
+// because it encapsulates the internal pointers so that the original crypto code and the Python bridge don't disturb each other during compilation!
 // Note: The exact Datantypes (f.e. FP_ELEM, FZ_ELEM) has to match towards the original function.
 
 static void (*c_convert_restr_vec_to_fp)(FP_ELEM res[N], const FZ_ELEM in[N]) = convert_restr_vec_to_fp;
@@ -47,6 +47,8 @@ extern "C" {
     void cross_expand_sk(FZ_ELEM e_bar[N], FP_ELEM V_tr[K][N-K], const uint8_t seed_sk[KEYPAIR_SEED_LENGTH_BYTES]) {
         c_expand_sk(e_bar, V_tr, seed_sk);
     }
+
+
 
 #ifdef __cplusplus
 }
