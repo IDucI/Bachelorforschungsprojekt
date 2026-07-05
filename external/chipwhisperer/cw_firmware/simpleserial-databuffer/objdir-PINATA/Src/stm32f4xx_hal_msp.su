@@ -1,3 +1,0 @@
-../hal/chipwhisperer-fw-extra/pinata/Src/stm32f4xx_hal_msp.c:64:6:HAL_MspInit	8	static
-../hal/chipwhisperer-fw-extra/pinata/Src/stm32f4xx_hal_msp.c:87:6:HAL_UART_MspInit	40	static
-../hal/chipwhisperer-fw-extra/pinata/Src/stm32f4xx_hal_msp.c:124:6:HAL_UART_MspDeInit	0	static
