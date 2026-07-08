@@ -14,15 +14,25 @@ Currently supported variant:
 Currently exposed subroutine:
 
 - `cross_convert_restr_vec_to_fp`
-- `restr_vec_by_fp_matrix` 
-- `fp_vec_by_fp_vec_pointwise`
-- `fp_vec_by_fp_matrix`
-- `fz_vec_sub_n`
-- `expand_sk`
-- `csprng_fz_inf_w`
-- `fz_inf_w_by_fz_matrix`
-- `fz_dz_norm_n`
-- `fz_vec_sub_m` Ist useless wahrscheinlich wegen RSDP(G)
+- `cross_restr_vec_by_fp_matrix` 
+- `cross_fp_vec_by_fp_vec_pointwise`
+- `cross_fp_vec_by_fp_matrix`
+- `cross_fz_vec_sub_n`
+- `cross_expand_sk`
+- `cross_fz_dz_norm_n`
+- `cross_fp_vec_by_restr_vec_scaled`
+- `cross_expand_digest_to_fixed_weight`
+- `cross_pack_fp_syn`
+- `cross_pack_fz_vec`
+- `cross_unpack_fz_vec`
+- `cross_expand_pk` (with 2 parameters)
+
+In RSDP-(G):
+
+- `cross_fz_inf_w_by_fz_matrix`
+- `fz_vec_sub_m`
+- `fz_dz_norm_m`
+- `cross_expand_pk` (with 3 parameters)
 
 
 ### Important files

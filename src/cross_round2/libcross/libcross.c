@@ -1,9 +1,17 @@
 #include "libcross.h"
 #include "fp_arith.h"
 #include "restr_arith.h"
+#include "pack_unpack.h"
 
 // Manual declaration of expand_sk so that it is known due to compile problem if we make the shared lib again with make clean && make
 void expand_sk(uint8_t e_bar[N], uint8_t V_tr[K][N-K], const uint8_t seed_sk[KEYPAIR_SEED_LENGTH_BYTES]);
+
+#if defined(RSDPG)
+    void expand_pk(FP_ELEM V_tr[K][N-K], FZ_ELEM W_mat[M][N-M], const uint8_t seed_pk[KEYPAIR_SEED_LENGTH_BYTES]);
+#else
+    void expand_pk(FP_ELEM V_tr[K][N-K], const uint8_t seed_pk[KEYPAIR_SEED_LENGTH_BYTES]);
+#endif
+
 
 // Initialize the function pointers (Outside of guards)
 // Change from extern to static, because of name conflict problem with the original function to fix the problem, use static, 
@@ -11,11 +19,25 @@ void expand_sk(uint8_t e_bar[N], uint8_t V_tr[K][N-K], const uint8_t seed_sk[KEY
 // Note: The exact Datantypes (f.e. FP_ELEM, FZ_ELEM) has to match towards the original function.
 
 static void (*c_convert_restr_vec_to_fp)(FP_ELEM res[N], const FZ_ELEM in[N]) = convert_restr_vec_to_fp;
-static void (*c_restr_vec_by_fp_matrix)(uint8_t *, const uint8_t *, const uint8_t (*)[N-K]) = (void (*)(uint8_t *, const uint8_t *, const uint8_t (*)[N-K]))restr_vec_by_fp_matrix;
+static void (*c_restr_vec_by_fp_matrix)(FP_ELEM res[N-K], FZ_ELEM e[N], FP_ELEM V_tr[K][N-K]) = restr_vec_by_fp_matrix;
 static void (*c_fp_vec_by_fp_vec_pointwise)(FP_ELEM res[N], const FP_ELEM in1[N], const FP_ELEM in2[N]) = fp_vec_by_fp_vec_pointwise;
 static void (*c_fp_vec_by_fp_matrix)(FP_ELEM res[N-K], FP_ELEM e[N], FP_ELEM V_tr[K][N-K]) = fp_vec_by_fp_matrix;
 static void (*c_fz_vec_sub_n)(FZ_ELEM res[N], const FZ_ELEM a[N], const FZ_ELEM b[N]) = fz_vec_sub_n;
-static void (*c_expand_sk)(FZ_ELEM e_bar[N], FP_ELEM V_tr[K][N-K], const uint8_t seed_sk[KEYPAIR_SEED_LENGTH_BYTES]) = expand_sk;
+static void (*c_expand_sk)(FZ_ELEM e_bar[N], FP_ELEM V_tr[K][N-K],const uint8_t seed_sk[KEYPAIR_SEED_LENGTH_BYTES]) = expand_sk;
+static void (*c_fp_vec_by_restr_vec_scaled)(FP_ELEM res[N], const FZ_ELEM e[N], const FP_ELEM chall_1,const FP_ELEM u_prime[N]) = fp_vec_by_restr_vec_scaled;
+static void (*c_expand_digest_to_fixed_weight)(uint8_t fixed_weight_string[T], const uint8_t digest_chall_2[HASH_DIGEST_LENGTH]) = expand_digest_to_fixed_weight;
+static void (*c_pack_fp_syn)(uint8_t out[DENSELY_PACKED_FP_SYN_SIZE], const FP_ELEM in[N-K]) = pack_fp_syn;
+static void (*c_pack_fz_vec)(uint8_t out[DENSELY_PACKED_FZ_VEC_SIZE], const FZ_ELEM in[N]) = pack_fz_vec;
+static uint8_t (*c_unpack_fz_vec)(FZ_ELEM out[N], const uint8_t in[DENSELY_PACKED_FZ_VEC_SIZE]) = unpack_fz_vec;
+
+#if defined(RSDPG)
+    static void (*c_fz_inf_w_by_fz_matrix)(FZ_ELEM res[N], const FZ_ELEM e[M], FZ_ELEM W_mat[M][N-M]) = fz_inf_w_by_fz_matrix;
+    static void (*c_fz_vec_sub_m)(FZ_ELEM res[M], const FZ_ELEM a[M], const FZ_ELEM b[M]) = fz_vec_sub_m; 
+    static void (*c_fz_dz_norm_m)(FZ_ELEM v[M]) = fz_dz_norm_m; 
+    static void (*c_expand_pk)(FP_ELEM V_tr[K][N-K], FZ_ELEM W_mat[M][N-M], const uint8_t seed_pk[KEYPAIR_SEED_LENGTH_BYTES]) = expand_pk;
+#else
+    static void (*c_expand_pk)(FP_ELEM V_tr[K][N-K], const uint8_t seed_pk[KEYPAIR_SEED_LENGTH_BYTES]) = expand_pk;
+#endif
 
 // Only the wrapper functions that should be visible externally go into the guard
 #ifdef __cplusplus
@@ -28,8 +50,7 @@ extern "C" {
     }
 
     void cross_restr_vec_by_fp_matrix(FP_ELEM res[N-K], const FZ_ELEM v[N], const FP_ELEM M[K][N-K]) {
-    	// Explicit cast on the call to prevent warnings
-    	c_restr_vec_by_fp_matrix((uint8_t*)res, (const uint8_t*)v, (const uint8_t (*)[N-K])M);
+    	c_restr_vec_by_fp_matrix(res, (FZ_ELEM*)v, (FP_ELEM (*)[N-K])M);
 	}
 
     void cross_fp_vec_by_fp_vec_pointwise(FP_ELEM res[N], const FP_ELEM in1[N], const FP_ELEM in2[N]) { 
@@ -47,6 +68,47 @@ extern "C" {
     void cross_expand_sk(FZ_ELEM e_bar[N], FP_ELEM V_tr[K][N-K], const uint8_t seed_sk[KEYPAIR_SEED_LENGTH_BYTES]) {
         c_expand_sk(e_bar, V_tr, seed_sk);
     }
+
+    #if defined(RSDPG)
+        void cross_fz_vec_sub_m(FZ_ELEM res[M], const FZ_ELEM a[M], const FZ_ELEM b[M]) {
+            c_fz_vec_sub_m(res, a, b);
+        }
+        void cross_fz_inf_w_by_fz_matrix(FZ_ELEM res[N], const FZ_ELEM e[M], FZ_ELEM W_mat[M][N-M]) {
+            c_fz_inf_w_by_fz_matrix(res, e, W_mat); 
+        }
+        void cross_fz_dz_norm_n(FZ_ELEM v[N]) {
+            c_fz_dz_norm_n(v);
+        }
+        void cross_expand_pk(FP_ELEM V_tr[K][N-K], FZ_ELEM W_mat[M][N-M], const uint8_t seed_pk[KEYPAIR_SEED_LENGTH_BYTES]) {
+            c_expand_pk(V_tr, W_mat, seed_pk);
+        }
+    #else
+        void cross_expand_pk(FP_ELEM V_tr[K][N-K], const uint8_t seed_pk[KEYPAIR_SEED_LENGTH_BYTES]) {
+            c_expand_pk(V_tr, seed_pk);
+        }
+    #endif
+
+
+    void cross_fp_vec_by_restr_vec_scaled(FP_ELEM res[N], const FZ_ELEM e[N], const FP_ELEM chall_1, const FP_ELEM u_prime[N]) {
+        c_fp_vec_by_restr_vec_scaled(res, e, chall_1, u_prime);
+    }
+
+    void cross_expand_digest_to_fixed_weight(uint8_t fixed_weight_string[T], const uint8_t digest_chall_2[HASH_DIGEST_LENGTH]) {
+        c_expand_digest_to_fixed_weight(fixed_weight_string, digest_chall_2);
+    }
+
+    void cross_pack_fp_syn(uint8_t out[DENSELY_PACKED_FP_SYN_SIZE], const FP_ELEM in[N-K]) {
+        c_pack_fp_syn(out, in);
+    }
+
+    void cross_pack_fz_vec(uint8_t out[DENSELY_PACKED_FZ_VEC_SIZE], const FZ_ELEM in[N]) {
+        c_pack_fz_vec(out, in);
+    }
+
+    uint8_t cross_unpack_fz_vec(FZ_ELEM out[N], const uint8_t in[DENSELY_PACKED_FZ_VEC_SIZE]) {
+        return c_unpack_fz_vec(out, in);
+    }
+    
 
 #ifdef __cplusplus
 }
