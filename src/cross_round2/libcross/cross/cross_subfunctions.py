@@ -41,7 +41,7 @@ class CrossSubfunctions:
         self.cross.c_cross.cross_fz_vec_sub_n.restype = None
 
         # Key generation and expansion (Key Generation)
-        self.cross.c_cross.cross_expand_sk.argtypes = [ctypes.POINTER(ctypes.c_uint8), ctypes.POINTER(ctypes.c_uint8), ctypes.POINTER(ctypes.c_uint8)  ]
+        self.cross.c_cross.cross_expand_sk.argtypes = [ctypes.POINTER(ctypes.c_uint8), ctypes.POINTER(ctypes.c_uint8), ctypes.POINTER(ctypes.c_uint8)]
         self.cross.c_cross.cross_expand_sk.restype = None
 
         # Protocol core validation & scaling
@@ -174,7 +174,7 @@ class CrossSubfunctions:
         self.cross.c_cross.cross_fz_vec_sub_n(c_diff_result, c_restr_vec_a, c_restr_vec_b)
         return list(c_diff_result)
 
-    def expand_sk(self, seed_sk: bytes) -> List [List[int], List[int]]:
+    def expand_sk(self, seed_sk: bytes) -> Tuple [List[int], List[int]]:
         """Expands the secret key seed into the error vector e_bar (N) and public matrix V_tr (K x N-K)."""
         # Security check for the seed length (usually 32 bytes at level 1)
         # Replace 'self.seed_length' with your variable or the fixed value (e.g., 32)
@@ -302,7 +302,7 @@ class CrossSubfunctions:
         c_matrix_W_mat = (c_uint8 * matrix_size)(*group_matrix_W_mat)
         
         self.cross.c_cross.cross_fz_inf_w_by_fz_matrix(c_extended_res, c_subgroup_input, c_matrix_W_mat)
-        return list(c_extended_res
+        return list(c_extended_res)
 
     def fz_vec_sub_m(self, subgroup_vec_a: List[int], subgroup_vec_b: List[int]) -> List[int]:
         """RSDP(G) only: Subtracts two subgroup vectors coordinate-wise over the space M."""
