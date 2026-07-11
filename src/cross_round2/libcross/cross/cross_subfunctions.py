@@ -42,6 +42,7 @@ class CrossSubfunctions:
 
         # Key generation and expansion (Key Generation)
         self.cross.c_cross.cross_expand_sk.argtypes = [ctypes.POINTER(ctypes.c_uint8), ctypes.POINTER(ctypes.c_uint8), ctypes.POINTER(ctypes.c_uint8)]
+        self.cross.c_cross.cross_expand_sk.argtypes = [ctypes.POINTER(ctypes.c_uint8), ctypes.POINTER(ctypes.c_uint8), ctypes.POINTER(ctypes.c_uint8)  ]
         self.cross.c_cross.cross_expand_sk.restype = None
 
         # Protocol core validation & scaling
