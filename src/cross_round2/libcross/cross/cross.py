@@ -9,7 +9,9 @@ from .cross_params import get_params
 
 
 def platform_release_string():
-    return '_'+(release().split('-')[0])
+    version = release().split("-")[0]
+    version = ".".join(version.split(".")[:3])
+    return f"_{version}.so"
 
 
 class Cross:

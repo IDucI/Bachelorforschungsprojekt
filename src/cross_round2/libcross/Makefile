@@ -47,7 +47,7 @@ LDFLAGS=-lcrypto
 # LIBNAMES := $(filter-out $(EXCLLIBS), $(LIBNAMES))
 
 # hardcoded for testing 
-LIBNAMES := cross_r_sdp_1_fast
+LIBNAMES := cross_rsdp_1_fast
 
 # fancy colorful terminal printing
 RED := \033[0;31m
