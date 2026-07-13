@@ -43,13 +43,13 @@ class CrossSubfunctions:
         self.cross.c_cross.cross_fz_vec_sub_n.restype = None
 
         # Key generation and expansion (Key Generation)
-        self.cross.c_cross.cross_expand_sk.argtypes = [ctypes.POINTER(ctypes.c_uint8), ctypes.POINTER(ctypes.c_uint8), ctypes.POINTER(ctypes.c_uint8)]
-        self.cross.c_cross.cross_expand_sk.argtypes = [ctypes.POINTER(ctypes.c_uint8), ctypes.POINTER(ctypes.c_uint8), ctypes.POINTER(ctypes.c_uint8)  ]
-        self.cross.c_cross.cross_expand_sk.restype = None
+        #self.cross.c_cross.cross_expand_sk.argtypes = [ctypes.POINTER(ctypes.c_uint8), ctypes.POINTER(ctypes.c_uint8), ctypes.POINTER(ctypes.c_uint8)]
+        #self.cross.c_cross.cross_expand_sk.argtypes = [ctypes.POINTER(ctypes.c_uint8), ctypes.POINTER(ctypes.c_uint8), ctypes.POINTER(ctypes.c_uint8)  ]
+        #self.cross.c_cross.cross_expand_sk.restype = None
 
         # Protocol core validation & scaling
-        self.cross.c_cross.cross_fz_dz_norm_n.argtypes = [POINTER(c_uint8)]
-        self.cross.c_cross.cross_fz_dz_norm_n.restype = None
+        #self.cross.c_cross.cross_fz_dz_norm_n.argtypes = [POINTER(c_uint8)]
+        #self.cross.c_cross.cross_fz_dz_norm_n.restype = None
 
         self.cross.c_cross.cross_fp_vec_by_restr_vec_scaled.argtypes = [POINTER(c_uint8), POINTER(c_uint8), c_uint8, POINTER(c_uint8)]
         self.cross.c_cross.cross_fp_vec_by_restr_vec_scaled.restype = None
