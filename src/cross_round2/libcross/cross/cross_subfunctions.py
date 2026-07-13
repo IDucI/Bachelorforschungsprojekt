@@ -1,21 +1,23 @@
 import ctypes
 from ctypes import c_uint8, POINTER
 from typing import List, Tuple
+from .cross_params import get_params
 
 
 class CrossSubfunctions:
     def __init__(self, cross) -> None:
-        # Cryptographic Dimensions & Parameters 
         self.cross = cross
-        self.n = 127 # Length of vectors in the full code space (N)
-        self.k = 64  # Dimension of the code (K); defines parity-check sizes
-        self.m = 44  # Dimension of the subgroup G (Only used in RSDPG variants)
-        self.t = 120 # Weight parameter T for fixed-weight string expansion
+        self.params = cross.params
 
-        # Densely packed byte sizes for the Pack/Unpack functions 
-        # These values correspond to the mathematically densely packed representations from CROSS
-        self.densely_packed_fp_syn_size = 51   # DENSELY_PACKED_FP_SYN_SIZE for RSDP(G) 1 Fast
-        self.densely_packed_fz_vec_size = 32   # DENSELY_PACKED_FZ_VEC_SIZE for RSDP(G) 1 Fast
+        self.n = self.params.n
+        self.k = self.params.k
+        self.m = self.params.m
+        self.t = self.params.t
+        self.w = self.params.w
+
+        self.keypair_seed_length_bytes = self.params.keypair_seed_length_bytes
+        self.densely_packed_fp_syn_size = self.params.densely_packed_fp_syn_size
+        self.densely_packed_fz_vec_size = self.params.densely_packed_fz_vec_size
 
     def load_dll(self):
         """Loads the native CROSS shared library (.so) via ctypes and declares the argument types (argtypes) and return types (restype) 
@@ -179,8 +181,8 @@ class CrossSubfunctions:
         """Expands the secret key seed into the error vector e_bar (N) and public matrix V_tr (K x N-K)."""
         # Security check for the seed length (usually 32 bytes at level 1)
         # Replace 'self.seed_length' with your variable or the fixed value (e.g., 32)
-        if len(seed_sk) != 32: 
-            raise ValueError(f"Expected seed length 32, got {len(seed_sk)}")
+        if len(seed_sk) != self.keypair_seed_length_bytes: 
+            raise ValueError(f"Expected seed length {self.keypair_seed_length_bytes}, got {len(seed_sk)}")
 
         # Dimension
         matrix_size = self.k * (self.n - self.k)
@@ -188,7 +190,7 @@ class CrossSubfunctions:
         # ctypes-Types defintion
         E_BAR_TYPE = ctypes.c_uint8 * self.n
         V_TR_TYPE = ctypes.c_uint8 * matrix_size
-        SEED_TYPE = ctypes.c_uint8 * 32
+        SEED_TYPE = ctypes.c_uint8 * self.keypair_seed_length_bytes
         
         c_error_vec_e_bar = E_BAR_TYPE()
         c_public_matrix_V_tr = V_TR_TYPE()
@@ -268,12 +270,12 @@ class CrossSubfunctions:
 
     def expand_pk(self, seed_pk: bytes) -> Tuple[List[int], List[int]]:
         """Expands the public key seed into the public matrix V_tr (K x N-K) and optional RSDPG group matrix W_mat."""
-        if len(seed_pk) != 32:
-            raise ValueError(f"Expected seed length 32, got {len(seed_pk)}")
+        if len(seed_pk) != self.keypair_seed_length_bytes:
+            raise ValueError(f"Expected seed length {self.keypair_seed_length_bytes}, got {len(seed_pk)}")
             
         v_tr_size = self.k * (self.n - self.k)
         c_public_matrix_V_tr = (c_uint8 * v_tr_size)()
-        c_seed_pk = (c_uint8 * 32)(*seed_pk)
+        c_seed_pk = (c_uint8 * self.keypair_seed_length_bytes)(*seed_pk)
         
         # Dynamic case distinction, whether we are in RSDP or RSDPG mode
         if hasattr(self.cross.c_cross, "cross_fz_inf_w_by_fz_matrix"):
