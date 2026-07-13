@@ -73,9 +73,9 @@ def normalize_optimization(optimization: str) -> str:
 
 
 def get_params(
-    algorithm: str = "RSDP", 
-    category: int = 1,
-    optimization: str = "fast",
+    algorithm: str, 
+    category: int,
+    optimization: str,
 ) -> CrossParams:
     algorithm = normalize_algorithm(algorithm)
     category = validate_category(category)
