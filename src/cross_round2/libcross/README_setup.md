@@ -30,8 +30,8 @@ Currently exposed subroutine:
 In RSDP-(G):
 
 - `cross_fz_inf_w_by_fz_matrix`
-- `fz_vec_sub_m`
-- `fz_dz_norm_m`
+- `cross_fz_vec_sub_m`
+- `cross_fz_dz_norm_m`
 - `cross_expand_pk` (with 3 parameters)
 
 
