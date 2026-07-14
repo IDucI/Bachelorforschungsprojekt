@@ -1,0 +1,144 @@
+# coming from outside makefile are these values:
+# ALG_VERSION
+# ALG_PATH
+# DEBUG
+# PLATFORM
+
+# CPPFLAGS
+# CXXFLAGS
+# DEBUG
+
+LIBNAME := lib$(ALG_VERSION)
+# ALG_DIR := $(ALG_PATH)$(ALG_VERSION)/
+ALG_DIR := $(ALG_PATH)Reference_Implementation/
+
+# use the default compilation programs, if not otherwise set somewhere prior
+SHELL?=/usr/bin/bash
+CC?=/usr/bin/gcc
+CXX?=/usr/bin/g++
+CFLAGS += -std=c11
+CPPFLAGS += -I $(ALG_DIR) -I $(ALG_DIR)include
+# The first incremental LESS target uses the toy parameters from parameters.h.
+# No CATEGORY/TARGET macro is defined for less_toy.
+ifeq ($(ALG_VERSION),less_toy)
+CPPFLAGS +=
+endif
+LDLIBS :=  
+HOSTNAME = $(shell hostname -s)
+
+# define a build output directory if not otherwise specified
+ifeq ($(BUILD_DIR),)
+	BUILD_DIR := ./build/
+endif
+
+# define a prefix directory if not otherwise specified
+ifeq ($(PREFIX),)
+	PREFIX := $(HOME).local
+endif
+
+# fancy colorful terminal printing
+RED := \033[0;31m
+GREEN := \033[1;32m
+CYAN := \033[0;36m
+NO_COLOR := \033[0m
+
+# files for compilation
+# EXCLUDES are the files to exclude from compilable SOURCES files.
+EXCLUDE :=
+# HEADERS all variant header files that need to be provided to the compiler for proper compilation.
+HEADERS := $(wildcard $(ALG_DIR)*.h) $(wildcard $(ALG_DIR)include/*.h) libless.h
+# SOURCES all variant source files that need to be included for compilation
+
+# Sources required for the first generator_monomial_mul milestone.
+SOURCES := \
+    $(ALG_DIR)function_linkage.c \
+    $(ALG_DIR)lib/codes.c \
+    $(ALG_DIR)lib/rng.c \
+    $(ALG_DIR)lib/fips202.c \
+    $(ALG_DIR)lib/keccakf1600.c
+
+# OBJS are the compiled objects for the source files that are to be compiled
+# make will compile any file that ends in .o implictly. You will therefore only find compilation
+# defintions for special cases. Everything else is compiled implicitly
+OBJS := ${patsubst %.o, %.$(HOSTNAME).o, ${patsubst %.c, %.o, ${patsubst %.cpp, %.o, $(SOURCES)}} $(LIBNAME).o}
+# because we are compile shared libraries: there are some options which work with a dynamic or a static library. Therefore we both have a
+# set of DYNAMIC and STATIC objects
+OBJSDYNAMIC := $(OBJS:.o=.dbg.o)
+OBJSSTATIC := $(OBJS:.o=.s.o)
+
+# default option to compile. e.g. the variant that we're working with
+# it requires the .so plain and static .a objects to be compiled
+target: $(BUILD_DIR) $(BUILD_DIR)$(LIBNAME)_$(PLATFORM).so $(BUILD_DIR)$(LIBNAME)_$(PLATFORM) $(BUILD_DIR)$(LIBNAME)_$(PLATFORM).a
+
+# here are the not implicit compilation rules for the object files.
+# .dbg.o for debugging build objects and .s.o for static objects
+%.$(HOSTNAME).dbg.o: %.cpp
+	$(CXX) $(CPPFLAGS) $(CFLAGS) $^ -fomit-frame-pointer -fPIC -c -o $@ -D ALG_VERSION=\"$(LIBNAME)\" $(LDFLAGS) $(LDLIBS)
+%.$(HOSTNAME).s.o: %.cpp
+	$(CXX) $(CPPFLAGS) $(CFLAGS) $^ -c -o $@ -D ALG_VERSION=\"$(LIBNAME)\" $(LDFLAGS) $(LDLIBS)
+
+%.$(HOSTNAME).dbg.o: %.c
+	$(CC) $(CPPFLAGS) $(CFLAGS) $^ -fomit-frame-pointer -fPIC -c -o $@ -D ALG_VERSION=\"$(LIBNAME)\" $(LDFLAGS) $(LDLIBS)
+%.$(HOSTNAME).s.o: %.c
+	$(CC) $(CPPFLAGS) $(CFLAGS) $^ -c -o $@ -D ALG_VERSION=\"$(LIBNAME)\" $(LDFLAGS) $(LDLIBS)
+$(LIBNAME).$(HOSTNAME).dbg.o: libless.c
+	$(CC) $(CPPFLAGS) $(CFLAGS) -fomit-frame-pointer -fPIC -c -o $@ -D ALG_VERSION=\"$(LIBNAME)\" $(LDFLAGS) $(LDLIBS) $^
+$(LIBNAME).$(HOSTNAME).s.o: libless.c
+	$(CC) $(CPPFLAGS) $(CFLAGS) -c -o $@ -D ALG_VERSION=\"$(LIBNAME)\" $(LDFLAGS) $(LDLIBS) $^
+
+# ensure the build directory exists
+$(BUILD_DIR):
+	mkdir -p $(BUILD_DIR)
+
+# the plain file is just the .so
+$(BUILD_DIR)$(LIBNAME)_$(PLATFORM): $(BUILD_DIR)$(LIBNAME)_$(PLATFORM).so
+	@cp $@.so $@
+
+# compile the shared library
+$(BUILD_DIR)$(LIBNAME)_$(PLATFORM).so: $(HEADERS) $(OBJSDYNAMIC)
+	$(CXX) $(CPPFLAGS) $(CFLAGS) -shared -o $@ -D ALG_VERSION=\"$(LIBNAME)\" $(OBJSDYNAMIC) $(LDFLAGS) $(LDLIBS)
+	
+# compile the static library
+$(BUILD_DIR)$(LIBNAME)_$(PLATFORM).a: $(OBJSSTATIC)
+	ar rc $@ $^
+
+# ensure that the PREFIX directory has a lib folder to install us in
+.PHONY: config
+config:
+	mkdir -p $(PREFIX)/lib/
+
+# define these four commands. they do what they say.
+.PHONY: install
+install: target
+	mkdir -p $(PREFIX)/lib/
+	-cp -f $(BUILD_DIR)$(LIBNAME)_$(PLATFORM) $(PREFIX)/lib/$(LIBNAME)_$(PLATFORM)
+	-cp -f $(BUILD_DIR)$(LIBNAME)_$(PLATFORM).so $(PREFIX)/lib/$(LIBNAME)_$(PLATFORM).so
+	-cp -f $(BUILD_DIR)$(LIBNAME)_$(PLATFORM).a $(PREFIX)/lib/$(LIBNAME)_$(PLATFORM).a
+	mkdir -p $(PREFIX)/include/$(ALG_VERSION)
+	-cp $(ALG_DIR)include/*.h $(PREFIX)/include/$(ALG_VERSION)/
+	-cp libless.h $(PREFIX)/include/$(ALG_VERSION)/
+	@echo -e 'installing $(CYAN)$(LIBNAME)$(NO_COLOR)'
+
+.PHONY: installed
+installed: 
+	@$(if $(wildcard $(PREFIX)/lib/$(LIBNAME)_$(PLATFORM)), @echo  "$(GREEN)$(LIBNAME) is installed$(NO_COLOR)", @echo "$(RED)$(LIBNAME) is not installed$(NO_COLOR)")
+	@$(if $(wildcard $(PREFIX)/lib/$(LIBNAME)_$(PLATFORM).so), @echo "$(GREEN)$(LIBNAME).so is installed$(NO_COLOR)", @echo "$(RED)$(LIBNAME).so is not installed$(NO_COLOR)")
+	@$(if $(wildcard $(PREFIX)/lib/$(LIBNAME)_$(PLATFORM).a), @echo "$(GREEN)$(LIBNAME).a is installed$(NO_COLOR)", @echo "$(RED)$(LIBNAME).a is not installed$(NO_COLOR)")
+	@$(if $(wildcard $(PREFIX)/include/$(ALG_VERSION)), @echo "$(GREEN)$(ALG_VERSION) headers are installed$(NO_COLOR)", @echo "$(RED)$(ALG_VERSION) headers are not installed$(NO_COLOR)")
+
+.PHONY: uninstall
+uninstall:
+	-rm -f $(PREFIX)/lib/$(LIBNAME)_$(PLATFORM)
+	-rm -f $(PREFIX)/lib/$(LIBNAME)_$(PLATFORM).so
+	-rm -f $(PREFIX)/lib/$(LIBNAME)_$(PLATFORM).a
+	-rm -rf $(PREFIX)/include/$(ALG_VERSION)
+	
+	@echo -e 'uninstalling $(CYAN)$(LIBNAME)$(NO_COLOR)'
+
+clean:
+	-rm -f $(BUILD_DIR)$(LIBNAME)
+	-rm -f $(BUILD_DIR)$(LIBNAME).so
+	-rm -f $(BUILD_DIR)$(LIBNAME).a
+# -rm -f $(ALG_DIR)*.o
+	-rm -f $(OBJSDYNAMIC) $(OBJSSTATIC)
+	-rm -f *.o
