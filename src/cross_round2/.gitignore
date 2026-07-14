@@ -65,3 +65,7 @@ objdir-*/
 *.lss
 *.map
 *.sym
+
+# IDE/local editor files
+.vs/
+.vscode/
