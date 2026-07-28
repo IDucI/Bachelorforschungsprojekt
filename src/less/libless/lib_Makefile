@@ -53,6 +53,7 @@ HEADERS := $(wildcard $(ALG_DIR)*.h) $(wildcard $(ALG_DIR)include/*.h) libless.h
 SOURCES := \
     $(ALG_DIR)function_linkage.c \
     $(ALG_DIR)lib/codes.c \
+    $(ALG_DIR)lib/monomial.c \
     $(ALG_DIR)lib/rng.c \
     $(ALG_DIR)lib/fips202.c \
     $(ALG_DIR)lib/keccakf1600.c
