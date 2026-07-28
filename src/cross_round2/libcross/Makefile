@@ -85,7 +85,7 @@ export CXXFLAGS
 # run clang format and autopep on your sourcecode. Please do this, it makes life so much easier
 .PHONY: format
 format:
-	clang-format -i libcross.c libcross.h $(wildcard variants/*/function_linkage.c)
+	clang-format -i libcross.c libcross.h
 	autopep8 -i $(wildcard cross/*.py)
 
 # configure the installation before doing make install
