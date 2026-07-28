@@ -36,7 +36,7 @@ uint8_t subroutines(uint8_t cmd, uint8_t scmd, uint8_t len, uint8_t* x) {
         FZ_ELEM* vec_b = all_elements + M;
         FZ_ELEM result[M];
         fz_vec_sub_m(result, vec_a, vec_b);
-        simpleserial_put('r', M * sizeof(FP_ELEM), (uint8_t*)result);
+        simpleserial_put('r', M * sizeof(FZ_ELEM), (uint8_t*)result);
         led2_off();
         return SS_ERR_OK;
     }
