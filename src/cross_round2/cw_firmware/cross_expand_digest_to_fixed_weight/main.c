@@ -23,17 +23,17 @@
 #include "ledz.h"
 
 #include "fp_arith.h"
-static uint8_t databuffer[N * sizeof(FZ_ELEM)] allocation;
+static uint8_t databuffer[HASH_DIGEST_LENGTH] allocation;
 
-#define SUBROUTINE_CONVERT 0x03
+#define SUBROUTINE_EXPAND_DIGEST 0x14
 
 uint8_t subroutines(uint8_t cmd, uint8_t scmd, uint8_t len, uint8_t* x) {
     switch (scmd) {
-    case SUBROUTINE_CONVERT: {
+    case SUBROUTINE_EXPAND_DIGEST: {
         led2_on();
-        FP_ELEM result[N];
-        convert_restr_vec_to_fp(result, (FZ_ELEM*)(databuffer));
-        simpleserial_put('r', N * sizeof(FP_ELEM), (uint8_t*)result);
+        uint8_t result[T];
+        expand_digest_to_fixed_weight(result, databuffer);
+        simpleserial_put('r', T * sizeof(uint8_t), result);
         led2_off();
         return SS_ERR_OK;
     }
