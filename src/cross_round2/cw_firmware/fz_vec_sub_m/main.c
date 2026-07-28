@@ -23,20 +23,17 @@
 #include "ledz.h"
 
 #include "fp_arith.h"
-static uint8_t databuffer[2*N * sizeof(FZ_ELEM)] allocation;
+static uint8_t databuffer[N * sizeof(FZ_ELEM)] allocation;
 
-#define SUBROUTINE_SUB_M 0x11
+#define SUBROUTINE_CONVERT 0x03
 
 uint8_t subroutines(uint8_t cmd, uint8_t scmd, uint8_t len, uint8_t* x) {
     switch (scmd) {
-    case SUBROUTINE_SUB_M: {
+    case SUBROUTINE_CONVERT: {
         led2_on();
-        FZ_ELEM* all_elements = (FZ_ELEM*)databuffer;
-        FZ_ELEM* vec_a = all_elements;
-        FZ_ELEM* vec_b = all_elements + M;
-        FZ_ELEM result[M];
-        fz_vec_sub_m(result, vec_a, vec_b);
-        simpleserial_put('r', M * sizeof(FP_ELEM), (uint8_t*)result);
+        FP_ELEM result[N];
+        convert_restr_vec_to_fp(result, (FZ_ELEM*)(databuffer));
+        simpleserial_put('r', N * sizeof(FP_ELEM), (uint8_t*)result);
         led2_off();
         return SS_ERR_OK;
     }
