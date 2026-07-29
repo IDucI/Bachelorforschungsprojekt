@@ -15,7 +15,7 @@ Currently exposed subroutine:
 
 - `cross_convert_restr_vec_to_fp`
 - `cross_restr_vec_by_fp_matrix` 
-- `cross_fp_vec_by_fp_vec_pointwise`
+- `cross_fp_vec_by_fp_vec_pointwise` 
 - `cross_fp_vec_by_fp_matrix`
 - `cross_fz_vec_sub_n`
 - `cross_expand_sk`

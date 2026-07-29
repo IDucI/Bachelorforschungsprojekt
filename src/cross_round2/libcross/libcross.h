@@ -36,7 +36,7 @@ extern "C" {
 
     #if defined(RSDPG)
         void cross_fz_inf_w_by_fz_matrix(FZ_ELEM res[N], const FZ_ELEM e[M], FZ_ELEM W_mat[M][N-M]);
-        void cross_fz_dz_norm_n(FZ_ELEM v[N]);
+        void cross_fz_dz_norm_m(FZ_ELEM v[M]);
         void cross_fz_vec_sub_m(FZ_ELEM res[M], const FZ_ELEM a[M], const FZ_ELEM b[M]);
         //void cross_expand_pk(FP_ELEM V_tr[K][N-K], FZ_ELEM W_mat[M][N-M], const uint8_t seed_pk[KEYPAIR_SEED_LENGTH_BYTES]);
     #else
