@@ -8,7 +8,7 @@ Project Location:
 
 The firmware project is located at:
 
-cross_round2/cw_firmware/cross_convert_restr_vec_to_fp
+cross_round2/cw_firmware/cross_subroutines_rsdp
 
 
 
@@ -47,23 +47,24 @@ Building the Firmware:
 
 Build the firmware from WSL or another Linux-like environment:
 
-cd cross_round2/cw_firmware/cross_convert_restr_vec_to_fp
+cd cross_round2/cw_firmware/cross_subroutines_rsdp
 make clean
+make MCU_CLK=INT or faster with make allquick MCU_CLK=INT
 ./compile
 
 The generated firmware image is:
 
-cross_convert_restr_vec_to_fp-PINATA.hex
+cross_subroutines_rsdp-PINATA.hex
 
 
 
-Flashing and Verification:
+Flashing and Verification: 
 
 The firmware can be flashed and tested from Windows PowerShell using Python 3.12.
 
 Run the verification script from the firmware project folder:
 
-cd cross_round2\cw_firmware\cross_convert_restr_vec_to_fp
+cd cross_round2\cw_firmware\cross_subroutines_rsdp
 py -3.12 verify_pinata_external_clock.py
 
 The script configures the ChipWhisperer Nano clock output, flashes the firmware, starts the target, and performs a SimpleSerial readback test.
@@ -81,18 +82,6 @@ firmware starts correctly
 UART timing is correct
 SimpleSerial communication works
 
-
-
-Adding a New CROSS Subroutine:
-
-New CROSS subroutine can be added by copying an existing firmware project folder, for example:
-
-cross_round2/cw_firmware/cross_convert_restr_vec_to_fp
-
-Rename the copied folder and adapt the project Makefile if necessary, especially the TARGET name and the included source files.
-
-The main firmware logic is implemented in main.c. For a new CROSS subroutine, include the required CROSS headers and set up the required input/output buffers there. The actual command interface is handled through SimpleSerial commands.
-SimpleSerial v2.1 is used for communication between the ChipWhisperer host script and the Pinata firmware.
 
 In the current firmware structure, the commands are used as follows:
 

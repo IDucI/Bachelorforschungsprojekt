@@ -5,7 +5,7 @@ import chipwhisperer as cw
 
 
 HERE = Path(__file__).resolve().parent
-HEX_BINARY = str(HERE / "cross_fp_vec_by_restr_vec_scaled-PINATA.hex")
+HEX_BINARY = str(HERE / "cross_subroutines_rsdp-PINATA.hex")
 BAUDRATE = 230400
 
 

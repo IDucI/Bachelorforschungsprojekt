@@ -27,14 +27,26 @@ SS_VER::=SS_VER_2_1
 
 # Target file name (without extension).
 # This is the name of the compiled .hex file.
-TARGET = cross_fp_vec_by_fp_vec_pointwise
+TARGET = cross_subroutines_rsdp
 
-# List C source files here.
-# Header files (.h) are automatically pulled in.
-SRC += main.c ledz.c
-CFLAGS += -I../../libcross/variants/Reference_Implementation/include
+# Local C source files 
+SRC += main.c ledz.c 
+
+# External CROSS source files (linked dynamically via VPATH search path)
+VPATH += ../../libcross/variants/Reference_Implementation/lib
+SRC += pack_unpack.c
+SRC += csprng_hash.c
+SRC += fips202.c
+SRC += keccakf1600.c
+
+# Include directories so headers (e.g., pack.h, csprng_hash.h) can be found
+EXTRAINCDIRS += ../../libcross
+EXTRAINCDIRS += ../../libcross/variants/Reference_Implementation/include
+
+# Target compilation flags
 CFLAGS += -DRSDP -DCATEGORY_1 -DSPEED
 CFLAGS += -UHSE_VALUE -DHSE_VALUE=15000000U
+
 # -----------------------------------------------------------------------------
 
 # ifeq ($(CRYPTO_OPTIONS),)
