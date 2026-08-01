@@ -10,9 +10,10 @@
 extern "C" {
 #endif
 
+
     void cross_convert_restr_vec_to_fp(FP_ELEM res[N], const FZ_ELEM in[N]);
 
-    void cross_restr_vec_by_fp_matrix(FP_ELEM res[N-K], const FZ_ELEM v[N], const FP_ELEM M[K][N-K]);
+    void cross_restr_vec_by_fp_matrix(FP_ELEM res[N-K], const FZ_ELEM v[N], const FP_ELEM V_tr[K][N-K]);
 
     void cross_fp_vec_by_fp_vec_pointwise(FP_ELEM res[N], const FP_ELEM in1[N], const FP_ELEM in2[N]);
 

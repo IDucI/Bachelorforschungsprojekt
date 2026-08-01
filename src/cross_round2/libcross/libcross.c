@@ -57,8 +57,8 @@ extern "C" {
         c_convert_restr_vec_to_fp(res, in);
     }
 
-    void cross_restr_vec_by_fp_matrix(FP_ELEM res[N-K], const FZ_ELEM v[N], const FP_ELEM M[K][N-K]) {
-    	c_restr_vec_by_fp_matrix(res, (FZ_ELEM*)v, (FP_ELEM (*)[N-K])M);
+    void cross_restr_vec_by_fp_matrix(FP_ELEM res[N-K], const FZ_ELEM v[N], const FP_ELEM V_tr[K][N-K]) {
+    	c_restr_vec_by_fp_matrix(res, (FZ_ELEM*)v, (FP_ELEM (*)[N-K])V_tr);
 	}
 
     void cross_fp_vec_by_fp_vec_pointwise(FP_ELEM res[N], const FP_ELEM in1[N], const FP_ELEM in2[N]) { 

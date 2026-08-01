@@ -46,8 +46,26 @@ LDFLAGS=-lcrypto
 # LIBNAMES := $(LIBNAMES_PATHS:$(ALG_PATH)%/=%)
 # LIBNAMES := $(filter-out $(EXCLLIBS), $(LIBNAMES))
 
-# hardcoded for testing 
-LIBNAMES := cross_rsdp_1_fast
+# all 18 CROSS parameter variants 
+LIBNAMES ?= \
+	cross_rsdp_1_fast \
+	cross_rsdp_1_balanced \
+	cross_rsdp_1_small \
+	cross_rsdp_3_fast \
+	cross_rsdp_3_balanced \
+	cross_rsdp_3_small \
+	cross_rsdp_5_fast \
+	cross_rsdp_5_balanced \
+	cross_rsdp_5_small \
+	cross_rsdpg_1_fast \
+	cross_rsdpg_1_balanced \
+	cross_rsdpg_1_small \
+	cross_rsdpg_3_fast \
+	cross_rsdpg_3_balanced \
+	cross_rsdpg_3_small \
+	cross_rsdpg_5_fast \
+	cross_rsdpg_5_balanced \
+	cross_rsdpg_5_small \
 
 # fancy colorful terminal printing
 RED := \033[0;31m

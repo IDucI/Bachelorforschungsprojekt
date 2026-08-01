@@ -18,9 +18,32 @@ CC?=/usr/bin/gcc
 CXX?=/usr/bin/g++
 CFLAGS += -std=c11
 CPPFLAGS += -I $(ALG_DIR) -I $(ALG_DIR)include
-ifeq ($(ALG_VERSION),cross_rsdp_1_fast)
-CPPFLAGS += -DRSDP -DCATEGORY_1 -DSPEED
-endif
+
+# determine compiler flags from ALG_VERSION in the format cross_<algorithm>_<category>_<optimization> e.g. cross_rsdp_1_fast
+VARIANT_PARTS := $(subst _, ,$(ALG_VERSION))
+
+ALGORITHM    := $(word 2, $(VARIANT_PARTS))
+CATEGORY     := $(word 3, $(VARIANT_PARTS))
+OPTIMIZATION := $(word 4, $(VARIANT_PARTS))
+
+ALGORITHM_FLAG_rsdp  := -DRSDP
+ALGORITHM_FLAG_rsdpg := -DRSDPG
+
+CATEGORY_FLAG_1 := -DCATEGORY_1
+CATEGORY_FLAG_3 := -DCATEGORY_3
+CATEGORY_FLAG_5 := -DCATEGORY_5
+
+OPTIMIZATION_FLAG_fast     := -DSPEED
+OPTIMIZATION_FLAG_balanced := -DBALANCED
+OPTIMIZATION_FLAG_small    := -DSIG_SIZE
+
+VARIANT_CPPFLAGS := \
+	$(ALGORITHM_FLAG_$(ALGORITHM)) \
+	$(CATEGORY_FLAG_$(CATEGORY)) \
+	$(OPTIMIZATION_FLAG_$(OPTIMIZATION))
+
+CPPFLAGS += $(VARIANT_CPPFLAGS)
+
 LDLIBS = -lcrypto #-static-libasan 
 HOSTNAME = $(shell hostname -s)
 
