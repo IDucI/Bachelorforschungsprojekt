@@ -82,4 +82,62 @@ class Cross:
             self.logger.error(e)
             raise
 
+        sk_size = self.params.keypair_seed_length_bytes
+        pk_size = (self.params.keypair_seed_length_bytes + self.params.densely_packed_fp_syn_size)
+
+        self._sk_type = c_uint8 * sk_size
+        self._pk_type = c_uint8 * pk_size
+
+        self.sig_size = c_size_t.in_dll(
+            self.c_cross,
+            "cross_sigbytes"
+        ).value
+        
+        self._sig_type = c_uint8 * self.sig_size
+
+        self.c_cross.cross_keygen.argtypes = [
+            POINTER(c_uint8),
+            POINTER(c_uint8)
+        ]
+        self.c_cross.cross_keygen.restype = None
+
+        self.c_cross.cross_sign.argtypes = [
+            POINTER(c_uint8),
+            POINTER(c_uint8),
+            c_uint64,
+            POINTER(c_uint8)
+        ]
+        self.c_cross.cross_sign.restype = None
+        
+        self.c_cross.cross_verify.argtypes = [
+            POINTER(c_uint8),
+            POINTER(c_uint8),
+            c_uint64,
+            POINTER(c_uint8)
+        ]
+        self.c_cross.cross_verify.restype = c_int
+
         self.subfunctions.load_dll()
+
+    def keygen(self):
+        sk = self._sk_type()
+        pk = self._pk_type()
+        self.c_cross.cross_keygen(sk, pk)
+        return list(sk), list(pk)
+
+    def sign(self, secret_key, m):
+        sk = self._sk_type(*secret_key)
+        m = (c_uint8 * len(m))(*m)
+        mlen = len(m)
+        sig = self._sig_type()
+        self.c_cross.cross_sign(sk, m, mlen, sig)
+        return list(sig)
+
+    def verify(self, public_key, m, signature):
+        pk = self._pk_type(*public_key)
+        m = (c_uint8 * len(m))(*m)
+        mlen = len(m)
+        sig = self._sig_type(*signature)
+        return self.c_cross.cross_verify(pk, m, mlen, sig)
+
+        

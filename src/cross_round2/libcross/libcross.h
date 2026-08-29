@@ -2,6 +2,7 @@
 #define LIBCROSS_H
 
 #include <stdint.h>
+#include <stddef.h>
 #include "fp_arith.h"
 #include "restr_arith.h"
 #include "CROSS.h"
@@ -10,6 +11,31 @@
 extern "C" {
 #endif
 
+    /**
+    * SK: output secret key
+    * PK: output public key
+    */
+    void cross_keygen(uint8_t* SK, uint8_t* PK);
+
+    /**
+    * SK:      input secret key
+    * m:       input message
+    * mlen:    length of the message
+    * sig:     output signature
+    */
+    void cross_sign(const uint8_t* SK, const uint8_t* m, uint64_t mlen, uint8_t* sig);
+
+    /**
+    * PK:      input public key
+    * m:       input message
+    * mlen:    length of the message
+    * sig:     input signature
+    * returns: 1 if valid, 0 otherwise
+    */
+    int cross_verify(const uint8_t* PK, const uint8_t* m, uint64_t mlen, const uint8_t* sig);
+
+    // size of CROSS_sig_t, used by Python to allocate memory
+    extern const size_t cross_sigbytes;
 
     void cross_convert_restr_vec_to_fp(FP_ELEM res[N], const FZ_ELEM in[N]);
 
