@@ -26,6 +26,12 @@ ALGORITHM    := $(word 2, $(VARIANT_PARTS))
 CATEGORY     := $(word 3, $(VARIANT_PARTS))
 OPTIMIZATION := $(word 4, $(VARIANT_PARTS))
 
+OBJ_DIR := variants/$(ALG_VERSION)/
+
+$(info ALG_VERSION = $(ALG_VERSION))
+$(info ALG_DIR     = $(ALG_DIR))
+$(info OBJ_DIR     = $(OBJ_DIR))
+
 ALGORITHM_FLAG_rsdp  := -DRSDP
 ALGORITHM_FLAG_rsdpg := -DRSDPG
 
@@ -73,7 +79,7 @@ SOURCES := $(filter-out $(EXCLUDE), $(wildcard $(ALG_DIR)*.c) $(wildcard $(ALG_D
 # OBJS are the compiled objects for the source files that are to be compiled
 # make will compile any file that ends in .o implictly. You will therefore only find compilation
 # defintions for special cases. Everything else is compiled implicitly
-OBJS := ${patsubst %.o, %.$(HOSTNAME).o, ${patsubst %.c, %.o, ${patsubst %.cpp, %.o, $(SOURCES)}} $(LIBNAME).o}
+OBJS := $(patsubst $(ALG_DIR)%,$(OBJ_DIR)%,${patsubst %.o, %.$(HOSTNAME).o, ${patsubst %.c, %.o, ${patsubst %.cpp, %.o, $(SOURCES)}} $(LIBNAME).o})
 # because we are compile shared libraries: there are some options which work with a dynamic or a static library. Therefore we both have a
 # set of DYNAMIC and STATIC objects
 OBJSDYNAMIC := $(OBJS:.o=.dbg.o)
@@ -85,14 +91,18 @@ target: $(BUILD_DIR) $(BUILD_DIR)$(LIBNAME)_$(PLATFORM).so $(BUILD_DIR)$(LIBNAME
 
 # here are the not implicit compilation rules for the object files.
 # .dbg.o for debugging build objects and .s.o for static objects
-%.$(HOSTNAME).dbg.o: %.cpp
+$(OBJ_DIR)%.$(HOSTNAME).dbg.o: $(ALG_DIR)%.cpp
+	@mkdir -p $(dir $@)
 	$(CXX) $(CPPFLAGS) $(CFLAGS) $^ -fomit-frame-pointer -fPIC -c -o $@ -D ALG_VERSION=\"$(LIBNAME)\" $(LDFLAGS) $(LDLIBS)
-%.$(HOSTNAME).s.o: %.cpp
+$(OBJ_DIR)%.$(HOSTNAME).s.o: $(ALG_DIR)%.cpp
+	@mkdir -p $(dir $@)
 	$(CXX) $(CPPFLAGS) $(CFLAGS) $^ -c -o $@ -D ALG_VERSION=\"$(LIBNAME)\" $(LDFLAGS) $(LDLIBS)
 
-%.$(HOSTNAME).dbg.o: %.c
+$(OBJ_DIR)%.$(HOSTNAME).dbg.o: $(ALG_DIR)%.c
+	@mkdir -p $(dir $@)
 	$(CC) $(CPPFLAGS) $(CFLAGS) $^ -fomit-frame-pointer -fPIC -c -o $@ -D ALG_VERSION=\"$(LIBNAME)\" $(LDFLAGS) $(LDLIBS)
-%.$(HOSTNAME).s.o: %.c
+$(OBJ_DIR)%.$(HOSTNAME).s.o: $(ALG_DIR)%.c
+	@mkdir -p $(dir $@)
 	$(CC) $(CPPFLAGS) $(CFLAGS) $^ -c -o $@ -D ALG_VERSION=\"$(LIBNAME)\" $(LDFLAGS) $(LDLIBS)
 $(LIBNAME).$(HOSTNAME).dbg.o: libcross.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) -fomit-frame-pointer -fPIC -c -o $@ -D ALG_VERSION=\"$(LIBNAME)\" $(LDFLAGS) $(LDLIBS) $^

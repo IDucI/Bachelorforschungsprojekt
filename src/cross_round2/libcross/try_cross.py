@@ -3,15 +3,17 @@ from cross import Cross
 
 c = Cross(
     path="build",
-    algorithm="RSDPG",
-    category=3,
-    optimization="fast",
+    algorithm="RSDP",
+    category=1,
+    optimization="small",
 )
 
-inp = [i % c.params.z for i in range(c.params.n)]
-out = c.subfunctions.convert_restr_vec_to_fp(inp)
+#inp = [i % c.params.z for i in range(c.params.n)]
+#out = c.subfunctions.convert_restr_vec_to_fp(inp)
 
-print(out[:16])
+#print(out[:16])
+
+print("SIG size:", c.sig_size)
 
 sk, pk = c.keygen()
 
