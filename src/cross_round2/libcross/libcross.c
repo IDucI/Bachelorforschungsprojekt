@@ -8,11 +8,11 @@
 // Manual declaration of expand_sk so that it is known due to compile problem if we make the shared lib again with make clean && make
 // ---------------------------------------------------------------------------------------------------------------------------------------
 
-void expand_sk(uint8_t e_bar[N], uint8_t V_tr[K][N-K], const uint8_t seed_sk[KEYPAIR_SEED_LENGTH_BYTES]);
-
 #if defined(RSDPG)
+    void expand_sk(FZ_ELEM e_bar[N], FZ_ELEM e_G_bar[M], FP_ELEM V_tr[K][N - K], FZ_ELEM W_mat[M][N - M], const uint8_t seed_sk[KEYPAIR_SEED_LENGTH_BYTES]);
     void expand_pk(FP_ELEM V_tr[K][N-K], FZ_ELEM W_mat[M][N-M], const uint8_t seed_pk[KEYPAIR_SEED_LENGTH_BYTES]);
 #else
+    void expand_sk(FZ_ELEM e_bar[N], FP_ELEM V_tr[K][N - K], const uint8_t seed_sk[KEYPAIR_SEED_LENGTH_BYTES]);
     void expand_pk(FP_ELEM V_tr[K][N-K], const uint8_t seed_pk[KEYPAIR_SEED_LENGTH_BYTES]);
 #endif
 
@@ -29,7 +29,6 @@ static void (*c_restr_vec_by_fp_matrix)(FP_ELEM res[N-K], FZ_ELEM e[N], FP_ELEM 
 static void (*c_fp_vec_by_fp_vec_pointwise)(FP_ELEM res[N], const FP_ELEM in1[N], const FP_ELEM in2[N]) = fp_vec_by_fp_vec_pointwise;
 static void (*c_fp_vec_by_fp_matrix)(FP_ELEM res[N-K], FP_ELEM e[N], FP_ELEM V_tr[K][N-K]) = fp_vec_by_fp_matrix;
 static void (*c_fz_vec_sub_n)(FZ_ELEM res[N], const FZ_ELEM a[N], const FZ_ELEM b[N]) = fz_vec_sub_n;
-static void (*c_expand_sk)(FZ_ELEM e_bar[N], FP_ELEM V_tr[K][N-K],const uint8_t seed_sk[KEYPAIR_SEED_LENGTH_BYTES]) = expand_sk;
 static void (*c_fp_vec_by_restr_vec_scaled)(FP_ELEM res[N], const FZ_ELEM e[N], const FP_ELEM chall_1,const FP_ELEM u_prime[N]) = fp_vec_by_restr_vec_scaled;
 static void (*c_expand_digest_to_fixed_weight)(uint8_t fixed_weight_string[T], const uint8_t digest_chall_2[HASH_DIGEST_LENGTH]) = expand_digest_to_fixed_weight;
 static void (*c_pack_fp_syn)(uint8_t out[DENSELY_PACKED_FP_SYN_SIZE], const FP_ELEM in[N-K]) = pack_fp_syn;
@@ -41,8 +40,10 @@ static void (*c_fz_dz_norm_n)(FZ_ELEM v[N]) = fz_dz_norm_n;
     static void (*c_fz_inf_w_by_fz_matrix)(FZ_ELEM res[N], const FZ_ELEM e[M], FZ_ELEM W_mat[M][N-M]) = fz_inf_w_by_fz_matrix;
     static void (*c_fz_vec_sub_m)(FZ_ELEM res[M], const FZ_ELEM a[M], const FZ_ELEM b[M]) = fz_vec_sub_m; 
     static void (*c_fz_dz_norm_m)(FZ_ELEM v[M]) = fz_dz_norm_m; 
+    static void (*c_expand_sk)(FZ_ELEM e_bar[N], FZ_ELEM e_G_bar[M], FP_ELEM V_tr[K][N - K], FZ_ELEM W_mat[M][N - M], const uint8_t seed_sk[KEYPAIR_SEED_LENGTH_BYTES]) = expand_sk;
     static void (*c_expand_pk)(FP_ELEM V_tr[K][N-K], FZ_ELEM W_mat[M][N-M], const uint8_t seed_pk[KEYPAIR_SEED_LENGTH_BYTES]) = expand_pk;
 #else
+    static void (*c_expand_sk)(FZ_ELEM e_bar[N], FP_ELEM V_tr[K][N - K], const uint8_t seed_sk[KEYPAIR_SEED_LENGTH_BYTES]) = expand_sk; 
     static void (*c_expand_pk)(FP_ELEM V_tr[K][N-K], const uint8_t seed_pk[KEYPAIR_SEED_LENGTH_BYTES]) = expand_pk;
 #endif
 
@@ -108,12 +109,8 @@ extern "C" {
 
     void cross_fz_dz_norm_n(FZ_ELEM v[N]) {
             c_fz_dz_norm_n(v);
-        }
-
-    
-    void cross_expand_sk(FZ_ELEM e_bar[N], FP_ELEM V_tr[K][N-K], const uint8_t seed_sk[KEYPAIR_SEED_LENGTH_BYTES]) {
-        c_expand_sk(e_bar, V_tr, seed_sk);
     }
+
     
     #if defined(RSDPG)
         void cross_fz_vec_sub_m(FZ_ELEM res[M], const FZ_ELEM a[M], const FZ_ELEM b[M]) {
@@ -125,13 +122,20 @@ extern "C" {
         void cross_fz_dz_norm_m(FZ_ELEM v[M]) {
             c_fz_dz_norm_m(v);
         }
+        void cross_expand_sk(FZ_ELEM e_bar[N], FZ_ELEM e_G_bar[M], FP_ELEM V_tr[K][N - K], FZ_ELEM W_mat[M][N - M], 
+                             const uint8_t seed_sk[KEYPAIR_SEED_LENGTH_BYTES]) {
+            c_expand_sk(e_bar, e_G_bar, V_tr, W_mat, seed_sk);
+        }
         void cross_expand_pk(FP_ELEM V_tr[K][N-K], FZ_ELEM W_mat[M][N-M], const uint8_t seed_pk[KEYPAIR_SEED_LENGTH_BYTES]) {
             c_expand_pk(V_tr, W_mat, seed_pk);
         }
     #else
-    void cross_expand_pk(FP_ELEM V_tr[K][N - K], const uint8_t seed_pk[KEYPAIR_SEED_LENGTH_BYTES]) {
-        c_expand_pk(V_tr, seed_pk);
-    }
+        void cross_expand_sk(FZ_ELEM e_bar[N], FP_ELEM V_tr[K][N - K], const uint8_t seed_sk[KEYPAIR_SEED_LENGTH_BYTES]) {
+            c_expand_sk(e_bar, V_tr, seed_sk);
+        }
+        void cross_expand_pk(FP_ELEM V_tr[K][N - K], const uint8_t seed_pk[KEYPAIR_SEED_LENGTH_BYTES]) {
+            c_expand_pk(V_tr, seed_pk);
+        }
     #endif
 
 
