@@ -1,5 +1,4 @@
-from cross import Cross
-
+from cross import Cross, Calculations
 
 c = Cross(
     path="build",
@@ -26,10 +25,25 @@ result = c.verify(pk, message, signature)
 
 print ("Verify:", result)
 
-c = Cross(
-    path="build",
-    algorithm="RSDP",
-    category=1,
-    optimization="balanced",
+calc = Calculations(c.subfunctions)
+
+seed_sk = bytes(
+    j for j in range(c.params.keypair_seed_length_bytes)
 )
 
+root_seed = bytes(
+    0x40 + j for j in range(c.params.seed_length_bytes)
+)
+
+salt = bytes(
+    0x80 + j for j in range(c.params.salt_length_bytes)
+)
+
+v_bar_0 = calc.v_bar_i(
+    seed_sk,
+    root_seed,
+    salt,
+    0
+)
+
+print("v_bar[0] =", v_bar_0)
