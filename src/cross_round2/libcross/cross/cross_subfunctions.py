@@ -1,13 +1,21 @@
 import ctypes
-from ctypes import c_uint8, POINTER
+from ctypes import c_uint16, c_uint32, c_uint8, POINTER, c_ulonglong
 from typing import List, Tuple
 from .cross_params import get_params
 
+FP_ELEM = c_uint8
+FZ_ELEM = c_uint8
+
+# CSPRNG_STATE_T maps to shake128incctx for Category 1 and shake256incctx for Category 3/5.
+# Both use uint64_t ctx[26].
+class c_csprng_state(ctypes.Structure):
+    _fields_ =[("ctx", ctypes.c_uint64 *26)]
 
 class CrossSubfunctions:
     def __init__(self, cross) -> None:
         self.cross = cross
         self.params = cross.params
+        self.algorithm = self.params.algorithm
 
         self.n = self.params.n
         self.k = self.params.k
@@ -15,7 +23,10 @@ class CrossSubfunctions:
         self.t = self.params.t
         self.w = self.params.w
 
+        self.seed_length_bytes = self.params.seed_length_bytes
         self.keypair_seed_length_bytes = self.params.keypair_seed_length_bytes
+        self.salt_length_bytes = self.params.salt_length_bytes
+        self.num_nodes_seed_tree = self.params.num_nodes_seed_tree
         self.densely_packed_fp_syn_size = self.params.densely_packed_fp_syn_size
         self.densely_packed_fz_vec_size = self.params.densely_packed_fz_vec_size
 
@@ -24,6 +35,34 @@ class CrossSubfunctions:
         of the C functions.This ensures type safety when passing Python lists (converted into ctypes arrays) to the raw C pointers of 
         the reference implementation. 
         """
+
+        # ------------------------------------------------------------------------
+        #  Functions for internal state calculation
+        # ------------------------------------------------------------------------
+
+        self.cross.c_cross.cross_randombytes.argtypes = [POINTER(c_uint8), c_ulonglong]
+        self.cross.c_cross.cross_randombytes.restype = None
+
+        self.cross.c_cross.cross_gen_seed_tree.argtypes = [POINTER(c_uint8), POINTER(c_uint8), POINTER(c_uint8)]
+        self.cross.c_cross.cross_gen_seed_tree.restype = None
+
+        self.cross.c_cross.cross_seed_leaves.argtypes = [POINTER(c_uint8), POINTER(c_uint8)]
+        self.cross.c_cross.cross_seed_leaves.restype = None
+
+        self.cross.c_cross.cross_csprng_initialize.argtypes = [POINTER(c_csprng_state), POINTER(c_uint8), c_uint32, c_uint16]
+        self.cross.c_cross.cross_csprng_initialize.restype = None
+
+        if self.algorithm == "RSDP":
+            self.cross.c_cross.cross_csprng_fz_vec.argtypes = [POINTER(c_uint8), POINTER(c_csprng_state)]
+            self.cross.c_cross.cross_csprng_fz_vec.restype = None
+
+        elif self.algorithm == "RSDPG":
+            self.cross.c_cross.cross_csprng_fz_inf_w.argtypes = [POINTER(c_uint8), POINTER(c_csprng_state)]
+            self.cross.c_cross.cross_csprng_fz_inf_w.restype = None
+            
+        # ------------------------------------------------------------------------
+        #  Subroutines
+        # ------------------------------------------------------------------------
 
         # Vector conversion
         self.cross.c_cross.cross_convert_restr_vec_to_fp.argtypes = [POINTER(c_uint8), POINTER(c_uint8)]
@@ -89,6 +128,56 @@ class CrossSubfunctions:
             self.cross.c_cross.cross_fz_dz_norm_m.argtypes = [POINTER(c_uint8)]
             self.cross.c_cross.cross_fz_dz_norm_m.restype = None
 
+    # ------------------------------------------------------------------------
+    #  Functions for internal state calculation
+    # ------------------------------------------------------------------------
+
+    def randombytes (self, length: int) -> bytes:
+        buffer = (c_uint8 * length)()
+
+        self.cross.c_cross.cross_randombytes(buffer, c_ulonglong(length)) 
+        return bytes(buffer)
+
+    def gen_seed_tree(self, root_seed: bytes, salt: bytes) -> bytes:
+        c_seed_tree   = (c_uint8 * (self.num_nodes_seed_tree * self.seed_length_bytes))()
+        c_root_seed = (c_uint8 * (self.seed_length_bytes))(*root_seed)
+        c_salt      = (c_uint8 * (self.salt_length_bytes))(*salt)
+
+        self.cross.c_cross.cross_gen_seed_tree(c_seed_tree, c_root_seed, c_salt)
+        return bytes(c_seed_tree)
+
+    def seed_leaves(self, seed_tree: bytes) -> bytes:
+        c_seed_tree   = (c_uint8 * (self.num_nodes_seed_tree * self.seed_length_bytes))(*seed_tree)
+        c_round_seeds = (c_uint8* (self.t * self.seed_length_bytes))()
+
+        self.cross.c_cross.cross_seed_leaves(c_round_seeds, c_seed_tree)
+        return bytes(c_round_seeds)
+
+    def csprng_initialize(self, seed: bytes, seed_len_bytes: int, dsc: int) -> c_csprng_state:
+        c_state = c_csprng_state()
+        c_seed  = (c_uint8 * len(seed))(*seed)
+        
+        self.cross.c_cross.cross_csprng_initialize(c_state, c_seed, seed_len_bytes, dsc)
+        return c_state
+
+    def csprng_fz_vec(self, csprng_state: c_csprng_state) -> bytes:
+        if self.algorithm == "RSDPG": raise ValueError("csprng_fz_vec is only available for RSDP")
+        c_res = (FZ_ELEM * self.n)()
+
+        self.cross.c_cross.cross_csprng_fz_vec(c_res, csprng_state)
+        return bytes(c_res)
+
+    def csprng_fz_inf_w(self, csprng_state: c_csprng_state) -> bytes:
+        if self.algorithm == "RSDP": raise ValueError("csprng_fz_inf_w is only available for RSDPG")
+        c_res = (FZ_ELEM * self.m)()
+
+        self.cross.c_cross.cross_csprng_fz_inf_w(c_res, csprng_state)
+        return bytes(c_res)
+
+    # ------------------------------------------------------------------------
+    #  Subroutines
+    # ------------------------------------------------------------------------
+        
     def convert_restr_vec_to_fp(self, restr_vector: List[int]) -> List[int]:
         """Maps a vector from the restricted subgroup (FZ) to the full field (FP) of length N."""
         if len(restr_vector) != self.n:

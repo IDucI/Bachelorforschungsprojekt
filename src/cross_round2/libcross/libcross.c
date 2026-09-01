@@ -1,6 +1,7 @@
 #include "libcross.h"
 #include "fp_arith.h"
 #include "restr_arith.h"
+#include "seedtree.h"
 #include "pack_unpack.h"
 #include <string.h>
 
@@ -81,6 +82,36 @@ extern "C" {
     }
 
     const size_t cross_sigbytes = sizeof(CROSS_sig_t);
+
+    // -----------------------------------------------------------------------
+    // Functions for internal state calculation
+    // -----------------------------------------------------------------------
+
+    void cross_randombytes(uint8_t* out, unsigned long long len) {
+        randombytes(out, len);
+    }
+
+    void cross_gen_seed_tree(uint8_t * seed_tree, uint8_t * root_seed, uint8_t * salt) {
+        gen_seed_tree(seed_tree, root_seed, salt);
+    }
+
+    void cross_seed_leaves(uint8_t * round_seeds, uint8_t * seed_tree) {
+        seed_leaves(round_seeds, seed_tree);
+    }
+
+    void cross_csprng_initialize(CSPRNG_STATE_T* const csprng_state, const uint8_t * const seed, const uint32_t seed_len_bytes, const uint16_t dsc) {
+        csprng_initialize(csprng_state, seed, seed_len_bytes, dsc);
+    }
+
+    #if defined(RSDP)
+    void cross_csprng_fz_vec(FZ_ELEM res[N], CSPRNG_STATE_T* const csprng_state) {
+        csprng_fz_vec(res, csprng_state);
+    }
+    #elif defined(RSDPG)
+    void cross_csprng_fz_inf_w(FZ_ELEM res[M], CSPRNG_STATE_T* const csprng_state) {
+        csprng_fz_inf_w(res, csprng_state);
+    }
+    #endif
 
     // -----------------------------------------------------------------------
     // Subroutines

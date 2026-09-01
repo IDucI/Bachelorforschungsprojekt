@@ -11,6 +11,10 @@
 extern "C" {
 #endif
 
+    // -----------------------------------------------------------------------
+    // High-Level API
+    // -----------------------------------------------------------------------
+
     /**
     * SK: output secret key
     * PK: output public key
@@ -36,6 +40,28 @@ extern "C" {
 
     // size of CROSS_sig_t, used by Python to allocate memory
     extern const size_t cross_sigbytes;
+
+    // -----------------------------------------------------------------------
+    // Functions for internal state calculation
+    // -----------------------------------------------------------------------
+
+    void cross_randombytes(uint8_t * out, unsigned long long len);
+
+    void cross_gen_seed_tree(uint8_t * seed_tree, uint8_t * root_seed, uint8_t * salt);
+
+    void cross_seed_leaves(uint8_t * round_seeds, uint8_t * seed_tree);
+
+    void cross_csprng_initialize(CSPRNG_STATE_T* const csprng_state, const uint8_t * const seed, const uint32_t seed_len_bytes, const uint16_t dsc);
+
+#if defined(RSDP)
+    void cross_csprng_fz_vec(FZ_ELEM res[N], CSPRNG_STATE_T* const csprng_state);
+#elif defined(RSDPG)
+    void cross_csprng_fz_inf_w(FZ_ELEM res[M], CSPRNG_STATE_T* const csprng_state);
+#endif
+
+    // -----------------------------------------------------------------------
+    // Subroutines
+    // -----------------------------------------------------------------------
 
     void cross_convert_restr_vec_to_fp(FP_ELEM res[N], const FZ_ELEM in[N]);
 

@@ -40,9 +40,25 @@ class CrossParams:
     # ========================= Derived parameter helpers =========================
 
     @property
+    def seed_length_bytes(self) -> int:
+        return self.sec_margin_lambda//8
+
+    @property
     def keypair_seed_length_bytes(self) -> int:
         # Seedsk and Seedpk are 2 * lambda bits long
         return 2 * (self.sec_margin_lambda // 8) 
+
+    @property
+    def salt_length_bytes(self) -> int:
+        return 2 * (self.sec_margin_lambda // 8) 
+
+    @property
+    def num_leaves_seed_tree(self) -> int:
+        return self.t
+
+    @property
+    def num_nodes_seed_tree(self) -> int:
+        return 2 * self.num_leaves_seed_tree - 1
 
     @property 
     def densely_packed_fp_syn_size(self) -> int:
@@ -51,6 +67,10 @@ class CrossParams:
     @property
     def densely_packed_fz_vec_size(self) -> int:
         return (self.n * (self.z - 1).bit_length() + 7) // 8
+
+    @property
+    def csprng_domain_sep_const(self) -> int:
+        return 0
 
 # ==================== Input normalization and validation ====================
 
