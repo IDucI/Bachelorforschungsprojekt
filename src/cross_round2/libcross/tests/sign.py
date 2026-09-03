@@ -38,7 +38,7 @@ if len(sys.argv) == 4:
     with open("transfer.json", "w") as f:
         json.dump(data, f)
 
-    result = subprocess.run(["python3", "verify.py"])
+    result = subprocess.run([sys.executable, "-m", "tests.verify"])
 
     raise SystemExit(result.returncode)
 
@@ -48,11 +48,12 @@ for algorithm in algorithms:
         for optimization in optimizations:
 
             result = subprocess.run([
-                sys.executable,
-                __file__,
-                algorithm,
-                str(category),
-                optimization
+            sys.executable,
+            "-m",
+            "tests.sign",
+            algorithm,
+            str(category),
+            optimization
             ])
 
             if result.returncode == 0:
