@@ -49,6 +49,10 @@ class CrossParams:
         return 2 * (self.sec_margin_lambda // 8) 
 
     @property
+    def hash_digest_length(self) -> int:
+        return 2 * (self.sec_margin_lambda // 8) 
+
+    @property
     def salt_length_bytes(self) -> int:
         return 2 * (self.sec_margin_lambda // 8) 
 
