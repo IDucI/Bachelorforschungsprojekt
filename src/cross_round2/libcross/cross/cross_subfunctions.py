@@ -3,8 +3,6 @@ from ctypes import c_uint16, c_uint32, c_uint8, POINTER, c_ulonglong
 from typing import List, Tuple
 from .cross_params import get_params
 
-FP_ELEM = c_uint8
-FZ_ELEM = c_uint8
 
 # CSPRNG_STATE_T maps to shake128incctx for Category 1 and shake256incctx for Category 3/5.
 # Both use uint64_t ctx[26].
@@ -17,16 +15,20 @@ class CrossSubfunctions:
         self.params = cross.params
         self.algorithm = self.params.algorithm
 
+        self.FZ_ELEM = c_uint8
+        self.FP_ELEM = c_uint16 if self.algorithm == "RSDPG" else c_uint8
+
         self.n = self.params.n
         self.k = self.params.k
         self.m = self.params.m
         self.t = self.params.t
         self.w = self.params.w
 
-        self.seed_length_bytes = self.params.seed_length_bytes
-        self.keypair_seed_length_bytes = self.params.keypair_seed_length_bytes
-        self.salt_length_bytes = self.params.salt_length_bytes
-        self.num_nodes_seed_tree = self.params.num_nodes_seed_tree
+        self.seed_length_bytes          = self.params.seed_length_bytes
+        self.keypair_seed_length_bytes  = self.params.keypair_seed_length_bytes
+        self.hash_digest_length         = self.params.hash_digest_length
+        self.salt_length_bytes          = self.params.salt_length_bytes
+        self.num_nodes_seed_tree        = self.params.num_nodes_seed_tree
         self.densely_packed_fp_syn_size = self.params.densely_packed_fp_syn_size
         self.densely_packed_fz_vec_size = self.params.densely_packed_fz_vec_size
 
@@ -53,11 +55,11 @@ class CrossSubfunctions:
         self.cross.c_cross.cross_csprng_initialize.restype = None
 
         if self.algorithm == "RSDP":
-            self.cross.c_cross.cross_csprng_fz_vec.argtypes = [POINTER(c_uint8), POINTER(c_csprng_state)]
+            self.cross.c_cross.cross_csprng_fz_vec.argtypes = [POINTER(self.FZ_ELEM), POINTER(c_csprng_state)]
             self.cross.c_cross.cross_csprng_fz_vec.restype = None
 
         elif self.algorithm == "RSDPG":
-            self.cross.c_cross.cross_csprng_fz_inf_w.argtypes = [POINTER(c_uint8), POINTER(c_csprng_state)]
+            self.cross.c_cross.cross_csprng_fz_inf_w.argtypes = [POINTER(self.FZ_ELEM), POINTER(c_csprng_state)]
             self.cross.c_cross.cross_csprng_fz_inf_w.restype = None
             
         # ------------------------------------------------------------------------
@@ -65,67 +67,67 @@ class CrossSubfunctions:
         # ------------------------------------------------------------------------
 
         # Vector conversion
-        self.cross.c_cross.cross_convert_restr_vec_to_fp.argtypes = [POINTER(c_uint8), POINTER(c_uint8)]
+        self.cross.c_cross.cross_convert_restr_vec_to_fp.argtypes = [POINTER(self.FP_ELEM), POINTER(self.FZ_ELEM)]
         self.cross.c_cross.cross_convert_restr_vec_to_fp.restype = None
 
         # Vector-Matrix arithmetic
-        self.cross.c_cross.cross_restr_vec_by_fp_matrix.argtypes = [POINTER(c_uint8), POINTER(c_uint8), POINTER(c_uint8)]
+        self.cross.c_cross.cross_restr_vec_by_fp_matrix.argtypes = [POINTER(self.FP_ELEM), POINTER(self.FZ_ELEM), POINTER(self.FP_ELEM)]
         self.cross.c_cross.cross_restr_vec_by_fp_matrix.restype = None
 
-        self.cross.c_cross.cross_fp_vec_by_fp_vec_pointwise.argtypes = [POINTER(c_uint8), POINTER(c_uint8), POINTER(c_uint8)]
+        self.cross.c_cross.cross_fp_vec_by_fp_vec_pointwise.argtypes = [POINTER(self.FP_ELEM), POINTER(self.FP_ELEM), POINTER(self.FP_ELEM)]
         self.cross.c_cross.cross_fp_vec_by_fp_vec_pointwise.restype = None
 
-        self.cross.c_cross.cross_fp_vec_by_fp_matrix.argtypes = [POINTER(c_uint8), POINTER(c_uint8), POINTER(c_uint8)]
+        self.cross.c_cross.cross_fp_vec_by_fp_matrix.argtypes = [POINTER(self.FP_ELEM), POINTER(self.FP_ELEM), POINTER(self.FP_ELEM)]
         self.cross.c_cross.cross_fp_vec_by_fp_matrix.restype = None 
 
-        self.cross.c_cross.cross_fz_vec_sub_n.argtypes = [POINTER(c_uint8), POINTER(c_uint8), POINTER(c_uint8)]
+        self.cross.c_cross.cross_fz_vec_sub_n.argtypes = [POINTER(self.FZ_ELEM), POINTER(self.FZ_ELEM), POINTER(self.FZ_ELEM)]
         self.cross.c_cross.cross_fz_vec_sub_n.restype = None
 
         # Key generation and expansion (Key Generation)
-        #self.cross.c_cross.cross_expand_sk.argtypes = [ctypes.POINTER(ctypes.c_uint8), ctypes.POINTER(ctypes.c_uint8), ctypes.POINTER(ctypes.c_uint8)]
-        #self.cross.c_cross.cross_expand_sk.argtypes = [ctypes.POINTER(ctypes.c_uint8), ctypes.POINTER(ctypes.c_uint8), ctypes.POINTER(ctypes.c_uint8)  ]
-        #self.cross.c_cross.cross_expand_sk.restype = None
+        if self.algorithm == "RSDP":
+            self.cross.c_cross.cross_expand_sk.argtypes = [POINTER(self.FZ_ELEM), POINTER(self.FP_ELEM), POINTER(c_uint8)]
+        elif self.algorithm == "RSDPG":
+            self.cross.c_cross.cross_expand_sk.argtypes = [POINTER(self.FZ_ELEM), POINTER(self.FZ_ELEM), POINTER(self.FP_ELEM), POINTER(self.FZ_ELEM), POINTER(c_uint8)]
+        self.cross.c_cross.cross_expand_sk.restype = None
 
         # Protocol core validation & scaling
-        #self.cross.c_cross.cross_fz_dz_norm_n.argtypes = [POINTER(c_uint8)]
-        #self.cross.c_cross.cross_fz_dz_norm_n.restype = None
+        self.cross.c_cross.cross_fz_dz_norm_n.argtypes = [POINTER(self.FZ_ELEM)]
+        self.cross.c_cross.cross_fz_dz_norm_n.restype = None
 
-        self.cross.c_cross.cross_fp_vec_by_restr_vec_scaled.argtypes = [POINTER(c_uint8), POINTER(c_uint8), c_uint8, POINTER(c_uint8)]
+        self.cross.c_cross.cross_fp_vec_by_restr_vec_scaled.argtypes = [POINTER(self.FP_ELEM), POINTER(self.FZ_ELEM), self.FP_ELEM, POINTER(self.FP_ELEM)]
         self.cross.c_cross.cross_fp_vec_by_restr_vec_scaled.restype = None
 
         self.cross.c_cross.cross_expand_digest_to_fixed_weight.argtypes = [POINTER(c_uint8), POINTER(c_uint8)]
         self.cross.c_cross.cross_expand_digest_to_fixed_weight.restype = None
 
-        self.cross.c_cross.cross_pack_fp_syn.argtypes = [POINTER(c_uint8), POINTER(c_uint8)]
+        self.cross.c_cross.cross_pack_fp_syn.argtypes = [POINTER(c_uint8), POINTER(self.FP_ELEM)]
         self.cross.c_cross.cross_pack_fp_syn.restype = None
 
-        self.cross.c_cross.cross_pack_fz_vec.argtypes = [POINTER(c_uint8), POINTER(c_uint8)]
+        self.cross.c_cross.cross_pack_fz_vec.argtypes = [POINTER(c_uint8), POINTER(self.FZ_ELEM)]
         self.cross.c_cross.cross_pack_fz_vec.restype = None
 
-        self.cross.c_cross.cross_unpack_fz_vec.argtypes = [POINTER(c_uint8), POINTER(c_uint8)]
+        self.cross.c_cross.cross_unpack_fz_vec.argtypes = [POINTER(self.FZ_ELEM), POINTER(c_uint8)]
         self.cross.c_cross.cross_unpack_fz_vec.restype = c_uint8  # Returns 1 on success
 
-        if hasattr(self.cross.c_cross, "cross_expand_pk"):
-            # Since the C function has 2 or 3 parameters depending on the variant, we check for type safety
-            # whether the RSDPG group functions are available to choose the appropriate signature.
-            if hasattr(self.cross.c_cross, "cross_fz_inf_w_by_fz_matrix"):
-                # RSDPG: cross_expand_pk(V_tr, W_mat, seed_pk)
-                self.cross.c_cross.cross_expand_pk.argtypes = [POINTER(c_uint8), POINTER(c_uint8), POINTER(c_uint8)]
-            else:
-                # RSDP: cross_expand_pk(V_tr, seed_pk)
-                self.cross.c_cross.cross_expand_pk.argtypes = [POINTER(c_uint8), POINTER(c_uint8)]
-            self.cross.c_cross.cross_expand_pk.restype = None
 
-        # DYNAMIC PROTECTION FOR RSDP(G), because its currently working with only variant RSDP without the subgroup G
-        # Catches errors if the library was built for pure RSDP without the subgroup G
-        if hasattr(self.cross.c_cross, "cross_fz_inf_w_by_fz_matrix"):
-            self.cross.c_cross.cross_fz_inf_w_by_fz_matrix.argtypes = [POINTER(c_uint8), POINTER(c_uint8), POINTER(c_uint8)]
+        # Since the C function has 2 or 3 parameters depending on the variant, we check for type safety
+        # whether the RSDPG group functions are available to choose the appropriate signature.
+        if self.algorithm == "RSDP":
+            # RSDP: cross_expand_pk(V_tr, seed_pk)
+            self.cross.c_cross.cross_expand_pk.argtypes = [POINTER(self.FP_ELEM), POINTER(c_uint8)]
+        elif self.algorithm == "RSDPG":
+            # RSDPG: cross_expand_pk(V_tr, W_mat, seed_pk)
+            self.cross.c_cross.cross_expand_pk.argtypes = [POINTER(self.FP_ELEM), POINTER(self.FZ_ELEM), POINTER(c_uint8)]
+        self.cross.c_cross.cross_expand_pk.restype = None
+
+        if self.algorithm == "RSDPG":
+            self.cross.c_cross.cross_fz_inf_w_by_fz_matrix.argtypes = [POINTER(self.FZ_ELEM), POINTER(self.FZ_ELEM), POINTER(self.FZ_ELEM)]
             self.cross.c_cross.cross_fz_inf_w_by_fz_matrix.restype = None
 
-            self.cross.c_cross.cross_fz_vec_sub_m.argtypes = [POINTER(c_uint8), POINTER(c_uint8), POINTER(c_uint8)]
+            self.cross.c_cross.cross_fz_vec_sub_m.argtypes = [POINTER(self.FZ_ELEM), POINTER(self.FZ_ELEM), POINTER(self.FZ_ELEM)]
             self.cross.c_cross.cross_fz_vec_sub_m.restype = None
 
-            self.cross.c_cross.cross_fz_dz_norm_m.argtypes = [POINTER(c_uint8)]
+            self.cross.c_cross.cross_fz_dz_norm_m.argtypes = [POINTER(self.FZ_ELEM)]
             self.cross.c_cross.cross_fz_dz_norm_m.restype = None
 
     # ------------------------------------------------------------------------
@@ -139,6 +141,11 @@ class CrossSubfunctions:
         return bytes(buffer)
 
     def gen_seed_tree(self, root_seed: bytes, salt: bytes) -> bytes:
+        if len(root_seed) != self.seed_length_bytes:
+            raise ValueError(f"Expected root_seed to have length {self.seed_length_bytes}, got {len(root_seed)}")
+        if len(salt) != self.salt_length_bytes:
+            raise ValueError(f"Expected salt to have length {self.salt_length_bytes}, got {len(salt)}")
+
         c_seed_tree   = (c_uint8 * (self.num_nodes_seed_tree * self.seed_length_bytes))()
         c_root_seed = (c_uint8 * (self.seed_length_bytes))(*root_seed)
         c_salt      = (c_uint8 * (self.salt_length_bytes))(*salt)
@@ -147,282 +154,281 @@ class CrossSubfunctions:
         return bytes(c_seed_tree)
 
     def seed_leaves(self, seed_tree: bytes) -> bytes:
-        c_seed_tree   = (c_uint8 * (self.num_nodes_seed_tree * self.seed_length_bytes))(*seed_tree)
+        size_seed_tree = self.num_nodes_seed_tree * self.seed_length_bytes
+        if len(seed_tree) != (size_seed_tree):
+            raise ValueError(f"Expected seed_tree to have length {size_seed_tree}, got {len(seed_tree)}")
+
+        c_seed_tree   = (c_uint8 * size_seed_tree)(*seed_tree)
         c_round_seeds = (c_uint8* (self.t * self.seed_length_bytes))()
 
         self.cross.c_cross.cross_seed_leaves(c_round_seeds, c_seed_tree)
         return bytes(c_round_seeds)
 
     def csprng_initialize(self, seed: bytes, seed_len_bytes: int, dsc: int) -> c_csprng_state:
+        if len(seed) != seed_len_bytes:
+            raise ValueError(f"Expected seed to have length {seed_len_bytes}, got {len(seed)}")
+
         c_state = c_csprng_state()
         c_seed  = (c_uint8 * len(seed))(*seed)
         
         self.cross.c_cross.cross_csprng_initialize(c_state, c_seed, seed_len_bytes, dsc)
         return c_state
 
-    def csprng_fz_vec(self, csprng_state: c_csprng_state) -> bytes:
+    def csprng_fz_vec(self, csprng_state: c_csprng_state) -> List[int]:
         if self.algorithm == "RSDPG": raise ValueError("csprng_fz_vec is only available for RSDP")
-        c_res = (FZ_ELEM * self.n)()
+        c_res = (self.FZ_ELEM * self.n)()
 
         self.cross.c_cross.cross_csprng_fz_vec(c_res, csprng_state)
-        return bytes(c_res)
+        return list(c_res)
 
-    def csprng_fz_inf_w(self, csprng_state: c_csprng_state) -> bytes:
+    def csprng_fz_inf_w(self, csprng_state: c_csprng_state) -> List[int]:
         if self.algorithm == "RSDP": raise ValueError("csprng_fz_inf_w is only available for RSDPG")
-        c_res = (FZ_ELEM * self.m)()
+        c_res = (self.FZ_ELEM * self.m)()
 
         self.cross.c_cross.cross_csprng_fz_inf_w(c_res, csprng_state)
-        return bytes(c_res)
+        return list(c_res)
 
     # ------------------------------------------------------------------------
     #  Subroutines
     # ------------------------------------------------------------------------
         
-    def convert_restr_vec_to_fp(self, restr_vector: List[int]) -> List[int]:
+    def convert_restr_vec_to_fp(self, inp: List[int]) -> List[int]:
         """Maps a vector from the restricted subgroup (FZ) to the full field (FP) of length N."""
-        if len(restr_vector) != self.n:
-            raise ValueError(f"Expected input length {self.n}, got {len(restr_vector)}")
+        if len(inp) != self.n:
+            raise ValueError(f"Expected inp to have length {self.n}, got {len(inp)}")
 
-        input_type = c_uint8 * self.n
-        output_type = c_uint8 * self.n
+        c_inp = (self.FZ_ELEM * self.n)(*inp)
+        c_res = (self.FP_ELEM * self.n)()
 
-        c_restr_input= input_type(*restr_vector)
-        c_fp_output = output_type()
+        self.cross.c_cross.cross_convert_restr_vec_to_fp(c_res, c_inp)
 
-        self.cross.c_cross.cross_convert_restr_vec_to_fp(c_fp_output, c_restr_input)
-
-        return list(c_fp_output)
+        return list(c_res)
     
-    def restr_vec_by_fp_matrix(self, restr_vector: List[int], public_matrix_V_tr: List[int]) -> List[int]:
+    def restr_vec_by_fp_matrix(self, e: List[int], V_tr: List[int]) -> List[int]:
         """Multiplies a restricted vector (length N) by a flat FP matrix of size K x (N-K)."""
-        if len(restr_vector) != self.n:
-            raise ValueError(f"Expected vector length {self.n}, got {len(restr_vector)}")
-        # M is a flat list of size K * (N-K)
+        if len(e) != self.n:
+            raise ValueError(f"Expected e to have length {self.n}, got {len(e)}")
+        # V_tr is a flat list of size K * (N-K)
         matrix_size = self.k * (self.n - self.k)
-        if len(public_matrix_V_tr) != matrix_size:
-            raise ValueError(f"Expected matrix size {matrix_size}, got {len(public_matrix_V_tr)}")
+        if len(V_tr) != matrix_size:
+            raise ValueError(f"Expected V_tr to have size {matrix_size}, got {len(V_tr)}")
 
-        c_restr_vector = (c_uint8 * self.n)(*restr_vector)
-        c_matrix_V_tr = (c_uint8 * matrix_size)(*public_matrix_V_tr)
-        c_synd_result = (c_uint8 * (self.n - self.k))()
+        c_res = (self.FP_ELEM * (self.n - self.k))()
+        c_e = (self.FZ_ELEM * self.n)(*e)
+        c_V_tr = (self.FP_ELEM * matrix_size)(*V_tr)
 
-        self.cross.c_cross.cross_restr_vec_by_fp_matrix(c_synd_result, c_restr_vector, c_matrix_V_tr)
-        return list(c_synd_result)
+        self.cross.c_cross.cross_restr_vec_by_fp_matrix(c_res, c_e, c_V_tr)
+        return list(c_res)
 
-    def fp_vec_by_fp_vec_pointwise(self, fp_vector_1: List[int], fp_vector_2: List[int]) -> List[int]:
+    def fp_vec_by_fp_vec_pointwise(self, in1: List[int], in2: List[int]) -> List[int]:
         """Performs a coordinate-wise multiplication of two FP vectors of length N."""
         # Validation: Both Entry vector must have the length N (self.n) 
-        if len(fp_vector_1) != self.n or len(fp_vector_2) != self.n:
-            raise ValueError(f"Expected both inputs to have length {self.n}")
+        if len(in1) != self.n:
+            raise ValueError(f"Expected in1 to have length {self.n}, got {len(in1)}")
+        if len(in2) != self.n:
+            raise ValueError(f"Expected in2 to have length {self.n}, got {len(in2)}")
     
-        # ctypes-Arrays for C preparing (Size N)
-        FP_ELEM_ARRAY_N = ctypes.c_uint8 * self.n  # If FP_ELEM = 1 Byte 
-    
-        c_res_vector = FP_ELEM_ARRAY_N()
-        c_fp_input_1 = FP_ELEM_ARRAY_N(*fp_vector_1)
-        c_fp_input_2 = FP_ELEM_ARRAY_N(*fp_vector_2)
+        c_res = (self.FP_ELEM * self.n)()
+        c_in1 = (self.FP_ELEM * self.n)(*in1)
+        c_in2 = (self.FP_ELEM * self.n)(*in2)
     
         # The call of the C-Function
-        self.cross.c_cross.cross_fp_vec_by_fp_vec_pointwise(c_res_vector, c_fp_input_1, c_fp_input_2)
-        return list(c_res_vector)
+        self.cross.c_cross.cross_fp_vec_by_fp_vec_pointwise(c_res, c_in1, c_in2)
+        return list(c_res)
     
-    def fp_vec_by_fp_matrix(self, fp_vector: List[int], public_matrix_V_tr: List[int]) -> List[int]:
+    def fp_vec_by_fp_matrix(self, e: List[int], V_tr: List[int]) -> List[int]:
         """Multiplies an FP vector by a flat FP matrix yielding a result of length N-K."""
-        if len(fp_vector) != self.n:
-            raise ValueError(f"Expected vector length {self.n}, got {len(fp_vector)}")
+        if len(e) != self.n:
+            raise ValueError(f"Expected e to have length {self.n}, got {len(e)}")
         matrix_size = self.k * (self.n - self.k)
-        if len(public_matrix_V_tr) != matrix_size:
-            raise ValueError(f"Expected matrix size {matrix_size}, got {len(public_matrix_V_tr)}")
+        if len(V_tr) != matrix_size:
+            raise ValueError(f"Expected V_tr to have length {matrix_size}, got {len(V_tr)}")
         
         # The mathematical result length of such a vector-matrix multiplication
         # (vector of length K times matrix K x (N-K) gives a vector of length N-K)
-        output_size = self.n - self.k
 
-        vector_type = c_uint8 * self.n
-        matrix_type = c_uint8 * matrix_size
-        output_type = c_uint8 * output_size
-
-        c_fp_vector = vector_type(*fp_vector)
-        c_matrix_V_tr = matrix_type(*public_matrix_V_tr)
-        c_output_synd = output_type()  
+        c_res = (self.FP_ELEM * (self.n - self.k))()
+        c_e = (self.FP_ELEM * self.n)(*e)
+        c_V_tr = (self.FP_ELEM * matrix_size)(*V_tr)
 
         # C-Function call up 
-        self.cross.c_cross.cross_fp_vec_by_fp_matrix(c_output_synd, c_fp_vector, c_matrix_V_tr)
+        self.cross.c_cross.cross_fp_vec_by_fp_matrix(c_res, c_e, c_V_tr)
 
-        return list(c_output_synd)
+        return list(c_res)
 
-    def fz_vec_sub_n(self, restr_vec_a : List[int], restr_vec_b : List [int]) -> List[int]:
+    def fz_vec_sub_n(self, a : List[int], b : List [int]) -> List[int]:
         """Subtracts two restricted vectors coordinate-wise over the space N."""
-        if len(restr_vec_a) != self.n or len(restr_vec_b) != self.n:
-            raise ValueError(f"Expected both inputs to have length {self.n}")
-        
-        # ctypes-Arrays for C preparing (Size N)
-        FZ_ELEM_ARRAY_N = ctypes.c_uint8 * self.n  
+        if len(a) != self.n: 
+            raise ValueError(f"Expected a to have length {self.n}, got {len(a)}")
+        if len(b) != self.n:
+            raise ValueError(f"Expected b to have length {self.n}, got {len(b)}")
     
-        c_diff_result = FZ_ELEM_ARRAY_N()
-        c_restr_vec_a = FZ_ELEM_ARRAY_N(*restr_vec_a)
-        c_restr_vec_b = FZ_ELEM_ARRAY_N(*restr_vec_b)
+        c_res = (self.FZ_ELEM * self.n)()
+        c_a   = (self.FZ_ELEM * self.n)(*a)
+        c_b   = (self.FZ_ELEM * self.n)(*b)
     
-        self.cross.c_cross.cross_fz_vec_sub_n(c_diff_result, c_restr_vec_a, c_restr_vec_b)
-        return list(c_diff_result)
+        self.cross.c_cross.cross_fz_vec_sub_n(c_res, c_a, c_b)
+        return list(c_res)
 
-    def expand_sk(self, seed_sk: bytes) -> Tuple [List[int], List[int]]:
-        """Expands the secret key seed into the error vector e_bar (N) and public matrix V_tr (K x N-K)."""
+    def expand_sk(self, seed_sk: bytes) -> Tuple[List[int], List[int]] | Tuple[List[int], List[int], List[int], List[int]]:
+        """Expands seed_sk into e_bar and V_tr, RSDPG additionally returns e_G_bar and W_mat."""
         # Security check for the seed length (usually 32 bytes at level 1)
         # Replace 'self.seed_length' with your variable or the fixed value (e.g., 32)
         if len(seed_sk) != self.keypair_seed_length_bytes: 
-            raise ValueError(f"Expected seed length {self.keypair_seed_length_bytes}, got {len(seed_sk)}")
+            raise ValueError(f"Expected seed_sk to have length {self.keypair_seed_length_bytes}, got {len(seed_sk)}")
 
-        # Dimension
-        matrix_size = self.k * (self.n - self.k)
+        c_seed_sk = (c_uint8 * self.keypair_seed_length_bytes)(*seed_sk)
+        c_e_bar   = (self.FZ_ELEM * self.n)()
+        c_V_tr    = (self.FP_ELEM * (self.k * (self.n - self.k)))()
 
-        # ctypes-Types defintion
-        E_BAR_TYPE = ctypes.c_uint8 * self.n
-        V_TR_TYPE = ctypes.c_uint8 * matrix_size
-        SEED_TYPE = ctypes.c_uint8 * self.keypair_seed_length_bytes
-        
-        c_error_vec_e_bar = E_BAR_TYPE()
-        c_public_matrix_V_tr = V_TR_TYPE()
-        c_seed_sk = SEED_TYPE(*seed_sk)
+        if self.algorithm == "RSDP":
+            self.cross.c_cross.cross_expand_sk(c_e_bar, c_V_tr, c_seed_sk)
+            return list(c_e_bar), list(c_V_tr)
 
-        self.cross.c_cross.cross_expand_sk(c_error_vec_e_bar, c_public_matrix_V_tr, c_seed_sk)
-
-        return list(c_error_vec_e_bar), list(c_public_matrix_V_tr)
+        elif self.algorithm == "RSDPG":
+            c_e_G_bar = (self.FZ_ELEM * self.m)()
+            c_W_mat   = (self.FZ_ELEM * (self.m * (self.n - self.m)))()
+            self.cross.c_cross.cross_expand_sk(c_e_bar, c_e_G_bar, c_V_tr, c_W_mat, c_seed_sk)
+            return list(c_e_bar), list(c_e_G_bar), list(c_V_tr), list(c_W_mat)
     
-    def fz_dz_norm_n(self, restr_vector: List[int]) -> List[int]:
+    def fz_dz_norm_n(self, v: List[int]) -> List[int]:
         """Normalizes a restricted vector of length N in place (internally) and returns the normalized list."""
-        if len(restr_vector) != self.n:
-            raise ValueError(f"Expected input length {self.n}, got {len(restr_vector)}")
+        if len(v) != self.n:
+            raise ValueError(f"Expected v to have length {self.n}, got {len(v)}")
         
-        c_restr_vector = (c_uint8 * self.n)(*restr_vector)
+        c_v = (self.FZ_ELEM * self.n)(*v)
 
-        self.cross.c_cross.cross_fz_dz_norm_n(c_restr_vector)
-        return list(c_restr_vector)
+        self.cross.c_cross.cross_fz_dz_norm_n(c_v)
+        return list(c_v)
     
-    def fp_vec_by_restr_vec_scaled(self, restr_error_vector: List[int], chall_1: int, fp_vec_u_prime: List[int]) -> List[int]:
+    def fp_vec_by_restr_vec_scaled(self, e: List[int], chall_1: int, u_prime: List[int]) -> List[int]:
         """Computes the scaled addition of a restricted vector and an FP vector scaled by challenge_1."""
-        if len(restr_error_vector) != self.n or len(fp_vec_u_prime) != self.n:
-            raise ValueError(f"Expected vectors of length {self.n}")
+        if len(e) != self.n:
+            raise ValueError(f"Expected e to have length {self.n}, got {len(e)}")
+        if len(u_prime) != self.n:
+            raise ValueError(f"Expected u_prime to have length {self.n}, got {len(u_prime)}")
         
-        c_scaled_res = (c_uint8 * self.n)()
-        c_restr_error = (c_uint8 * self.n)(*restr_error_vector)
-        c_fp_u_prime = (c_uint8 * self.n)(*fp_vec_u_prime)
+        c_res = (self.FP_ELEM * self.n)()
+        c_e = (self.FZ_ELEM * self.n)(*e)
+        c_u_prime = (self.FP_ELEM * self.n)(*u_prime)
         
-        self.cross.c_cross.cross_fp_vec_by_restr_vec_scaled(c_scaled_res, c_restr_error, c_uint8(chall_1), c_fp_u_prime)
-        return list(c_scaled_res)
+        self.cross.c_cross.cross_fp_vec_by_restr_vec_scaled(c_res, c_e, self.FP_ELEM(chall_1), c_u_prime)
+        return list(c_res)
     
-    def expand_digest_to_fixed_weight(self, digest_chall_2: bytes) -> List[int]:
+    def expand_digest_to_fixed_weight(self, digest: bytes) -> List[int]:
         """Expands a seed/digest string into a challenge string of fixed weight T."""
         # T-size for fixed_weight_string (selft.t)
-        c_weight_res = (c_uint8 * self.t)()
-        c_digest_input = (c_uint8 * len(digest_chall_2))(*digest_chall_2)
+        if len(digest) != self.hash_digest_length:
+            raise ValueError(f"Expected digest to have length {self.hash_digest_length}, got {len(digest)}")
+
+        c_fixed_weight_string = (c_uint8 * self.t)()
+        c_digest = (c_uint8 * self.hash_digest_length)(*digest)
         
-        self.cross.c_cross.cross_expand_digest_to_fixed_weight(c_weight_res, c_digest_input)
-        return list(c_weight_res)
+        self.cross.c_cross.cross_expand_digest_to_fixed_weight(c_fixed_weight_string, c_digest)
+        return list(c_fixed_weight_string)
     
-    def pack_fp_syn(self, fp_synd: List[int]) -> bytes:
+    def pack_fp_syn(self, inp: List[int]) -> bytes:
         """Packs a syndrome vector over FP (length N-K) into a densely packed byte string."""
         expected_len = self.n - self.k
-        if len(fp_synd) != expected_len:
-            raise ValueError(f"Expected syndrome length {expected_len}, got {len(fp_synd)}")
+        if len(inp) != expected_len:
+            raise ValueError(f"Expected inp to have length {expected_len}, got {len(inp)}")
             
-        c_packed_bytes = (c_uint8 * self.densely_packed_fp_syn_size)()
-        c_synd_input = (c_uint8 * expected_len)(*fp_synd)
+        c_out = (c_uint8 * self.densely_packed_fp_syn_size)()
+        c_inp = (self.FP_ELEM * expected_len)(*inp)
         
-        self.cross.c_cross.cross_pack_fp_syn(c_packed_bytes, c_synd_input)
-        return bytes(c_packed_bytes)
+        self.cross.c_cross.cross_pack_fp_syn(c_out, c_inp)
+        return bytes(c_out)
 
-    def pack_fz_vec(self, restr_vector: List[int]) -> bytes:
+    def pack_fz_vec(self, inp: List[int]) -> bytes:
         """Packs a restricted vector over FZ (length N) into a densely packed byte string."""
-        if len(restr_vector) != self.n:
-            raise ValueError(f"Expected vector length {self.n}, got {len(restr_vector)}")
+        if len(inp) != self.n:
+            raise ValueError(f"Expected inp to have length {self.n}, got {len(inp)}")
             
-        c_packed_bytes = (c_uint8 * self.densely_packed_fz_vec_size)()
-        c_vec_input = (c_uint8 * self.n)(*restr_vector)
+        c_out = (c_uint8 * self.densely_packed_fz_vec_size)()
+        c_inp = (self.FZ_ELEM * self.n)(*inp)
         
-        self.cross.c_cross.cross_pack_fz_vec(c_packed_bytes, c_vec_input)
-        return bytes(c_packed_bytes)
+        self.cross.c_cross.cross_pack_fz_vec(c_out, c_inp)
+        return bytes(c_out)
 
-    def unpack_fz_vec(self, packed_bytes: bytes) -> List[int]:
+    def unpack_fz_vec(self, inp: bytes) -> List[int]:
         """Unpacks a densely packed byte string back into a restricted vector over FZ of length N."""
-        if len(packed_bytes) != self.densely_packed_fz_vec_size:
-            raise ValueError(f"Expected packed size {self.densely_packed_fz_vec_size}, got {len(packed_bytes)}")
+        if len(inp) != self.densely_packed_fz_vec_size:
+            raise ValueError(f"Expected inp to have length {self.densely_packed_fz_vec_size}, got {len(inp)}")
             
-        c_unpacked_vec = (c_uint8 * self.n)()
-        c_packed_input = (c_uint8 * self.densely_packed_fz_vec_size)(*packed_bytes)
+        c_out = (self.FZ_ELEM * self.n)()
+        c_inp = (c_uint8 * self.densely_packed_fz_vec_size)(*inp)
         
-        success_flag = self.cross.c_cross.cross_unpack_fz_vec(c_unpacked_vec, c_packed_input)
+        success_flag = self.cross.c_cross.cross_unpack_fz_vec(c_out, c_inp)
         if success_flag != 1:
             raise RuntimeError("Unpacking the FZ vector failed in native library.")
             
-        return list(c_unpacked_vec)
+        return list(c_out)
 
-    def expand_pk(self, seed_pk: bytes) -> Tuple[List[int], List[int]]:
+    def expand_pk(self, seed_pk: bytes) -> List[int] | Tuple[List[int], List[int]]:
         """Expands the public key seed into the public matrix V_tr (K x N-K) and optional RSDPG group matrix W_mat."""
         if len(seed_pk) != self.keypair_seed_length_bytes:
-            raise ValueError(f"Expected seed length {self.keypair_seed_length_bytes}, got {len(seed_pk)}")
+            raise ValueError(f"Expected seed_pk to have length {self.keypair_seed_length_bytes}, got {len(seed_pk)}")
             
-        v_tr_size = self.k * (self.n - self.k)
-        c_public_matrix_V_tr = (c_uint8 * v_tr_size)()
+        c_V_tr = (self.FP_ELEM * (self.k * (self.n - self.k)))()
         c_seed_pk = (c_uint8 * self.keypair_seed_length_bytes)(*seed_pk)
-        
-        # Dynamic case distinction, whether we are in RSDP or RSDPG mode
-        if hasattr(self.cross.c_cross, "cross_fz_inf_w_by_fz_matrix"):
-            # RSDPG variant: Requires the additional allocation/buffering of W_mat
-            w_mat_size = self.m * (self.n - self.m)
-            c_group_matrix_W_mat = (c_uint8 * w_mat_size)()
-            
-            self.cross.c_cross.cross_expand_pk(c_public_matrix_V_tr, c_group_matrix_W_mat, c_seed_pk)
-            return list(c_public_matrix_V_tr), list(c_group_matrix_W_mat)
-        else:
-            # Standard RSDP variant: Only V_tr is expanded
-            self.cross.c_cross.cross_expand_pk(c_public_matrix_V_tr, c_seed_pk)
-            return list(c_public_matrix_V_tr), []
 
-    # RSDP(G) METHODS (Catch errors if the library was built without G) otherwise they will work normally
-    def fz_inf_w_by_fz_matrix(self, subgroup_vec: List[int], group_matrix_W_mat: List[int]) -> List[int]:
+        if self.algorithm == "RSDP":
+            # Standard RSDP variant: Only V_tr is expanded
+            self.cross.c_cross.cross_expand_pk(c_V_tr, c_seed_pk)
+            return list(c_V_tr)
+        elif self.algorithm == "RSDPG":
+            # RSDPG variant: Requires the additional allocation/buffering of W_mat
+            c_W_mat = (self.FZ_ELEM * (self.m * (self.n - self.m)))()
+            
+            self.cross.c_cross.cross_expand_pk(c_V_tr, c_W_mat, c_seed_pk)
+            return list(c_V_tr), list(c_W_mat)
+
+    def fz_inf_w_by_fz_matrix(self, e: List[int], W_mat: List[int]) -> List[int]:
         """RSDP(G) only: Multiplies a subgroup vector (M) by a flat FZ matrix of size M x (N-M)."""
-        if not hasattr(self.cross.c_cross, "cross_fz_inf_w_by_fz_matrix"):
-            raise NotImplementedError("This compiled .so file does not support RSDP(G) functions.")
+        if self.algorithm == "RSDP":
+            raise ValueError("fz_inf_w_by_fz_matrix is only available for RSDPG")
         
         matrix_size = self.m * (self.n - self.m)
-        if len(subgroup_vec) != self.m or len(group_matrix_W_mat) != matrix_size:
-            raise ValueError(f"Dimensions error for RSDPG matrix arithmetic.")
-            
-        c_extended_res = (c_uint8 * self.n)()
-        c_subgroup_input = (c_uint8 * self.m)(*subgroup_vec)
-        c_matrix_W_mat = (c_uint8 * matrix_size)(*group_matrix_W_mat)
-        
-        self.cross.c_cross.cross_fz_inf_w_by_fz_matrix(c_extended_res, c_subgroup_input, c_matrix_W_mat)
-        return list(c_extended_res)
+        if len(e) != self.m: 
+            raise ValueError(f"Expected e to have length {self.m}, got {len(e)}")
+        if len(W_mat) != matrix_size:
+            raise ValueError(f"Expected W_mat to have length {matrix_size}, got {len(W_mat)}")
 
-    def fz_vec_sub_m(self, subgroup_vec_a: List[int], subgroup_vec_b: List[int]) -> List[int]:
+        c_res = (self.FZ_ELEM * self.n)()
+        c_e = (self.FZ_ELEM * self.m)(*e)
+        c_W_mat = (self.FZ_ELEM * matrix_size)(*W_mat)
+        
+        self.cross.c_cross.cross_fz_inf_w_by_fz_matrix(c_res, c_e, c_W_mat)
+        return list(c_res)
+
+    def fz_vec_sub_m(self, a: List[int], b: List[int]) -> List[int]:
         """RSDP(G) only: Subtracts two subgroup vectors coordinate-wise over the space M."""
-        if not hasattr(self.cross.c_cross, "cross_fz_vec_sub_m"):
-            raise NotImplementedError("This compiled .so file does not support RSDP(G) functions.")
+        if self.algorithm == "RSDP":
+            raise ValueError("fz_vec_sub_m is only available for RSDPG")
         
-        if len(subgroup_vec_a) != self.m or len(subgroup_vec_b) != self.m:
-            raise ValueError(f"Expected both inputs to have length {self.m}")
-        
-        FZ_ELEM_ARRAY_M = c_uint8 * self.m
-        c_difference_res = FZ_ELEM_ARRAY_M()
-        c_subgroup_a = FZ_ELEM_ARRAY_M(*subgroup_vec_a)
-        c_subgroup_b = FZ_ELEM_ARRAY_M(*subgroup_vec_b)
-        
-        self.cross.c_cross.cross_fz_vec_sub_m(c_difference_res, c_subgroup_a, c_subgroup_b)
-        return list(c_difference_res)
+        if len(a) != self.m:  
+            raise ValueError(f"Expected a to have length {self.m}, got {len(a)}")
+        if len(b) != self.m:
+            raise ValueError(f"Expected b to have length {self.m}, got {len(b)}")
 
-    def fz_dz_norm_m(self, subgroup_vec: List[int]) -> List[int]:
-        """RSDP(G) only: Normalizes a subgroup vector of length M to its canonical representation."""
-        if not hasattr(self.cross.c_cross, "cross_fz_dz_norm_m"):
-            raise NotImplementedError("This compiled .so file does not support RSDP(G) functions.")
+        c_res = (self.FZ_ELEM * self.m)()
+        c_a   = (self.FZ_ELEM * self.m)(*a)
+        c_b   = (self.FZ_ELEM * self.m)(*b)
         
-        if len(subgroup_vec) != self.m:
-            raise ValueError(f"Expected input length {self.m}, got {len(subgroup_vec)}")
+        self.cross.c_cross.cross_fz_vec_sub_m(c_res, c_a, c_b)
+        return list(c_res)
+
+    def fz_dz_norm_m(self, v: List[int]) -> List[int]:
+        """RSDP(G) only: Normalizes a subgroup vector of length M to its canonical representation."""
+        if self.algorithm == "RSDP":
+            raise ValueError("fz_dz_norm_m is only available for RSDPG")
+        
+        if len(v) != self.m:
+            raise ValueError(f"Expected v to have length {self.m}, got {len(v)}")
             
-        c_subgroup_vec = (c_uint8 * self.m)(*subgroup_vec)
-        self.cross.c_cross.cross_fz_dz_norm_m(c_subgroup_vec)
-        return list(c_subgroup_vec)
+        c_v = (self.FZ_ELEM * self.m)(*v)
+        self.cross.c_cross.cross_fz_dz_norm_m(c_v)
+        return list(c_v)
 
 
 
