@@ -41,8 +41,16 @@ endif
 
 LDFLAGS :=
 
-# First incremental LESS variant using the toy parameters.
-LIBNAMES := less_toy
+# LESS toy and official parameter-set variants.
+LIBNAMES := \
+	less_toy \
+	less_cat1_192 \
+	less_cat1_68 \
+	less_cat1_45 \
+	less_cat3_220 \
+	less_cat3_102 \
+	less_cat5_345 \
+	less_cat5_137
 
 # colorful terminal output
 RED := \033[0;31m

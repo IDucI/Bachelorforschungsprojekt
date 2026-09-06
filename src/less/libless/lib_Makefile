@@ -18,10 +18,15 @@ CC?=/usr/bin/gcc
 CXX?=/usr/bin/g++
 CFLAGS += -std=c11
 CPPFLAGS += -I $(ALG_DIR) -I $(ALG_DIR)include
-# The first incremental LESS target uses the toy parameters from parameters.h.
-# No CATEGORY/TARGET macro is defined for less_toy.
-ifeq ($(ALG_VERSION),less_toy)
-CPPFLAGS +=
+# Official LESS parameter-set builds define CATEGORY and TARGET.
+VARIANT_PARTS := $(subst _, ,$(ALG_VERSION))
+CATEGORY_NAME := $(word 2,$(VARIANT_PARTS))
+TARGET := $(word 3,$(VARIANT_PARTS))
+CATEGORY_VALUE_cat1 := 252
+CATEGORY_VALUE_cat3 := 400
+CATEGORY_VALUE_cat5 := 548
+ifneq ($(ALG_VERSION),less_toy)
+CPPFLAGS += -DCATEGORY=$(CATEGORY_VALUE_$(CATEGORY_NAME)) -DTARGET=$(TARGET) -DLIBLESS_HIGH_LEVEL
 endif
 LDLIBS :=  
 HOSTNAME = $(shell hostname -s)
@@ -49,7 +54,8 @@ EXCLUDE :=
 HEADERS := $(wildcard $(ALG_DIR)*.h) $(wildcard $(ALG_DIR)include/*.h) libless.h
 # SOURCES all variant source files that need to be included for compilation
 
-# Sources required for the first generator_monomial_mul milestone.
+# Sources for the toy subroutine build and official full host builds.
+ifeq ($(ALG_VERSION),less_toy)
 SOURCES := \
     $(ALG_DIR)function_linkage.c \
     $(ALG_DIR)lib/codes.c \
@@ -57,11 +63,30 @@ SOURCES := \
     $(ALG_DIR)lib/rng.c \
     $(ALG_DIR)lib/fips202.c \
     $(ALG_DIR)lib/keccakf1600.c
+else
+SOURCES := \
+    $(ALG_DIR)function_linkage.c \
+    $(ALG_DIR)lib/LESS.c \
+    $(ALG_DIR)lib/canonical.c \
+    $(ALG_DIR)lib/codes.c \
+    $(ALG_DIR)lib/fips202.c \
+    $(ALG_DIR)lib/keccakf1600.c \
+    $(ALG_DIR)lib/monomial.c \
+    $(ALG_DIR)lib/rng.c \
+    $(ALG_DIR)lib/seedtree.c \
+    $(ALG_DIR)lib/sort.c \
+    $(ALG_DIR)lib/transpose.c \
+    $(ALG_DIR)lib/utils.c
+endif
 
 # OBJS are the compiled objects for the source files that are to be compiled
 # make will compile any file that ends in .o implictly. You will therefore only find compilation
 # defintions for special cases. Everything else is compiled implicitly
-OBJS := ${patsubst %.o, %.$(HOSTNAME).o, ${patsubst %.c, %.o, ${patsubst %.cpp, %.o, $(SOURCES)}} $(LIBNAME).o}
+OBJ_DIR := variants/$(ALG_VERSION)/
+OBJS := $(patsubst $(ALG_DIR)%,$(OBJ_DIR)%,\
+    $(patsubst %.o,%.$(HOSTNAME).o,\
+    $(patsubst %.c,%.o,\
+    $(patsubst %.cpp,%.o,$(SOURCES))))) $(LIBNAME).$(HOSTNAME).o
 # because we are compile shared libraries: there are some options which work with a dynamic or a static library. Therefore we both have a
 # set of DYNAMIC and STATIC objects
 OBJSDYNAMIC := $(OBJS:.o=.dbg.o)
@@ -73,14 +98,18 @@ target: $(BUILD_DIR) $(BUILD_DIR)$(LIBNAME)_$(PLATFORM).so $(BUILD_DIR)$(LIBNAME
 
 # here are the not implicit compilation rules for the object files.
 # .dbg.o for debugging build objects and .s.o for static objects
-%.$(HOSTNAME).dbg.o: %.cpp
+$(OBJ_DIR)%.$(HOSTNAME).dbg.o: $(ALG_DIR)%.cpp
+	@mkdir -p $(dir $@)
 	$(CXX) $(CPPFLAGS) $(CFLAGS) $^ -fomit-frame-pointer -fPIC -c -o $@ -D ALG_VERSION=\"$(LIBNAME)\" $(LDFLAGS) $(LDLIBS)
-%.$(HOSTNAME).s.o: %.cpp
+$(OBJ_DIR)%.$(HOSTNAME).s.o: $(ALG_DIR)%.cpp
+	@mkdir -p $(dir $@)
 	$(CXX) $(CPPFLAGS) $(CFLAGS) $^ -c -o $@ -D ALG_VERSION=\"$(LIBNAME)\" $(LDFLAGS) $(LDLIBS)
 
-%.$(HOSTNAME).dbg.o: %.c
+$(OBJ_DIR)%.$(HOSTNAME).dbg.o: $(ALG_DIR)%.c
+	@mkdir -p $(dir $@)
 	$(CC) $(CPPFLAGS) $(CFLAGS) $^ -fomit-frame-pointer -fPIC -c -o $@ -D ALG_VERSION=\"$(LIBNAME)\" $(LDFLAGS) $(LDLIBS)
-%.$(HOSTNAME).s.o: %.c
+$(OBJ_DIR)%.$(HOSTNAME).s.o: $(ALG_DIR)%.c
+	@mkdir -p $(dir $@)
 	$(CC) $(CPPFLAGS) $(CFLAGS) $^ -c -o $@ -D ALG_VERSION=\"$(LIBNAME)\" $(LDFLAGS) $(LDLIBS)
 $(LIBNAME).$(HOSTNAME).dbg.o: libless.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) -fomit-frame-pointer -fPIC -c -o $@ -D ALG_VERSION=\"$(LIBNAME)\" $(LDFLAGS) $(LDLIBS) $^

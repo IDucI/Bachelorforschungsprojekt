@@ -13,6 +13,7 @@ class LessSubfunctions:
         self.n = self.params.n
         self.k = self.params.k
         self.n_pad = self.params.n_pad
+        self.num_keypairs = self.params.num_keypairs
         self.seed_length_bytes = self.params.seed_length_bytes
         self.private_key_seed_length_bytes = (
             self.params.private_key_seed_length_bytes
@@ -26,9 +27,34 @@ class LessSubfunctions:
         self.rref_values_count = (
             self.k * self.row_values_count
         )
+        self.private_monomial_seeds_count = (
+            (self.num_keypairs - 1) * self.private_key_seed_length_bytes
+        )
 
     def load_dll(self) -> None:
         """Declare native libless argument and return types."""
+
+        self.less.c_less.less_expand_private_key_seeds.argtypes = [
+            POINTER(c_uint8),
+            POINTER(c_uint8),
+            POINTER(c_uint8),
+        ]
+        self.less.c_less.less_expand_private_key_seeds.restype = None
+
+        self.less.c_less.less_generator_rref_expand.argtypes = [
+            POINTER(c_uint8),
+            POINTER(c_uint8),
+            POINTER(c_uint16),
+        ]
+        self.less.c_less.less_generator_rref_expand.restype = None
+
+        self.less.c_less.less_monomial_inv.argtypes = [
+            POINTER(c_uint8),
+            POINTER(c_uint16),
+            POINTER(c_uint8),
+            POINTER(c_uint16),
+        ]
+        self.less.c_less.less_monomial_inv.restype = None
 
         self.less.c_less.less_generator_monomial_mul.argtypes = [
             POINTER(c_uint8),
@@ -68,6 +94,94 @@ class LessSubfunctions:
         ]
 
         self.less.c_less.less_monomial_sample_prikey.restype = None
+
+    def expand_private_key_seeds(
+        self,
+        compressed_sk: Sequence[int] | bytes | bytearray,
+    ) -> Tuple[bytes, List[bytes]]:
+        compressed_sk = bytes(compressed_sk)
+        if len(compressed_sk) != self.private_key_seed_length_bytes:
+            raise ValueError(
+                f"Expected {self.private_key_seed_length_bytes} secret-key "
+                f"bytes, got {len(compressed_sk)}"
+            )
+
+        g0_type = c_uint8 * self.seed_length_bytes
+        seeds_type = c_uint8 * self.private_monomial_seeds_count
+        sk_type = c_uint8 * self.private_key_seed_length_bytes
+
+        c_g0_seed = g0_type()
+        c_private_seeds = seeds_type()
+        c_sk = sk_type.from_buffer_copy(compressed_sk)
+
+        self.less.c_less.less_expand_private_key_seeds(
+            c_g0_seed,
+            c_private_seeds,
+            c_sk,
+        )
+
+        private_seeds = bytes(c_private_seeds)
+        seed_size = self.private_key_seed_length_bytes
+        return bytes(c_g0_seed), [
+            private_seeds[offset:offset + seed_size]
+            for offset in range(0, len(private_seeds), seed_size)
+        ]
+
+    def generator_rref_expand(
+        self,
+        compact_values: List[int],
+        column_pos: List[int],
+    ) -> List[int]:
+        if len(compact_values) != self.rref_values_count:
+            raise ValueError(
+                f"Expected {self.rref_values_count} compact entries, "
+                f"got {len(compact_values)}"
+            )
+        if len(column_pos) != self.row_values_count:
+            raise ValueError(
+                f"Expected {self.row_values_count} column positions, "
+                f"got {len(column_pos)}"
+            )
+
+        full_type = c_uint8 * self.generator_values_count
+        compact_type = c_uint8 * self.rref_values_count
+        positions_type = c_uint16 * self.row_values_count
+
+        c_full = full_type()
+        c_compact = compact_type(*compact_values)
+        c_positions = positions_type(*column_pos)
+
+        self.less.c_less.less_generator_rref_expand(
+            c_full,
+            c_compact,
+            c_positions,
+        )
+        return list(c_full)
+
+    def monomial_inv(
+        self,
+        coefficients: List[int],
+        permutation: List[int],
+    ) -> Tuple[List[int], List[int]]:
+        if len(coefficients) != self.n or len(permutation) != self.n:
+            raise ValueError(f"Expected {self.n} monomial entries")
+
+        coefficients_type = c_uint8 * self.n
+        permutation_type = c_uint16 * self.n
+
+        c_res_coefficients = coefficients_type()
+        c_res_permutation = permutation_type()
+        c_coefficients = coefficients_type(*coefficients)
+        c_permutation = permutation_type(*permutation)
+
+        self.less.c_less.less_monomial_inv(
+            c_res_coefficients,
+            c_res_permutation,
+            c_coefficients,
+            c_permutation,
+        )
+
+        return list(c_res_coefficients), list(c_res_permutation)
 
     def generator_monomial_mul(
         self,
