@@ -8,12 +8,17 @@
 #include <string.h>
 #include <stdio.h>
 
+// expand_sk is not exposed in a header, so we declared it here.
 #if defined(RSDP)
 void expand_sk(FZ_ELEM e_bar[N],
 	FP_ELEM V_tr[K][N - K],
 	const uint8_t seed_sk[KEYPAIR_SEED_LENGTH_BYTES]);
 #elif defined(RSDPG)
-#error "RSDPG not implemented yet"
+void expand_sk(FZ_ELEM e_bar[N],
+	FZ_ELEM e_G_bar[M],
+	FP_ELEM V_tr[K][N - K],
+	FZ_ELEM W_mat[M][N - M],
+	const uint8_t seed_sk[KEYPAIR_SEED_LENGTH_BYTES]);
 #endif
 
 // Write byte array as hexadecimal string
@@ -55,7 +60,8 @@ static void write_fz_2d_array(
 	fprintf(json, "]");
 }
 
-// v_bar: output v_bar vector for each round i
+// v_bar: output vector for each round i before normalization,
+// used as input for convert_restr_vec_to_fp.
 static void calculate_v_bar(
 	FZ_ELEM v_bar[T][N],
 	const uint8_t seed_sk[KEYPAIR_SEED_LENGTH_BYTES],
@@ -64,7 +70,14 @@ static void calculate_v_bar(
 
 	FZ_ELEM e_bar[N];
 	FP_ELEM V_tr[K][N - K];
+
+#if defined(RSDP)
 	expand_sk(e_bar, V_tr, seed_sk);
+#elif defined(RSDPG)
+	FZ_ELEM e_G_bar[M];
+	FZ_ELEM W_mat[M][N - M];
+	expand_sk(e_bar, e_G_bar, V_tr, W_mat, seed_sk);
+#endif
 
 	uint8_t seed_tree[SEED_LENGTH_BYTES * NUM_NODES_SEED_TREE] = { 0 };
 	unsigned char round_seeds[T * SEED_LENGTH_BYTES] = { 0 };
@@ -72,6 +85,10 @@ static void calculate_v_bar(
 	seed_leaves(round_seeds, seed_tree);
 
 	FZ_ELEM e_bar_prime[T][N];
+
+#if defined(RSDPG)
+	FZ_ELEM e_G_bar_prime[M];
+#endif
 
 	CSPRNG_STATE_T csprng_state;
 	for (uint16_t i = 0; i < T; i++) {
@@ -90,6 +107,8 @@ static void calculate_v_bar(
 		csprng_fz_vec(e_bar_prime[i], &csprng_state);
 #elif defined(RSDPG)
 		csprng_fz_inf_w(e_G_bar_prime, &csprng_state);
+		fz_inf_w_by_fz_matrix(e_bar_prime[i], e_G_bar_prime, W_mat);
+		fz_dz_norm_n(e_bar_prime[i]);
 #endif
 		fz_vec_sub_n(v_bar[i], e_bar, e_bar_prime[i]);
 	}
