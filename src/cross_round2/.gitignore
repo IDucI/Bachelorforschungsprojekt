@@ -1,8 +1,6 @@
 # Prerequisites
 *.d
 
-
-
 # Compiled Object files
 *.slo
 *.lo
@@ -67,5 +65,5 @@ objdir-*/
 *.sym
 
 # IDE/local editor files
-.vs/
-.vscode/
+.vs
+.vscode

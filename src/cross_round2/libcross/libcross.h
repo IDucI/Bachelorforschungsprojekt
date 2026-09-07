@@ -6,6 +6,9 @@
 #include "fp_arith.h"
 #include "restr_arith.h"
 #include "CROSS.h"
+#include "parameters.h"
+#include "csprng_hash.h"
+#include "pack_unpack.h"
 
 #ifdef __cplusplus
 extern "C" {
