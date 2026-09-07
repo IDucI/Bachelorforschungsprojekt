@@ -22,20 +22,31 @@
 
 #include "ledz.h"
 
+#include "parameters.h"
+#include "csprng_hash.h"
 #include "libcross.h"
 #include "fp_arith.h"
 #include "restr_arith.h"
 #include "pack_unpack.h"
 
+// ------------------------------------------------------------------------------------------------------------------------
+// Manual declaration of expand_sk so that it is known due to compile problem 
+// ------------------------------------------------------------------------------------------------------------------------
+
+void expand_pk(FP_ELEM matrix_V_tr[K][N - K], const uint8_t seed_pk[KEYPAIR_SEED_LENGTH_BYTES]);
+void expand_sk(FZ_ELEM secret_vec_e[N], FP_ELEM matrix_V_tr[K][N - K], const uint8_t seed_sk[KEYPAIR_SEED_LENGTH_BYTES]);
 
 // -----------------------------------------------------------------------------
-// Calculate maximum buffer size for all subroutines
+// Calculate maximum buffer size for all subroutines 
 // -----------------------------------------------------------------------------
 
 // For pure RSDP variants, this is enough for the entire buffer
-#define TOTAL_BUFFER_SIZE (N * sizeof(FZ_ELEM) + (K * (N - K)) * sizeof(FP_ELEM))
+#define TOTAL_BUFFER_SIZE (KEYPAIR_SEED_LENGTH_BYTES + (K * (N - K)) * sizeof(FP_ELEM) + 256)
 
 static uint8_t databuffer[TOTAL_BUFFER_SIZE] allocation;
+
+// Place the static buffer globally outside the subroutines function to avoid stack overflow
+static FP_ELEM matrix_V_tr_buf[K][N - K];
 
 // -----------------------------------------------------------------------------
 // Subroutines-IDs
@@ -55,6 +66,8 @@ static uint8_t databuffer[TOTAL_BUFFER_SIZE] allocation;
 #define SUBROUTINE_EXPAND_DIGEST 0x14
 #define SUBROUTINE_DZ_NORM_N 0x15
 #define SUBROUTINE_DZ_NORM_M 0x16
+#define SUBROUTINE_EXPAND_PK 0x17
+#define SUBROUTINE_EXPAND_SK 0x18
 
 // -----------------------------------------------------------------------------
 // Central subroutine control
@@ -65,6 +78,7 @@ uint8_t subroutines(uint8_t cmd, uint8_t scmd, uint8_t len, uint8_t* x) {
     // -------------------------------------------------------------------------
     // Subroutine 0x03: Convert Restricted Vector to Fp Element Vector
     // -------------------------------------------------------------------------
+
     case SUBROUTINE_CONVERT: {
         led2_on();
 
@@ -86,6 +100,7 @@ uint8_t subroutines(uint8_t cmd, uint8_t scmd, uint8_t len, uint8_t* x) {
     // -------------------------------------------------------------------------
     // Subroutine 0x04: Multiply Restricted Vector by Fp Matrix Transpose
     // -------------------------------------------------------------------------
+
     case SUBROUTINE_RESTR_BY_MATRIX: {
         led2_on();
         
@@ -111,6 +126,7 @@ uint8_t subroutines(uint8_t cmd, uint8_t scmd, uint8_t len, uint8_t* x) {
     // Subroutine 0x05: Pack Restricted Element Vector (FZ) Into Dense Format
     // Note: This isn't checking a final mathematical result, just testing a helper function.
     // -------------------------------------------------------------------------
+
     case SUBROUTINE_PACK_VEC: {
         led2_on();
 
@@ -131,6 +147,7 @@ uint8_t subroutines(uint8_t cmd, uint8_t scmd, uint8_t len, uint8_t* x) {
     // Subroutine 0x06: Pack Syndrome Vector (Fp) Into Dense Format
     // Note: This isn't checking a final mathematical result, just testing a helper function.
     // -------------------------------------------------------------------------
+
     case SUBROUTINE_PACK_SYN: {
         led2_on();
 
@@ -150,6 +167,7 @@ uint8_t subroutines(uint8_t cmd, uint8_t scmd, uint8_t len, uint8_t* x) {
     // -------------------------------------------------------------------------
     // Subroutine 0x07: Unpack Dense Format Into Restricted Element Vector (FZ)
     // -------------------------------------------------------------------------
+
     case SUBROUTINE_UNPACK_VEC: {
         led2_on();
 
@@ -168,9 +186,11 @@ uint8_t subroutines(uint8_t cmd, uint8_t scmd, uint8_t len, uint8_t* x) {
         led2_off();
         return SS_ERR_OK;
     }
+
     // -------------------------------------------------------------------------
     // Subroutine 0x08: Subtract Two Restricted Vectors (Dimension N)
     // -------------------------------------------------------------------------
+
     case SUBROUTINE_VEC_SUB: {
         led2_on();
 
@@ -190,9 +210,11 @@ uint8_t subroutines(uint8_t cmd, uint8_t scmd, uint8_t len, uint8_t* x) {
         led2_off();
         return SS_ERR_OK;
     }
+
     // -------------------------------------------------------------------------
     // Subroutine 0x09: Multiply Fp Vector by Fp Matrix Transpose
     // -------------------------------------------------------------------------
+
     case SUBROUTINE_FP_VEC_MULT: {
         led2_on();
 
@@ -211,9 +233,11 @@ uint8_t subroutines(uint8_t cmd, uint8_t scmd, uint8_t len, uint8_t* x) {
         led2_off();
         return SS_ERR_OK;
     }
+
     // -------------------------------------------------------------------------
     // Subroutine 0x10: Pointwise Multiplication of Two Fp Vectors
     // -------------------------------------------------------------------------
+
     case SUBROUTINE_FP_VEC_MULT_POINTWISE: {
         led2_on();
         FP_ELEM result[N];
@@ -231,7 +255,13 @@ uint8_t subroutines(uint8_t cmd, uint8_t scmd, uint8_t len, uint8_t* x) {
         led2_off();
         return SS_ERR_OK;
     }
-    /* case SUBROUTINE_SUB_M: {
+
+    // -------------------------------------------------------------------------
+    // Subroutine 0x11: Vector Subtraction M 
+    // -------------------------------------------------------------------------
+
+     case SUBROUTINE_SUB_M: {
+#if defined(RSDPG)
         led2_on();
 
         FZ_ELEM* all_elements = (FZ_ELEM*)databuffer;
@@ -245,8 +275,17 @@ uint8_t subroutines(uint8_t cmd, uint8_t scmd, uint8_t len, uint8_t* x) {
 
         led2_off();
         return SS_ERR_OK;
-    } */
-    /* case SUBROUTINE_INF_W_BY_MATRIX: {
+#else
+        return SS_ERR_CMD;
+#endif
+    } 
+
+    // -------------------------------------------------------------------------
+    // Subroutine 0x12: Matrix Multiplication W (only for RSDPG)
+    // -------------------------------------------------------------------------
+
+    case SUBROUTINE_INF_W_BY_MATRIX: {
+#if defined(RSDPG)
         led2_on();
 
         FZ_ELEM* all_elements = (FZ_ELEM*)databuffer;
@@ -261,24 +300,29 @@ uint8_t subroutines(uint8_t cmd, uint8_t scmd, uint8_t len, uint8_t* x) {
 
         led2_off();
         return SS_ERR_OK;
-    } */
+#else
+        return SS_ERR_CMD;
+#endif
+    } 
+
     // -------------------------------------------------------------------------
     // Subroutine 0x13: Scaled Vector Addition (Fp Vector by Restricted Vector)
     // -------------------------------------------------------------------------
+
     case SUBROUTINE_SCALED: {
         led2_on();
 
         FP_ELEM result[N];
 
         // Extract 3 arguments from contiguous shared buffer:
-        // 1. Vector e (length N)
+        // Vector e (length N)
         const FZ_ELEM* vec_e = (const FZ_ELEM*)(databuffer);
 
-        // 2. Scalar challenge_1
+        // Scalar challenge_1
         uint32_t offset_chall = N * sizeof(FZ_ELEM);
         FP_ELEM chall_1 = *(FP_ELEM*)(databuffer + offset_chall);
 
-        // 3. Vector u_prime (length N - K)
+        // Vector u_prime (length N - K)
         uint32_t offset_u_prime = offset_chall + sizeof(FP_ELEM);
         const FP_ELEM* vec_u_prime = (const FP_ELEM*)(databuffer + offset_u_prime);
 
@@ -291,9 +335,11 @@ uint8_t subroutines(uint8_t cmd, uint8_t scmd, uint8_t len, uint8_t* x) {
         led2_off();
         return SS_ERR_OK;
     }
+
     // -------------------------------------------------------------------------
     // Subroutine 0x14: Expand Digest to Fixed Weight Vector
     // -------------------------------------------------------------------------
+
     case SUBROUTINE_EXPAND_DIGEST: {
         led2_on();
 
@@ -308,9 +354,11 @@ uint8_t subroutines(uint8_t cmd, uint8_t scmd, uint8_t len, uint8_t* x) {
         led2_off();
         return SS_ERR_OK;
     }
+
     // -------------------------------------------------------------------------
     // Subroutine 0x15: Normalize Restricted Vector (In-Place, Dimension N)
     // -------------------------------------------------------------------------
+
     case SUBROUTINE_DZ_NORM_N: {
         led2_on();
 
@@ -323,7 +371,13 @@ uint8_t subroutines(uint8_t cmd, uint8_t scmd, uint8_t len, uint8_t* x) {
         led2_off();
         return SS_ERR_OK;
     }
-    /* case SUBROUTINE_DZ_NORM_M: {
+
+    // -------------------------------------------------------------------------
+    // Subroutine 0x16: Normalize M 
+    // -------------------------------------------------------------------------
+
+    case SUBROUTINE_DZ_NORM_M: {
+#if defined(RSDPG)
         led2_on();
 
         fz_dz_norm_m((FZ_ELEM*)(databuffer));
@@ -332,11 +386,69 @@ uint8_t subroutines(uint8_t cmd, uint8_t scmd, uint8_t len, uint8_t* x) {
 
         led2_off();
         return SS_ERR_OK;
-    } */
+#else
+        return SS_ERR_CMD;
+#endif
+    } 
+
+    // -------------------------------------------------------------------------
+    // Subroutine 0x17: Expand Public Key
+    // -------------------------------------------------------------------------
+
+    case SUBROUTINE_EXPAND_PK: {
+        led2_on();
+
+        const uint8_t* seed_pk = (const uint8_t*)databuffer;
+        expand_pk(matrix_V_tr_buf, seed_pk);
+
+        uint16_t pk_len = (uint16_t)(K * (N - K) * sizeof(FP_ELEM));
+        uint8_t* data_ptr = (uint8_t*)matrix_V_tr_buf;
+
+        // The chunk index arrives as the first payload byte (x[0]); defaults to 0 if no payload was sent. Chunking is required here because 
+        // the full matrix (up to several KB) exceeds SimpleSerial2's single-packet limit (~249 bytes) - each chunk is requested via its own 'b' call.
+        uint16_t chunk_size = 200;  // safely under the ~249-byte SSv2.1 limit
+        uint16_t chunk_index = (len >= 1) ? x[0] : 0;
+        uint32_t offset = (uint32_t)chunk_index * chunk_size;
+
+        if (offset >= pk_len) {
+            led2_off();
+            return SS_ERR_LEN;
+        }
+
+        uint16_t current_len = (pk_len - offset < chunk_size) ? (uint16_t)(pk_len - offset) : chunk_size;
+        simpleserial_put('r', current_len, data_ptr + offset);
+
+        led2_off();
+        return SS_ERR_OK;
+    }
+
+    // -------------------------------------------------------------------------
+    // Subroutine 0x18: Expand Secret Key (seed_sk -> secret vector e)
+    // -------------------------------------------------------------------------
+
+    case SUBROUTINE_EXPAND_SK: {
+        led2_on();
+
+        // Input: seed for the secret key
+        const uint8_t* seed_sk = (const uint8_t*)databuffer;
+
+        // Output 1: secret vector e (placed inside databuffer right after the input seed)
+        FZ_ELEM* secret_vec_e = (FZ_ELEM*)(databuffer + KEYPAIR_SEED_LENGTH_BYTES);
+
+        // Reuse the global static matrix_V_tr_buf as dummy storage to avoid stack overflow!
+        expand_sk(secret_vec_e, matrix_V_tr_buf, seed_sk);
+
+        // Return the expanded secret vector e back to the host
+        simpleserial_put('r', N * sizeof(FZ_ELEM), (uint8_t*)secret_vec_e);
+
+        led2_off();
+        return SS_ERR_OK;
+    }
+
+    
     default:
         return SS_ERR_CMD;
     }
-
     return SS_ERR_CMD;
 }
 /*

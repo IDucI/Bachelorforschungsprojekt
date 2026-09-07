@@ -2,6 +2,8 @@
 #include "fp_arith.h"
 #include "restr_arith.h"
 #include "seedtree.h"
+#include "parameters.h"
+#include "csprng_hash.h"
 #include "pack_unpack.h"
 #include <string.h>
 
