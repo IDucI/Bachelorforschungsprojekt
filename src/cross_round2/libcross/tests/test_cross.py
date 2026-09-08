@@ -31,14 +31,14 @@ for algorithm in algorithms:
 
             print(algorithm, category, optimization)
 
-            v_bar = []
-            for i in range(c.params.t):
-                v_bar_i = calc.v_bar_i(seed_sk, root_seed, salt, i)
-                v_bar.append(v_bar_i)
+            v_bar_pre_norm = calc.v_bar_pre_norm(seed_sk, root_seed, salt)
 
-            v_bar_c = data["v_bar"]
+            v_bar_pre_norm_c = data["v_bar_pre_norm"]
 
-            if v_bar == v_bar_c:
+            print(v_bar_pre_norm[0][:10])
+            print(v_bar_pre_norm_c[0][:10])
+
+            if v_bar_pre_norm == v_bar_pre_norm_c:
                 print("MATCH")
             else:
                 print("MISMATCH")

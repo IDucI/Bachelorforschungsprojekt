@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from typing import Optional
+from xml.sax.handler import property_declaration_handler
 
 
 VALID_ALGORITHMS = {"RSDP", "RSDPG"}
@@ -37,6 +38,21 @@ class CrossParams:
             5: 256,
             }[self.category]
 
+    @property
+    def tree_nodes_to_store(self) -> int:
+        return {
+            "RSDP": {
+                "fast":     {1: 82,  3: 125, 5: 167},
+                "balanced": {1: 108, 3: 165, 5: 220},
+                "small":    {1: 129, 3: 184, 5: 251}
+                },
+             "RSDPG": {
+                "fast":     {1: 76,  3: 119, 5: 153},
+                "balanced": {1: 101, 3: 138, 5: 185},
+                "small":    {1: 117, 3: 165, 5: 220}
+                }
+            }[self.algorithm][self.optimization][self.category]
+
     # ========================= Derived parameter helpers =========================
 
     @property
@@ -56,6 +72,14 @@ class CrossParams:
     def salt_length_bytes(self) -> int:
         return 2 * (self.sec_margin_lambda // 8) 
 
+    @property 
+    def num_leaves_merkle_tree(self) -> int:
+        return self.t
+
+    @property
+    def num_nodes_merkle_tree(self) -> int:
+        return 2 * self.num_leaves_merkle_tree - 1
+
     @property
     def num_leaves_seed_tree(self) -> int:
         return self.t
@@ -64,6 +88,10 @@ class CrossParams:
     def num_nodes_seed_tree(self) -> int:
         return 2 * self.num_leaves_seed_tree - 1
 
+    @property
+    def densely_packed_fp_vec_size(self) -> int:
+        return (self.n * (self.p - 1).bit_length() + 7) // 8
+
     @property 
     def densely_packed_fp_syn_size(self) -> int:
         return ((self.n - self.k) * (self.p - 1).bit_length() + 7) // 8
@@ -71,6 +99,10 @@ class CrossParams:
     @property
     def densely_packed_fz_vec_size(self) -> int:
         return (self.n * (self.z - 1).bit_length() + 7) // 8
+
+    @property
+    def densely_packed_fz_rsdp_g_vec_size(self) -> int:
+        return (self.m * (self.z - 1).bit_length() + 7) // 8
 
     @property
     def csprng_domain_sep_const(self) -> int:
