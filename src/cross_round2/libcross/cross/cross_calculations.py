@@ -60,7 +60,7 @@ class Calculations:
     
     # v_bar: output vector for each round i before normalization,
     # used as input for convert_restr_vec_to_fp.
-    def v_bar(self, seed_sk, root_seed, salt):
+    def v_bar_pre_norm(self, seed_sk, root_seed, salt):
         v_bar = []
 
         if self.algorithm == "RSDP":
@@ -89,5 +89,10 @@ class Calculations:
             v_bar.append(v_bar_i)
 
         return v_bar
+
+    def v_bar_post_norm(self, v_bar_pre_norm):
+        v_bar = []
+        for i in range(self.params.t):
+            v_bar[i] = self.subfunctions.fz_dz_norm_n(v_bar_pre_norm[i])
         
         

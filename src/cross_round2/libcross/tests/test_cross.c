@@ -7,6 +7,7 @@
 #include "pack_unpack.h"
 #include <string.h>
 #include <stdio.h>
+#include <stdbool.h>
 
 // expand_sk is not exposed in a header, so we declared it here.
 #if defined(RSDP)
@@ -21,62 +22,176 @@ void expand_sk(FZ_ELEM e_bar[N],
 	const uint8_t seed_sk[KEYPAIR_SEED_LENGTH_BYTES]);
 #endif
 
-// Write byte array as hexadecimal string
-static void write_hex(
-	FILE* json,
-	const uint8_t* array,
-	size_t length) {
-
-	for (size_t i = 0; i < length; i++) {
-		fprintf(json, "%02x", array[i]);
+// Write comma between JSON fields if needed.
+static void json_separator(FILE* json, bool last) {
+	if (!last) {
+		fprintf(json, ",\n");
+	}
+	else {
+		fprintf(json, "\n");
 	}
 }
 
-// Write FZ_ELEM array as JSON array
-static void write_fz_2d_array(
+/*
+ * Write byte array as hexadecimal JSON string.
+ * Example: "seed_sk":"12ab"
+ * If last is false, append a comma after the JSON field.
+ */
+static void write_hex(
 	FILE* json,
+	const char* name,
+	const uint8_t* array,
+	size_t length,
+	bool last) {
+
+	fprintf(json, "\"%s\":\"", name);
+	for (size_t i = 0; i < length; i++) {
+		fprintf(json, "%02x", array[i]);
+	}
+	fprintf(json, "\"");
+	json_separator(json, last);
+}
+
+/*
+ * Write FP_ELEM matrix as JSON array.
+ * Example: "matrix":[[1,2],[2,1]]
+ * If last is false, append a comma after the JSON field.
+ */
+static void write_fp_matrix(
+	FILE* json,
+	const char* name,
 	size_t rows,
 	size_t cols,
-	const FZ_ELEM array[rows][cols]) {
+	const FP_ELEM array[rows][cols],
+	bool comma) {
 
+	fprintf(json, "\"%s\":", name);
 	fprintf(json, "[");
-
-	for (size_t i = 0; i < rows; i++){
+	for (size_t i = 0; i < rows; i++) {
 		fprintf(json, "[");
 
-		for (size_t j = 0; j < cols; j++){
+		for (size_t j = 0; j < cols; j++) {
 			fprintf(json, "%u", (unsigned int)array[i][j]);
 			if (j + 1 < cols) {
 				fprintf(json, ", ");
 			}
 		}
-
 		fprintf(json, "]");
-		if (i + 1 < rows) { 
-			fprintf(json, ", "); 
+		if (i + 1 < rows) {
+			fprintf(json, ", ");
 		}
 	}
-
 	fprintf(json, "]");
+	json_separator(json, comma);
 }
 
-// v_bar: output vector for each round i before normalization,
-// used as input for convert_restr_vec_to_fp.
-static void calculate_v_bar(
-	FZ_ELEM v_bar[T][N],
-	const uint8_t seed_sk[KEYPAIR_SEED_LENGTH_BYTES],
-	const uint8_t root_seed[SEED_LENGTH_BYTES],
-	const uint8_t salt[SALT_LENGTH_BYTES]) {
+/*
+ * Write FZ_ELEM matrix as JSON array.
+ * Example: "matrix":[[1,2],[2,1]]
+ * If last is false, append a comma after the JSON field.
+ */
+static void write_fz_matrix(
+	FILE* json,
+	const char* name,
+	size_t rows,
+	size_t cols,
+	const FZ_ELEM array[rows][cols],
+	bool comma) {
 
+	fprintf(json, "\"%s\":", name);
+	fprintf(json, "[");
+	for (size_t i = 0; i < rows; i++) {
+		fprintf(json, "[");
+
+		for (size_t j = 0; j < cols; j++) {
+			fprintf(json, "%u", (unsigned int)array[i][j]);
+			if (j + 1 < cols) {
+				fprintf(json, ", ");
+			}
+		}
+		fprintf(json, "]");
+		if (i + 1 < rows) {
+			fprintf(json, ", ");
+		}
+	}
+	fprintf(json, "]");
+	json_separator(json, comma);
+}
+
+/*
+ * Write FP_ELEM vector as JSON array.
+ * Example: "vector":[1,2,3]
+ * If last is false, append a comma after the JSON field.
+ */
+static void write_fp_vector(
+	FILE* json,
+	const char* name,
+	size_t length,
+	const FP_ELEM array[length],
+	bool comma) {
+
+	fprintf(json, "\"%s\":", name);
+	fprintf(json, "[");
+	for (size_t i = 0; i < length; i++) {
+		fprintf(json, "%u", (unsigned int)array[i]);
+		if (i + 1 < length) {
+			fprintf(json, ", ");
+		}
+	}
+	fprintf(json, "]");
+	json_separator(json, comma);
+}
+
+/*
+ * Write FZ_ELEM vector as JSON array.
+ * Example: "vector":[1,2,3]
+ * If last is false, append a comma after the JSON field.
+ */
+static void write_fz_vector(
+	FILE* json,
+	const char* name,
+	size_t length,
+	const FZ_ELEM array[length],
+	bool comma) {
+
+	fprintf(json, "\"%s\":", name);
+	fprintf(json, "[");
+	for (size_t i = 0; i < length; i++) {
+		fprintf(json, "%u", (unsigned int)array[i]);
+		if (i + 1 < length) {
+			fprintf(json, ", ");
+		}
+	}
+	fprintf(json, "]");
+	json_separator(json, comma);
+}
+
+int main(void) {
+	// Create JSON output file for current variant
+	char filename[100];
+	snprintf(filename, sizeof(filename), "%s.json", ALG_VERSION);
+	FILE* json = fopen(filename, "w");
+
+	// Generate random root seed and salt for both C and Python calculations.
+	sk_t SK;
+	pk_t PK;
+	CROSS_keygen(&SK, &PK);
+
+	uint8_t root_seed[SEED_LENGTH_BYTES];
+	uint8_t salt[SALT_LENGTH_BYTES];
+	randombytes(root_seed, SEED_LENGTH_BYTES);
+	randombytes(salt, SALT_LENGTH_BYTES);
+
+	// Calculate v_bar for comparison with the Python implementation.
 	FZ_ELEM e_bar[N];
 	FP_ELEM V_tr[K][N - K];
 
 #if defined(RSDP)
-	expand_sk(e_bar, V_tr, seed_sk);
+	expand_sk(e_bar, V_tr, SK.seed_sk);
 #elif defined(RSDPG)
 	FZ_ELEM e_G_bar[M];
 	FZ_ELEM W_mat[M][N - M];
-	expand_sk(e_bar, e_G_bar, V_tr, W_mat, seed_sk);
+	expand_sk(e_bar, e_G_bar, V_tr, W_mat, SK.seed_sk);
 #endif
 
 	uint8_t seed_tree[SEED_LENGTH_BYTES * NUM_NODES_SEED_TREE] = { 0 };
@@ -85,6 +200,27 @@ static void calculate_v_bar(
 	seed_leaves(round_seeds, seed_tree);
 
 	FZ_ELEM e_bar_prime[T][N];
+	FZ_ELEM v_bar[T][N];
+	FZ_ELEM v_bar_pre_norm[T][N];
+	FP_ELEM u_prime[T][N];
+	FP_ELEM s_prime[T][N - K];
+
+	FP_ELEM v[T][N];
+	FP_ELEM u[T][N];
+
+#if defined(RSDP)
+	uint8_t cmt_0_i_input[DENSELY_PACKED_FP_SYN_SIZE +
+		DENSELY_PACKED_FZ_VEC_SIZE +
+		SALT_LENGTH_BYTES];
+	const int offset_salt = DENSELY_PACKED_FP_SYN_SIZE + DENSELY_PACKED_FZ_VEC_SIZE;
+#elif defined(RSDPG)
+	uint8_t cmt_0_i_input[DENSELY_PACKED_FP_SYN_SIZE +
+		DENSELY_PACKED_FZ_RSDP_G_VEC_SIZE +
+		SALT_LENGTH_BYTES];
+	const int offset_salt = DENSELY_PACKED_FP_SYN_SIZE + DENSELY_PACKED_FZ_RSDP_G_VEC_SIZE;
+#endif
+
+	memcpy(cmt_0_i_input + offset_salt, salt, SALT_LENGTH_BYTES);
 
 #if defined(RSDPG)
 	FZ_ELEM e_G_bar_prime[M];
@@ -111,45 +247,42 @@ static void calculate_v_bar(
 		fz_dz_norm_n(e_bar_prime[i]);
 #endif
 		fz_vec_sub_n(v_bar[i], e_bar, e_bar_prime[i]);
+		fz_vec_sub_n(v_bar_pre_norm[i], e_bar, e_bar_prime[i]);
+
+		// FP_ELEM v[N] is declared above as FP_ELEM v[T][N] for testing, so we use v[i].
+		convert_restr_vec_to_fp(v[i], v_bar[i]);
+		fz_dz_norm_n(v_bar[i]);
+		csprng_fp_vec(u_prime[i], &csprng_state);
+
+		// FP_ELEM u[N] is declared above as FP_ELEM u[T][N] for testing, so we use u[i].
+		fp_vec_by_fp_vec_pointwise(u[i], v[i], u_prime[i]);
+		// FP_ELEM s_prime[N-K] is declared above as FP_ELEM s_prime[T][N - K] for testing, so we use s_prime[i].
+		fp_vec_by_fp_matrix(s_prime[i], u[i], V_tr);
+		fp_dz_norm_synd(s_prime[i]);
+		pack_fp_syn(cmt_0_i_input, s_prime[i]);
 	}
-}
 
-int main(void) {
-	// Create JSON output file for current variant
-	char filename[100];
-	snprintf(filename, sizeof(filename), "%s.json", ALG_VERSION);
-	FILE* json = fopen(filename, "w");
-
-	// Generate random root seed and salt for both C and Python calculations.
-	sk_t SK;
-	pk_t PK;
-	CROSS_keygen(&SK, &PK);
-
-	uint8_t root_seed[SEED_LENGTH_BYTES];
-	uint8_t salt[SALT_LENGTH_BYTES];
-	randombytes(root_seed, SEED_LENGTH_BYTES);
-	randombytes(salt, SALT_LENGTH_BYTES);
-
-	// Calculate v_bar for comparison with the Python implementation.
-	FZ_ELEM v_bar[T][N];
-	calculate_v_bar(v_bar, SK.seed_sk, root_seed, salt);
 	fprintf(json, "{\n");
 
-	fprintf(json, "\"seed_sk\":\"");
-	write_hex(json, SK.seed_sk, KEYPAIR_SEED_LENGTH_BYTES);
-	fprintf(json, "\",\n");
+	write_hex(json, "seed_sk", SK.seed_sk, KEYPAIR_SEED_LENGTH_BYTES, false);
+	write_hex(json, "root_seed", root_seed, SEED_LENGTH_BYTES, false);
+	write_hex(json, "salt", salt, SALT_LENGTH_BYTES, false);
 
-	fprintf(json, "\"root_seed\":\"");
-	write_hex(json, root_seed, SEED_LENGTH_BYTES);
-	fprintf(json, "\",\n");
+	write_fz_matrix(json, "v_bar_pre_norm", T, N, v_bar_pre_norm, false);
+	write_fz_vector(json, "e_bar", N, e_bar, false);
+	write_fp_matrix(json, "V_tr", K, (N - K), V_tr, false);
+	write_fz_matrix(json, "v_bar", T, N, v_bar, false);
 
-	fprintf(json, "\"salt\":\"");
-	write_hex(json, salt, SALT_LENGTH_BYTES);
-	fprintf(json, "\",\n");
+#if defined(RSDPG)
+	write_fz_vector(json, "e_G_bar", M, e_G_bar, false);
+	write_fz_matrix(json, "W_mat", M, (N - M), W_mat, false);
+#endif
 
-	fprintf(json, "\"v_bar\":");
-	write_fz_2d_array(json, T, N, v_bar);
-	fprintf(json, "\n");
+	write_fz_matrix(json, "e_bar_prime", T, N, e_bar_prime, false);
+	write_fp_matrix(json, "v", T, N, v, false);
+	write_fp_matrix(json, "u_prime", T, N, u_prime, false);
+	write_fp_matrix(json, "u", T, N, u, false);
+	write_fp_matrix(json, "s_prime", T, (N - K), s_prime, true);
 
 	fprintf(json, "}\n");
 	fclose(json);
