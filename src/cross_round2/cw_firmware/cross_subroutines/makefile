@@ -21,6 +21,13 @@
 # Explicitly sets the shell to Bash so that 'echo -e' and subshells run smoothly
 SHELL := /usr/bin/bash
 
+# Guaranteed clean console output with -j
+MAKEFLAGS += -j9 --output-sync=line
+
+# Default values for platform & clock
+PLATFORM ?= PINATA
+MCU_CLK  ?= INT
+
 DIRNAME := $(notdir $(patsubst %/,%,$(dir $(abspath $(lastword $(MAKEFILE_LIST))))))
 
 # =============================================================================
@@ -57,9 +64,11 @@ all: hex
 
 hex: $(HEXNAMES)
 	@echo "--------------------------------------------------------"
-	@echo " All 18 firmware projects successfully generated!"
+	@echo " All 18 variants are successfully generated"
 	@echo "--------------------------------------------------------"
 
+# Main build loop: Splits the target name into macro flags 
+# and calls itself recursively for each individual variant.
 $(HEXNAMES):
 	@RAW_VAR=$$(echo $@ | cut -d'_' -f2); \
 	if [ "$$RAW_VAR" = "rsdpg" ]; then VAR="RSDP_G"; else VAR="RSDP"; fi; \
@@ -68,25 +77,25 @@ $(HEXNAMES):
 	if [ "$$OPT_RAW" = "fast" ]; then OPT="SPEED"; elif [ "$$OPT_RAW" = "small" ]; then OPT="SIG_SIZE"; else OPT="BALANCED"; fi; \
 	CLEAN_NAME=$$(echo $@ | sed 's/^cross_//'); \
 	FULL_TARGET="$(DIRNAME)_$$CLEAN_NAME"; \
-	echo "======================================================================"; \
 	echo " Building Firmware Variant: $$FULL_TARGET"; \
-	echo "======================================================================"; \
+	mkdir -p "objdir-$$FULL_TARGET"; \
 	$(MAKE) --no-print-directory \
 		BUILD_SUB_VARIANT=1 \
 		TARGET=$$FULL_TARGET \
-		OBJDIR=objdir-$$FULL_TARGET \
+		OBJDIR="objdir-$$FULL_TARGET" \
 		SS_VER=SS_VER_2_1 \
 		MCU_CLK=$(MCU_CLK) \
+		PLATFORM=$(PLATFORM) \
 		CRYPTO_TARGET=NONE \
 		EXTRA_CFLAGS="-D$$VAR -DCATEGORY_$$CAT -D$$OPT" \
-		build_all || exit 1
-
+		all || exit 1
+ 
 clean:
 	@echo "Cleaning up all build artifacts and variant directories..."
 	rm -rf objdir-*
 	rm -f *.hex *.elf *.map *.su *.lst *.o *.lss *.sym *.bin *.eep
 	@echo "Clean completed!"
-	
+
 # =============================================================================
 # SINGLE VARIANT BUILD LOGIC (Only called in the sub-make)
 # =============================================================================
@@ -105,16 +114,14 @@ SS_VER::=SS_VER_2_1
 TARGET ?= cross_subroutines_rsdp
 
 # Local C source files 
-SRC += main.c hammingweight.c ledz.c
+SRC += main.c ledz.c  #hammingweight.c
 
 # External CROSS source files
 CROSS_LIB_DIR = ../../libcross/variants/Reference_Implementation/lib
-SRC += $(CROSS_LIB_DIR)/CROSS.c
-SRC += $(CROSS_LIB_DIR)/pack_unpack.c
-SRC += $(CROSS_LIB_DIR)/csprng_hash.c
-SRC += $(CROSS_LIB_DIR)/fips202.c
-SRC += $(CROSS_LIB_DIR)/keccakf1600.c
-SRC += $(CROSS_LIB_DIR)/sign.c
+SRC += CROSS.c pack_unpack.c csprng_hash.c fips202.c keccakf1600.c sign.c
+
+# VPATH zeigt dem Compiler, wo die Dateiverzeichnisse liegen
+VPATH += $(CROSS_LIB_DIR)
 
 # CROSS Reference Implementation Sources
 EXTRAINCDIRS += ../../libcross
@@ -122,16 +129,12 @@ EXTRAINCDIRS += ../../libcross/variants/Reference_Implementation
 EXTRAINCDIRS += ../../libcross/variants/Reference_Implementation/include
 EXTRAINCDIRS += ../../libcross/variants/Reference_Implementation/lib
 
-# Variante-Flags an die ChipWhisperer Extra-CFLAGS übergeben
-EXTRA_CFLAGS += $(EXTRA_CFLAGS)
-
 # Target compilation flags i.e Fallback CFLAGS
 CFLAGS ?= -DRSDP -DCATEGORY_1 -DSPEED
 CFLAGS += $(EXTRA_CFLAGS)
 CFLAGS += -DHIGH_SPEED_UART_BAUD=230400U
 
 # Basis-CFLAGS, which are always true
-# ChipWhisperer Nano nutzt den internen 16MHz HSI-Takt des STM32
 BASE_CFLAGS = -UHSE_VALUE -DHSI_VALUE=16000000U -DMCU_CLK_INT
 
 # -----------------------------------------------------------------------------
@@ -161,45 +164,21 @@ LDFLAGS += -Wl,--print-memory-usage
 ALL_CFLAGS += -fstack-usage # this creates %.su files with the stack allocations per function
 
 # specific definition of compilation of this object. This allows us to specify a different optimization flag
-$(OBJDIR)/hammingweight.o : hammingweight.c $(OBJDIR)
+#$(OBJDIR)/hammingweight.o : hammingweight.c $(OBJDIR)
+#	@$(ECHO_BLANK)
+#	@echo Compiling:
+#	@echo -en $(COMPMSG)
+#	$(CC) -c $(filter-out -O$(OPT), $(ALL_CFLAGS)) $< -o $@ -O0
+#	@echo -e $(DONEMSG)
+
+# Link: create ELF output file from object files.
+.SECONDARY : $(TARGET-PLAT).elf
+.PRECIOUS : $(OBJ)
+%.elf: $(OBJ)
 	@$(ECHO_BLANK)
-	@echo Compiling:
-	@echo -en $(COMPMSG)
-	$(CC) -c $(filter-out -O$(OPT), $(ALL_CFLAGS)) $< -o $@ -O0
+	@echo LINKING:
+	@echo -en $(LINKMSG)
+	$(LINK_COMPILER) $(ALL_CFLAGS) $^ --output $@ $(LDFLAGS)
 	@echo -e $(DONEMSG)
-
-
-OBJCOPY ?= arm-none-eabi-objcopy
-OBJDUMP ?= arm-none-eabi-objdump
-NM      ?= arm-none-eabi-nm
-
-.PHONY: build_all
-
-build_all: $(TARGET)-$(PLATFORM).hex \
-           $(TARGET)-$(PLATFORM).bin \
-           $(TARGET)-$(PLATFORM).sym \
-           $(TARGET)-$(PLATFORM).eep \
-           $(TARGET)-$(PLATFORM).lss
-
-# HIER FEHLTE DIE HEX-REGEL:
-$(TARGET)-$(PLATFORM).hex: $(TARGET)-$(PLATFORM).elf
-	@echo "Creating HEX file: $@"
-	$(OBJCOPY) -O ihex $< $@
-
-$(TARGET)-$(PLATFORM).bin: $(TARGET)-$(PLATFORM).elf
-	@echo "Creating Binary: $@"
-	$(OBJCOPY) -O binary $< $@
-
-$(TARGET)-$(PLATFORM).sym: $(TARGET)-$(PLATFORM).elf
-	@echo "Creating Symbol Table: $@"
-	$(NM) -n $< > $@
-
-$(TARGET)-$(PLATFORM).eep: $(TARGET)-$(PLATFORM).elf
-	@echo "Creating EEPROM file: $@"
-	@-$(OBJCOPY) -j .eeprom --set-section-flags=.eeprom="alloc,load" --change-section-lma .eeprom=0 --no-change-warnings -O ihex $< $@ || exit 0
-
-$(TARGET)-$(PLATFORM).lss: $(TARGET)-$(PLATFORM).elf
-	@echo "Creating Disassembly Listing: $@"
-	$(OBJDUMP) -h -S $< > $@
 
 endif

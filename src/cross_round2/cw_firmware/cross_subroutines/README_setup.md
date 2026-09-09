@@ -9,6 +9,7 @@ This project builds and runs the Pinata firmware for the CROSS subroutine test u
 The firmware project is located at:
 `...\Bachelorforschungsprojekt\src\cross_round2\cw_firmware\cross_subroutines`
 
+
 ## Clock Setup:
 
 We're using the internal clk corresponding to the given README from the reference_package
@@ -30,7 +31,7 @@ PH0    -> HS2 -> This isn't necessary anymore, because we don't use an external 
 
 Build the firmware from WSL or another Linux-like environment:
 `cd .../Bachelorforschungsprojekt/src/cross_round2/cw_firmware/cross_subroutines`
-`make PLATFORM=PINATA MCU_CLK=INT -j all` 
+`make` 
 (We use make, so ./compile shouldn't be necessary)
 
 ## The generated firmware image are 18 variants of these following points:
@@ -54,7 +55,13 @@ cross_rsdpg_5_fast
 cross_rsdpg_5_balanced 
 cross_rsdpg_5_small
 
--> We're getting the .hex- .elf- .map- .lss- .sym- .bin- .eep-files, where only the .hex is pretty interesting for us. This process will take around 3 to 4 minutes 
+-> We're getting the .hex- .elf- .map- .lss- .sym- .bin- .eep-files, where only the .hex is pretty interesting for us. This process will take around 4 to 5 minutes. 
+If everything worked out without an issue you can see an message with:
+
+============================================================
+All 18 variants are successfully generated!"
+============================================================
+
 
 ## Flashing and Verification: 
 
@@ -104,5 +111,9 @@ For example, the host can send input data with s, trigger a CROSS subroutine wit
 
 ## After modifying the firmware, rebuild it from the project folder:
 
-Execute the `make clean` command first, then build the firmware again with `make PLATFORM=PINATA MCU_CLK=INT -j all`. After that we can flash the generated 
-.hex file again.
+Execute the `make clean` command first, then build the firmware again with `make` after that we can flash .hex file again.  
+
+Don't do `make clean && make`, because The make clean doesn't catch all subfolders at once. When rm -rf objdir-* is executed, the system sends the delete command to the file system. With quick calls (or under WSL/Windows), the file system sometimes only frees the directories a few milliseconds later, even though Bash has already started the next command (make).
+The following `make` then sees for example for 7 variants, the .hex files or subfolders still exist and are up-to-date. It thinks then I don’t need to rebuild them. So it only builds the 11 variants that had already been deleted.
+
+
