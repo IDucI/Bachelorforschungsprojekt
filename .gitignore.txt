@@ -1,17 +1,69 @@
-# Build-Ordner
-build/
-bin/
-*.exe
+# Prerequisites
+*.d
+
+# Compiled Object files
+*.slo
+*.lo
 *.o
 *.obj
-*.dll
-*.so
-*.out
-*.env
-*.hex
 
-# VS-spezifisch
+# Precompiled Headers
+*.gch
+*.pch
+
+# Compiled Dynamic libraries
+*.so
+*.dylib
+*.dll
+
+# Fortran module files
+*.mod
+*.smod
+
+# Compiled Static libraries
+*.lai
+*.la
+*.a
+*.lib
+
+# Executables
+*.exe
+*.out
+*.app
+
+# Compiled python modules.
+*.pyc
+
+# Setuptools distribution folder.
+/dist/
+
+# Python egg metadata, regenerated from source files by setuptools.
+*.egg-info/
+
+
+*.json
+*.log
+*.kate-swp
+
+build/
+variants_old/
+configured.dat
+*.code-workspace
+test.*
+tmp.*
+
+# cw_firmware build artifacts
+objdir-*/
+*.su
+*.lst
+*.elf
+*.hex
+*.bin
+*.eep
+*.lss
+*.map
+*.sym
+
+# IDE/local editor files
 .vs/
-*.user
-*.suo
-     
+.vscode/
