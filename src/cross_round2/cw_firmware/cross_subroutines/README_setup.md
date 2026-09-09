@@ -55,11 +55,13 @@ cross_rsdpg_5_fast
 cross_rsdpg_5_balanced 
 cross_rsdpg_5_small
 
--> We're getting the .hex- .elf- .map- .lss- .sym- .bin- .eep-files, where only the .hex is pretty interesting for us. This process will take around 4 to 5 minutes. If everything worked out without an issue you can see an message with 
+-> We're getting the .hex- .elf- .map- .lss- .sym- .bin- .eep-files, where only the .hex is pretty interesting for us. This process will take around 4 to 5 minutes. 
+If everything worked out without an issue you can see an message with:
 
 ============================================================
 All 18 variants are successfully generated!"
 ============================================================
+
 
 ## Flashing and Verification: 
 
@@ -113,4 +115,5 @@ Execute the `make clean` command first, then build the firmware again with `make
 
 Don't do `make clean && make`, because The make clean doesn't catch all subfolders at once. When rm -rf objdir-* is executed, the system sends the delete command to the file system. With quick calls (or under WSL/Windows), the file system sometimes only frees the directories a few milliseconds later, even though Bash has already started the next command (make).
 The following `make` then sees for example for 7 variants, the .hex files or subfolders still exist and are up-to-date. It thinks then I don’t need to rebuild them. So it only builds the 11 variants that had already been deleted.
+
 

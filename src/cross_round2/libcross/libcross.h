@@ -62,6 +62,25 @@ extern "C" {
     void cross_csprng_fz_inf_w(FZ_ELEM res[M], CSPRNG_STATE_T* const csprng_state);
 #endif
 
+    void cross_csprng_fp_vec(FP_ELEM res[N], CSPRNG_STATE_T* const csprng_state);
+
+    void cross_fp_dz_norm_synd(FP_ELEM v[N]);
+
+    void cross_hash(uint8_t digest[HASH_DIGEST_LENGTH], const unsigned char* const m, const uint64_t mlen, const uint16_t dsc);
+
+    void cross_tree_root(uint8_t root[HASH_DIGEST_LENGTH], uint8_t tree[NUM_NODES_MERKLE_TREE * HASH_DIGEST_LENGTH],  uint8_t leaves[T][HASH_DIGEST_LENGTH]);
+
+    void cross_csprng_fp_vec_chall_1(FP_ELEM res[T], CSPRNG_STATE_T* const csprng_state);
+
+    void cross_pack_fp_vec(uint8_t out[DENSELY_PACKED_FP_VEC_SIZE], const FP_ELEM in[N]);
+
+    uint16_t cross_tree_proof(uint8_t mtp[HASH_DIGEST_LENGTH * TREE_NODES_TO_STORE], const uint8_t tree[NUM_NODES_MERKLE_TREE * HASH_DIGEST_LENGTH], const uint8_t leaves_to_reveal[T]);
+
+    int cross_seed_path(unsigned char* seed_storage, const unsigned char seed_tree[NUM_NODES_SEED_TREE * SEED_LENGTH_BYTES], const unsigned char indices_to_publish[T]);
+
+    #if defined(RSDPG)
+    void cross_pack_fz_rsdp_g_vec(uint8_t out[DENSELY_PACKED_FZ_RSDP_G_VEC_SIZE], const FZ_ELEM in[M]);
+    #endif
     // -----------------------------------------------------------------------
     // Subroutines
     // -----------------------------------------------------------------------

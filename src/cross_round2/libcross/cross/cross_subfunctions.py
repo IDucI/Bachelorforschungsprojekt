@@ -1,5 +1,6 @@
 import ctypes
-from ctypes import c_uint16, c_uint32, c_uint8, POINTER, c_ulonglong
+from ctypes import c_uint16, c_uint32, c_uint64, c_uint8, POINTER, c_ulonglong
+from pickletools import uint8
 from typing import List, Tuple
 from .cross_params import get_params
 
@@ -23,14 +24,21 @@ class CrossSubfunctions:
         self.m = self.params.m
         self.t = self.params.t
         self.w = self.params.w
+        
+        self.tree_nodes_to_store        = self.params.tree_nodes_to_store
 
         self.seed_length_bytes          = self.params.seed_length_bytes
         self.keypair_seed_length_bytes  = self.params.keypair_seed_length_bytes
         self.hash_digest_length         = self.params.hash_digest_length
         self.salt_length_bytes          = self.params.salt_length_bytes
+        self.num_nodes_merkle_tree      = self.params.num_nodes_merkle_tree
         self.num_nodes_seed_tree        = self.params.num_nodes_seed_tree
+        self.densely_packed_fp_vec_size = self.params.densely_packed_fp_vec_size
         self.densely_packed_fp_syn_size = self.params.densely_packed_fp_syn_size
         self.densely_packed_fz_vec_size = self.params.densely_packed_fz_vec_size
+
+        if self.algorithm == "RSDPG":
+            self.densely_packed_fz_rsdp_g_vec_size = self.params.densely_packed_fz_rsdp_g_vec_size
 
     def load_dll(self):
         """Loads the native CROSS shared library (.so) via ctypes and declares the argument types (argtypes) and return types (restype) 
@@ -61,6 +69,34 @@ class CrossSubfunctions:
         elif self.algorithm == "RSDPG":
             self.cross.c_cross.cross_csprng_fz_inf_w.argtypes = [POINTER(self.FZ_ELEM), POINTER(c_csprng_state)]
             self.cross.c_cross.cross_csprng_fz_inf_w.restype = None
+
+        self.cross.c_cross.cross_csprng_fp_vec.argtypes = [POINTER(self.FP_ELEM), POINTER(c_csprng_state)]
+        self.cross.c_cross.cross_csprng_fp_vec.restype = None
+
+        self.cross.c_cross.cross_fp_dz_norm_synd.artypes = [POINTER(self.FP_ELEM)]
+        self.cross.c_cross.cross_fp_dz_norm_synd.restype = None
+
+        self.cross.c_cross.cross_hash.argtypes = [POINTER(c_uint8), POINTER(c_uint8), c_uint64, c_uint16]
+        self.cross.c_cross.cross_hash.restype = None
+
+        self.cross.c_cross.cross_tree_root.argtypes = [POINTER(c_uint8), POINTER(c_uint8), POINTER(c_uint8)]
+        self.cross.c_cross.cross_tree_root.restype = None
+
+        self.cross.c_cross.cross_csprng_fp_vec_chall_1.argtypes = [POINTER(self.FP_ELEM), POINTER(c_csprng_state)]
+        self.cross.c_cross.cross_csprng_fp_vec_chall_1.restype = None
+
+        self.cross.c_cross.cross_pack_fp_vec.argtypes = [POINTER(c_uint8), POINTER(self.FP_ELEM)]
+        self.cross.c_cross.cross_pack_fp_vec.restype = None
+
+        self.cross.c_cross.cross_tree_proof.argtypes = [POINTER(c_uint8), POINTER(c_uint8), POINTER(c_uint8)]
+        self.cross.c_cross.cross_tree_proof.restype = c_uint16
+
+        self.cross.c_cross.cross_seed_path.argtypes = [POINTER(c_uint8), POINTER(c_uint8), POINTER(c_uint8)]
+        self.cross.c_cross.cross_seed_path.restype = int
+
+        if self.algorithm == "RSDPG":
+            self.cross.c_cross.cross_pack_fz_rsdp_g_vec.argtypes = [POINTER(c_uint8), POINTER(self.FZ_ELEM)]
+            self.cross.c_cross.cross_pack_fz_rsdp_g_vec.restype = None
             
         # ------------------------------------------------------------------------
         #  Subroutines
@@ -187,6 +223,95 @@ class CrossSubfunctions:
 
         self.cross.c_cross.cross_csprng_fz_inf_w(c_res, csprng_state)
         return list(c_res)
+
+    def csprng_fp_vec(self, csprng_state: c_csprng_state) -> List[int]:
+        c_res = (self.FP_ELEM * self.n)()
+        
+        self.cross.c_cross.csprng_fp_vec(c_res, csprng_state)
+        return list(c_res)
+
+    def fp_dz_norm_synd(self, v:List[int]) -> List[int]:
+        if len(v) != self.n:
+            raise ValueError(f"Expected v to have length {self.n}, got {len(v)}")
+        c_v = (self.FP_ELEM * self.n)(*v)
+
+        self.cross.c_cross.cross_fz_dz_norm_synd(c_v)
+        return list(c_v)
+
+    def hash(self, m: bytes, dsc: int) -> bytes:
+        c_digest = (c_uint8 * self.hash_digest_length)()
+        c_m      = (c_uint8 *len(m))(*m)  
+
+        self.cross.c_cross.cross_hash(c_digest, c_m, len(m), dsc)
+        return bytes(c_digest)
+
+    def tree_root(self, leaves: list[int]) -> tuple[bytes, bytes]:
+        matrix_size = self.t * self.hash_digest_length
+        if len(leaves) != matrix_size:
+            raise ValueError(f"Expected leaves to have length {matrix_size}, got {len(leaves)}")
+
+        c_root   = (c_uint8 * self.hash_digest_length)()
+        c_tree   = (c_uint8 * (self.num_nodes_merkle_tree * self.hash_digest_length))()
+        c_leaves = (c_uint8 * matrix_size)(*leaves)
+
+        self.cross.c_cross.cross_tree_root(c_root, c_tree, c_leaves)
+        return bytes(c_root), bytes(c_tree)
+
+    def csprng_fp_vec_chall_1(self, csprng_state: c_csprng_state) -> List[int]:
+        c_res = (self.FP_ELEM * self.t)()
+
+        self.cross.c_cross.cross_csprng_fp_vec_chall_1(c_res, csprng_state)
+        return list(c_res)
+
+    def pack_fp_vec(self, inp: List[int]) -> bytes:
+        if len(inp) != self.n:
+            raise ValueError(f"Expected inp to have length {self.n}, got {len(inp)}")
+
+        c_out = (c_uint8 * self.densely_packed_fp_vec_size)()
+        c_inp = (self.FP_ELEM * self.n)(*inp)
+
+        self.cross.c_cross.cross_pack_fp_vec(c_out, c_inp)
+        return bytes(c_out)
+
+    def tree_proof(self, tree: List[int], leaves_to_reveal: List[int]) -> tuple[int, bytes]:
+        tree_size = self.num_nodes_merkle_tree * self.hash_digest_length
+        if len(tree) != tree_size:
+            raise ValueError(f"Expected tree to have length {tree_size}, got {len(tree)}")
+        if len(leaves_to_reveal) != self.t:
+            raise ValueError(f"Expected leaves_to_reveal to have length {self.t}, got {len(leaves_to_reveal)}")
+
+        c_mtp              = (c_uint8 * (self.hash_digest_length * self.tree_nodes_to_store))()
+        c_tree             = (c_uint8 * tree_size)(*tree)
+        c_leaves_to_reveal = (c_uint8 * self.t)(*leaves_to_reveal)
+
+        res = self.cross.c_cross.cross_tree_proof(c_mtp, c_tree, c_leaves_to_reveal)
+        return res, bytes(c_mtp)
+
+    def cross_seed_path(self, seed_tree: List[int], indices_to_publish: List[int]) -> tuple[int, bytes]:
+        seed_tree_size = self.num_nodes_seed_tree * self.seed_length_bytes
+        if len(seed_tree) != seed_tree_size:
+            raise ValueError(f"Expected seed_tree to have length {seed_tree_size}, got {len(seed_tree)}")
+        if len(indices_to_publish) != self.t:
+            raise ValueError(f"Expected indices_to_publish to have length {self.t}, got {len(indices_to_publish)}")
+
+        # A published parent represents all seeds below it -> in the worst case, we store all leaves -> T seeds.
+        c_seed_storage       = (c_uint8 * (self.t * self.seed_length_bytes))()
+        c_seed_tree          = (c_uint8 * seed_tree_size)(*seed_tree)
+        c_indices_to_publish = (c_uint8 * self.t)(*indices_to_publish)
+
+        res = self.cross.c_cross.cross_seed_path(c_seed_storage, c_seed_tree, c_indices_to_publish)
+        # The reference returns the number of published seeds in res -> so we only return that written part of seed_storage.
+        return res, bytes(c_seed_storage[:res * self.seed_length_bytes])
+
+    def pack_fz_rsdp_g_vec (self, inp: List[int]) -> bytes:
+        if len(inp) != self.m:
+            raise ValueError(f"Expected inp to have length {self.m}, got {len(inp)}")
+
+        c_out = (c_uint8 * self.densely_packed_fz_rsdpg_g_vec_size)()
+        c_inp = (self.FZ_ELEM * self.m)(*inp)
+
+        self.cross.c_cross.cross_pack_fz_rsdp_g_vec(c_out, c_inp)
+        return bytes(c_out)
 
     # ------------------------------------------------------------------------
     #  Subroutines
