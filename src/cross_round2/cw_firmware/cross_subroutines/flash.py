@@ -2,6 +2,30 @@ import logging
 import time
 from pathlib import Path
 import chipwhisperer as cw
+import sys
+
+# =============================================================================
+# PATH SETUP & IMPORTS
+# =============================================================================
+
+# Determine directory of the current script (.../cw_firmware/cross_subroutines)
+HERE = Path(__file__).resolve().parent
+
+# Calculate path to libcross: two levels up to project root, then into "libcross"
+LIBCROSS_DIR = HERE.parent.parent / "libcross"
+BUILD_DIR = LIBCROSS_DIR / "build"  
+
+
+# MUST append to sys.path BEFORE importing modules from libcross
+if str(LIBCROSS_DIR) not in sys.path:
+    sys.path.insert(0, str(LIBCROSS_DIR))
+
+# Define directory containing the test vector JSON files
+TESTS_DIR = LIBCROSS_DIR
+
+# Import ChipWhisperer and local libcross modules
+import chipwhisperer as cw
+from cross import Cross, Calculations
 
 # =============================================================================
 # LOGGING SETUP
@@ -38,6 +62,65 @@ PARAMETER_SETS = [
 
 BAUDRATE = 230400
 
+def run_tests_for_variant(target, family: str, category: int, variant: str) -> bool:
+    """
+    Run functional and reference test vectors directly on the connected target.
+    """
+    print(f"Starting tests for {family} Cat-{category} ({variant})...")
+    
+    # Initialize Cross instance with the active serial target
+    c = Cross(
+        path=str(BUILD_DIR),
+        algorithm=family,
+        category=category,
+        optimization=variant,
+        release="_6.6.87.so"
+    )
+
+    # Assign Target to the subfunctions object (or directly to c)
+    if hasattr(c, "subfunctions"):
+        c.subfunctions.target = target
+    else:
+        c.target = target
+
+    # Keygen -> Sign -> Verify workflow
+    print("  -> Testing Keygen, Sign & Verify...")
+    sk, pk = c.keygen()
+    message = list(b"Hello CROSS")
+    signature = c.sign(sk, message)
+    is_valid = c.verify(pk, message, signature)
+
+    if not is_valid:
+        print("Error: Signature verification failed.")
+        return False
+    print("Signature verification successful.")
+
+    # Validate intermediate calculations against static JSON test vectors
+    json_path = TESTS_DIR / f"cross_{family.lower()}_{category}_{variant}.json"
+    if json_path.exists():
+        import json
+        print(f"  -> Validating vectors against {json_path.name}...")
+        with open(json_path, "r") as f:
+            data = json.load(f)
+
+        calc = Calculations(c.subfunctions)
+        seed_sk = bytes.fromhex(data["seed_sk"])
+        root_seed = bytes.fromhex(data["root_seed"])
+        salt = bytes.fromhex(data["salt"])
+
+        # Compute v_bar_pre_norm on board hardware
+        v_bar_pre_norm = calc.v_bar_pre_norm(seed_sk, root_seed, salt)
+        v_bar_pre_norm_ref = data["v_bar_pre_norm"]
+
+        if v_bar_pre_norm == v_bar_pre_norm_ref:
+            print("Vector-Match (v_bar_pre_norm): MATCH")
+        else:
+            print("Error: Vector-Match (v_bar_pre_norm): MISMATCH")
+            return False
+    else:
+        print(f"Warning: No JSON test vector file found at {json_path}")
+
+    return True
 
 # =============================================================================
 # MAIN ENTRY POINT
@@ -62,10 +145,10 @@ def main() -> None:
                 continue
 
             print("\n" + "=" * 60)
-            print(f" Flashing and verifying set: {param_key} ".center(60, "="))
+            print(f" Flashing and testing set: {param_key} ".center(60, "="))
             print("=" * 60)
 
-            # Flashing
+            # Flash target firmware
             print(f"[*] Flashing target with: {hex_filename}...")
             cw.program_target(
                 scope,
@@ -80,25 +163,17 @@ def main() -> None:
             target.baud = BAUDRATE
             target.flush()
 
-            # Quick communication verification
-            test_payload = bytes([1, 2, 3])
-            target.send_cmd("s", 0x80, test_payload)
-            resp = target.simpleserial_read("r", 3)
+            # Execute test workflow for current firmware iteration
+            success = run_tests_for_variant(target, family, category, variant)
 
-            print("Readback:", resp)
-
-            if resp is not None and list(resp) == list(test_payload):
-                print("OK: SimpleSerial responsiveness verified.")
+            if success:
+                print(f"\n[PASS] {param_key} fully functional")
             else:
-                print("ERROR: Unexpected readback response.")
+                print(f"\n[FAIL] {param_key} didn't pass the test")
 
-            # Disconnect target interface to free the port for the next firmware iteration
+            # Disconnect target interface to prepare for next flash cycle
             target.dis()
-
-        print("\n" + "=" * 60)
-        print(" All available firmware sets successfully flashed and verified ".center(60, "="))
-        print("=" * 60 + "\n")
-
+            
     except Exception as err:
         print(f"\n[-] Critical error: {err}")
 

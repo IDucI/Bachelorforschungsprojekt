@@ -18,16 +18,23 @@
 # To rebuild project do "make clean" then "make all".
 #----------------------------------------------------------------------------
 
+# Global Environment Configuration: 
+#
 # Explicitly sets the shell to Bash so that 'echo -e' and subshells run smoothly
 SHELL := /usr/bin/bash
 
 # Guaranteed clean console output with -j
+#
+# Parallel build setup (9 jobs) with line-synchronized output
 MAKEFLAGS += -j9 --output-sync=line
 
 # Default values for platform & clock
+#
+# Conditional assignment (?=) sets defaults if not specified externally
 PLATFORM ?= PINATA
 MCU_CLK  ?= INT
 
+# Dynamically extracts current directory name to build unique targets
 DIRNAME := $(notdir $(patsubst %/,%,$(dir $(abspath $(lastword $(MAKEFILE_LIST))))))
 
 # =============================================================================
@@ -36,8 +43,10 @@ DIRNAME := $(notdir $(patsubst %/,%,$(dir $(abspath $(lastword $(MAKEFILE_LIST))
 
 ifndef BUILD_SUB_VARIANT
 
+# Sets 'hex' as the default target when simply running 'make'
 .DEFAULT_GOAL := hex
 
+# List of all 18 CROSS parameter set combinations
 HEXNAMES = \
     cross_rsdp_1_fast \
     cross_rsdp_1_balanced \
@@ -58,6 +67,7 @@ HEXNAMES = \
     cross_rsdpg_5_balanced \
     cross_rsdpg_5_small
 
+# Mark targets that do not represent physical output files as PHONY
 .PHONY: hex all clean $(HEXNAMES)
 
 all: hex
@@ -68,7 +78,12 @@ hex: $(HEXNAMES)
 	@echo "--------------------------------------------------------"
 
 # Main build loop: Splits the target name into macro flags 
+#
 # and calls itself recursively for each individual variant.
+#
+# Parses target string (e.g. cross_rsdp_1_fast), converts values into C-Preprocessor Macros, 
+#
+# and creates a recursive sub-make execution for the specific sub-variant.
 $(HEXNAMES):
 	@RAW_VAR=$$(echo $@ | cut -d'_' -f2); \
 	if [ "$$RAW_VAR" = "rsdpg" ]; then VAR="RSDP_G"; else VAR="RSDP"; fi; \
@@ -110,17 +125,22 @@ SS_VER::=SS_VER_2_1
 # $(error, VAR is $(SS_VER))
 
 # Target file name (without extension).
+#
 # This is the name of the compiled .hex file.
 TARGET ?= cross_subroutines_rsdp
 
 # Local C source files 
+#
+# We don't need hammingweight, so we commenting it out
 SRC += main.c ledz.c  #hammingweight.c
 
 # External CROSS source files
+#
+# Define relative path to external CROSS reference C sources
 CROSS_LIB_DIR = ../../libcross/variants/Reference_Implementation/lib
 SRC += CROSS.c pack_unpack.c csprng_hash.c fips202.c keccakf1600.c sign.c
 
-# VPATH zeigt dem Compiler, wo die Dateiverzeichnisse liegen
+# VPATH shows the compiler where the file directories are
 VPATH += $(CROSS_LIB_DIR)
 
 # CROSS Reference Implementation Sources
@@ -163,6 +183,8 @@ endif
 LDFLAGS += -Wl,--print-memory-usage
 ALL_CFLAGS += -fstack-usage # this creates %.su files with the stack allocations per function
 
+# We don't need hammingweight, so we commenting it out
+#
 # specific definition of compilation of this object. This allows us to specify a different optimization flag
 #$(OBJDIR)/hammingweight.o : hammingweight.c $(OBJDIR)
 #	@$(ECHO_BLANK)
