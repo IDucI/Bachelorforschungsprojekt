@@ -1,30 +1,17 @@
 # README
 
-Running the Pinata CROSS Firmware with ChipWhisperer Nano.
-This project builds and runs the Pinata firmware for the CROSS subroutine test using a ChipWhisperer Nano.
+Running the Pinata CROSS Firmware with ChipWhisperer Nano. This project builds and runs the Pinata firmware for the CROSS 
+subroutine test using a ChipWhisperer Nano.
+
+First we build the firmware then after that we flash, verify and test the communication towards the board. 
+To test the communication we basically sends the board an input in form of an json file and it should send us the result back 
+again which we sent it at the first place. 
 
 
 ## Project Location:
 
 The firmware project is located at:
 `...\Bachelorforschungsprojekt\src\cross_round2\cw_firmware\cross_subroutines`
-
-
-## Clock Setup:
-
-We're using the internal clk corresponding to the given README from the reference_package
-
-
-## Required Wiring:
-
-Pinata -> ChipWhisperer
-BOOT0  -> PDIC
-RST    -> nRST
-GND    -> GND
-3V3    -> 3V3
-PC10   -> IO1
-PC11   -> IO2
-PH0    -> HS2 -> This isn't necessary anymore, because we don't use an external clock anymore
 
 
 ## Building the Firmware:
@@ -62,6 +49,22 @@ If everything worked out without an issue you can see an message with:
 All 18 variants are successfully generated!"
 ============================================================
 
+## Clock Setup:
+
+We're using the internal clk corresponding to the given README from the reference_package
+
+
+## Required Wiring:
+
+Pinata -> ChipWhisperer
+BOOT0  -> PDIC
+RST    -> nRST
+GND    -> GND
+3V3    -> 3V3
+PC10   -> IO1
+PC11   -> IO2
+PH0    -> HS2 -> This isn't necessary anymore, because we don't use an external clock anymore
+
 
 ## Flashing and Verification: 
 
@@ -87,9 +90,9 @@ OK: SimpleSerial responsiveness verified.
 
 -> In the end we should get this following message in the terminal, when all the 18 variants are flashed successfully:
 
-============================================================
- All available firmware sets successfully flashed and verified
-============================================================
+=====================================================================
+ All available firmware sets successfully flashed, verified & tested
+=====================================================================
 
 
 ## This confirms that:

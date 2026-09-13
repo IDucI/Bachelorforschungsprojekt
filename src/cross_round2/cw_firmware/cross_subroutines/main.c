@@ -33,8 +33,13 @@
 // Manual declaration of expand_sk so that it is known due to compile problem 
 // ------------------------------------------------------------------------------------------------------------------------
 
-void expand_pk(FP_ELEM matrix_V_tr[K][N - K], const uint8_t seed_pk[KEYPAIR_SEED_LENGTH_BYTES]);
-void expand_sk(FZ_ELEM secret_vec_e[N], FP_ELEM matrix_V_tr[K][N - K], const uint8_t seed_sk[KEYPAIR_SEED_LENGTH_BYTES]);
+#if defined(RSDPG)
+    void expand_sk(FZ_ELEM e_bar[N], FZ_ELEM e_G_bar[M], FP_ELEM V_tr[K][N - K], FZ_ELEM W_mat[M][N - M], const uint8_t seed_sk[KEYPAIR_SEED_LENGTH_BYTES]);
+    void expand_pk(FP_ELEM V_tr[K][N-K], FZ_ELEM W_mat[M][N-M], const uint8_t seed_pk[KEYPAIR_SEED_LENGTH_BYTES]);
+#else
+    void expand_sk(FZ_ELEM e_bar[N], FP_ELEM V_tr[K][N - K], const uint8_t seed_sk[KEYPAIR_SEED_LENGTH_BYTES]);
+    void expand_pk(FP_ELEM V_tr[K][N-K], const uint8_t seed_pk[KEYPAIR_SEED_LENGTH_BYTES]);
+#endif
 
 // -----------------------------------------------------------------------------
 // Calculate maximum buffer size for all subroutines 
@@ -43,31 +48,37 @@ void expand_sk(FZ_ELEM secret_vec_e[N], FP_ELEM matrix_V_tr[K][N - K], const uin
 // For pure RSDP variants, this is enough for the entire buffer
 #define TOTAL_BUFFER_SIZE (KEYPAIR_SEED_LENGTH_BYTES + (K * (N - K)) * sizeof(FP_ELEM) + 256)
 
+// Global shared buffer for SimpleSerial transfer placed in .ccmram
 static uint8_t databuffer[TOTAL_BUFFER_SIZE] allocation;
 
 // Place the static buffer globally outside the subroutines function to avoid stack overflow
 static FP_ELEM matrix_V_tr_buf[K][N - K];
 
+#if defined(RSDPG)
+// FOR RSDPG SUPPORT: Buffer for generator matrix W to avoid stack overflow
+static FZ_ELEM matrix_W_buf[M][N - M];
+#endif
+
 // -----------------------------------------------------------------------------
 // Subroutines-IDs
 // -----------------------------------------------------------------------------
 
-#define SUBROUTINE_CONVERT 0x03
-#define SUBROUTINE_RESTR_BY_MATRIX 0x04
-#define SUBROUTINE_PACK_VEC 0x05
-#define SUBROUTINE_PACK_SYN 0x06
-#define SUBROUTINE_UNPACK_VEC 0x07          
-#define SUBROUTINE_VEC_SUB 0x08
-#define SUBROUTINE_FP_VEC_MULT 0x09
-#define SUBROUTINE_FP_VEC_MULT_POINTWISE 0x10
-#define SUBROUTINE_SUB_M 0x11
-#define SUBROUTINE_INF_W_BY_MATRIX 0x12
-#define SUBROUTINE_SCALED 0x13
-#define SUBROUTINE_EXPAND_DIGEST 0x14
-#define SUBROUTINE_DZ_NORM_N 0x15
-#define SUBROUTINE_DZ_NORM_M 0x16
-#define SUBROUTINE_EXPAND_PK 0x17
-#define SUBROUTINE_EXPAND_SK 0x18
+#define cross_convert_restr_vec_to_fp 0x03
+#define cross_restr_vec_by_fp_matrix 0x04
+#define cross_pack_fz_vec 0x05
+#define cross_pack_fp_syn 0x06
+#define cross_unpack_fz_vec 0x07          
+#define cross_fz_vec_sub_n 0x08
+#define cross_fp_vec_by_fp_matrix 0x09
+#define cross_fp_vec_by_fp_vec_pointwise 0x10
+#define cross_fz_vec_sub_m 0x11
+#define cross_fz_inf_w_by_fz_matrix 0x12
+#define cross_fp_vec_by_restr_vec_scaled 0x13
+#define cross_expand_digest_to_fixed_weight 0x14
+#define cross_fz_dz_norm_n 0x15
+#define cross_fz_dz_norm_m 0x16
+#define cross_expand_pk 0x17
+#define cross_expand_sk 0x18
 
 // -----------------------------------------------------------------------------
 // Central subroutine control
@@ -75,11 +86,12 @@ static FP_ELEM matrix_V_tr_buf[K][N - K];
 
 uint8_t subroutines(uint8_t cmd, uint8_t scmd, uint8_t len, uint8_t* x) {
     switch (scmd) {
+
     // -------------------------------------------------------------------------
     // Subroutine 0x03: Convert Restricted Vector to Fp Element Vector
     // -------------------------------------------------------------------------
 
-    case SUBROUTINE_CONVERT: {
+    case cross_convert_restr_vec_to_fp: {
         led2_on();
 
         // The mathematical result has the dimension (N)
@@ -97,11 +109,12 @@ uint8_t subroutines(uint8_t cmd, uint8_t scmd, uint8_t len, uint8_t* x) {
         led2_off();
         return SS_ERR_OK;
     }
+
     // -------------------------------------------------------------------------
     // Subroutine 0x04: Multiply Restricted Vector by Fp Matrix Transpose
     // -------------------------------------------------------------------------
 
-    case SUBROUTINE_RESTR_BY_MATRIX: {
+    case cross_restr_vec_by_fp_matrix: {
         led2_on();
         
         // The mathematical result has the dimension (N - K)
@@ -127,7 +140,7 @@ uint8_t subroutines(uint8_t cmd, uint8_t scmd, uint8_t len, uint8_t* x) {
     // Note: This isn't checking a final mathematical result, just testing a helper function.
     // -------------------------------------------------------------------------
 
-    case SUBROUTINE_PACK_VEC: {
+    case cross_pack_fz_vec: {
         led2_on();
 
         // Read unpacked vector from shared buffer
@@ -148,7 +161,7 @@ uint8_t subroutines(uint8_t cmd, uint8_t scmd, uint8_t len, uint8_t* x) {
     // Note: This isn't checking a final mathematical result, just testing a helper function.
     // -------------------------------------------------------------------------
 
-    case SUBROUTINE_PACK_SYN: {
+    case cross_pack_fp_syn: {
         led2_on();
 
         // Read unpacked Fp syndrome vector from shared buffer
@@ -168,7 +181,7 @@ uint8_t subroutines(uint8_t cmd, uint8_t scmd, uint8_t len, uint8_t* x) {
     // Subroutine 0x07: Unpack Dense Format Into Restricted Element Vector (FZ)
     // -------------------------------------------------------------------------
 
-    case SUBROUTINE_UNPACK_VEC: {
+    case cross_unpack_fz_vec: {
         led2_on();
 
         // Output unpacked vector has dimension (N)
@@ -191,7 +204,7 @@ uint8_t subroutines(uint8_t cmd, uint8_t scmd, uint8_t len, uint8_t* x) {
     // Subroutine 0x08: Subtract Two Restricted Vectors (Dimension N)
     // -------------------------------------------------------------------------
 
-    case SUBROUTINE_VEC_SUB: {
+    case cross_fz_vec_sub_n: {
         led2_on();
 
 
@@ -215,7 +228,7 @@ uint8_t subroutines(uint8_t cmd, uint8_t scmd, uint8_t len, uint8_t* x) {
     // Subroutine 0x09: Multiply Fp Vector by Fp Matrix Transpose
     // -------------------------------------------------------------------------
 
-    case SUBROUTINE_FP_VEC_MULT: {
+    case cross_fp_vec_by_fp_matrix: {
         led2_on();
 
         FP_ELEM result[N - K];
@@ -238,8 +251,9 @@ uint8_t subroutines(uint8_t cmd, uint8_t scmd, uint8_t len, uint8_t* x) {
     // Subroutine 0x10: Pointwise Multiplication of Two Fp Vectors
     // -------------------------------------------------------------------------
 
-    case SUBROUTINE_FP_VEC_MULT_POINTWISE: {
+    case cross_fp_vec_by_fp_vec_pointwise: {
         led2_on();
+
         FP_ELEM result[N];
         
         // Set pointer to the two input vectors in the data buffer
@@ -260,15 +274,20 @@ uint8_t subroutines(uint8_t cmd, uint8_t scmd, uint8_t len, uint8_t* x) {
     // Subroutine 0x11: Vector Subtraction M 
     // -------------------------------------------------------------------------
 
-     case SUBROUTINE_SUB_M: {
+     case cross_fz_vec_sub_m: {
 #if defined(RSDPG)
+
         led2_on();
 
+        // Interpret shared buffer as contiguous array of FZ elements
         FZ_ELEM* all_elements = (FZ_ELEM*)databuffer;
+
+        // Extract vector A  and vector B
         FZ_ELEM* vec_a = all_elements;
         FZ_ELEM* vec_b = all_elements + M;
         FZ_ELEM result[M];
 
+        // Execute module-specific vector subtraction
         fz_vec_sub_m(result, vec_a, vec_b);
 
         simpleserial_put('r', M * sizeof(FZ_ELEM), (uint8_t*)result);
@@ -284,16 +303,21 @@ uint8_t subroutines(uint8_t cmd, uint8_t scmd, uint8_t len, uint8_t* x) {
     // Subroutine 0x12: Matrix Multiplication W (only for RSDPG)
     // -------------------------------------------------------------------------
 
-    case SUBROUTINE_INF_W_BY_MATRIX: {
+    case cross_fz_inf_w_by_fz_matrix: {
 #if defined(RSDPG)
         led2_on();
 
         FZ_ELEM* all_elements = (FZ_ELEM*)databuffer;
 
+        // Extract input vector e (dimension M) from databuffer
         const FZ_ELEM* vec_e = all_elements;
+
+        // Cast remaining databuffer slice to 2D matrix structure W of size [M x (N - M)]
         FZ_ELEM (*matrix_W)[N - M] = (FZ_ELEM(*)[N - M])(all_elements + M);
         FZ_ELEM result[N];
 
+        // Perform specialized product of Restricted Vector e with generator matrix W
+        // Expanding length M input to full length N representation.
         fz_inf_w_by_fz_matrix(result, vec_e, matrix_W);
 
         simpleserial_put('r', N * sizeof(FZ_ELEM), (uint8_t*)result);
@@ -309,7 +333,7 @@ uint8_t subroutines(uint8_t cmd, uint8_t scmd, uint8_t len, uint8_t* x) {
     // Subroutine 0x13: Scaled Vector Addition (Fp Vector by Restricted Vector)
     // -------------------------------------------------------------------------
 
-    case SUBROUTINE_SCALED: {
+    case cross_fp_vec_by_restr_vec_scaled: {
         led2_on();
 
         FP_ELEM result[N];
@@ -340,7 +364,7 @@ uint8_t subroutines(uint8_t cmd, uint8_t scmd, uint8_t len, uint8_t* x) {
     // Subroutine 0x14: Expand Digest to Fixed Weight Vector
     // -------------------------------------------------------------------------
 
-    case SUBROUTINE_EXPAND_DIGEST: {
+    case cross_expand_digest_to_fixed_weight: {
         led2_on();
 
         uint8_t result[T];
@@ -359,7 +383,7 @@ uint8_t subroutines(uint8_t cmd, uint8_t scmd, uint8_t len, uint8_t* x) {
     // Subroutine 0x15: Normalize Restricted Vector (In-Place, Dimension N)
     // -------------------------------------------------------------------------
 
-    case SUBROUTINE_DZ_NORM_N: {
+    case cross_fz_dz_norm_n: {
         led2_on();
 
         // Normalize raw representation into standard range in-place
@@ -376,12 +400,15 @@ uint8_t subroutines(uint8_t cmd, uint8_t scmd, uint8_t len, uint8_t* x) {
     // Subroutine 0x16: Normalize M 
     // -------------------------------------------------------------------------
 
-    case SUBROUTINE_DZ_NORM_M: {
+    case cross_fz_dz_norm_m: {
 #if defined(RSDPG)
         led2_on();
 
+        // In-place normalization of raw elements modulo p across dimension M
+        // Ensures element representations strictly conform to canonical range.
         fz_dz_norm_m((FZ_ELEM*)(databuffer));
 
+        // Transmit normalized vector of length M back 
         simpleserial_put('r', M * sizeof(FZ_ELEM), databuffer);
 
         led2_off();
@@ -395,11 +422,17 @@ uint8_t subroutines(uint8_t cmd, uint8_t scmd, uint8_t len, uint8_t* x) {
     // Subroutine 0x17: Expand Public Key
     // -------------------------------------------------------------------------
 
-    case SUBROUTINE_EXPAND_PK: {
+    case cross_expand_pk: {
         led2_on();
 
         const uint8_t* seed_pk = (const uint8_t*)databuffer;
+        
+#if defined(RSDPG)
+        // FOR RSDPG SUPPORT: Pass additional matrix_W_buf parameter
+        expand_pk(matrix_V_tr_buf, matrix_W_buf, seed_pk);
+#else
         expand_pk(matrix_V_tr_buf, seed_pk);
+#endif
 
         uint16_t pk_len = (uint16_t)(K * (N - K) * sizeof(FP_ELEM));
         uint8_t* data_ptr = (uint8_t*)matrix_V_tr_buf;
@@ -426,7 +459,7 @@ uint8_t subroutines(uint8_t cmd, uint8_t scmd, uint8_t len, uint8_t* x) {
     // Subroutine 0x18: Expand Secret Key (seed_sk -> secret vector e)
     // -------------------------------------------------------------------------
 
-    case SUBROUTINE_EXPAND_SK: {
+    case cross_expand_sk: {
         led2_on();
 
         // Input: seed for the secret key
@@ -435,8 +468,16 @@ uint8_t subroutines(uint8_t cmd, uint8_t scmd, uint8_t len, uint8_t* x) {
         // Output 1: secret vector e (placed inside databuffer right after the input seed)
         FZ_ELEM* secret_vec_e = (FZ_ELEM*)(databuffer + KEYPAIR_SEED_LENGTH_BYTES);
 
-        // Reuse the global static matrix_V_tr_buf as dummy storage to avoid stack overflow!
+#if defined(RSDPG)
+        // Local array for temporary e_G_bar vector
+        FZ_ELEM secret_vec_e_G[M];
+
+        // Call expand_sk with all 5 required parameters
+        expand_sk(secret_vec_e, secret_vec_e_G, matrix_V_tr_buf, matrix_W_buf, seed_sk);
+#else
+        // RSDP variant: Call expand_sk with 3 parameters
         expand_sk(secret_vec_e, matrix_V_tr_buf, seed_sk);
+#endif
 
         // Return the expanded secret vector e back to the host
         simpleserial_put('r', N * sizeof(FZ_ELEM), (uint8_t*)secret_vec_e);
