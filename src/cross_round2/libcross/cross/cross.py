@@ -6,6 +6,7 @@ from platform import release
 
 from .cross_subfunctions import CrossSubfunctions
 from .cross_params import get_params
+from .cross_calculations import Calculations
 
 
 def platform_release_string():
@@ -40,6 +41,7 @@ class Cross:
 
         self.params = get_params(algorithm, category, optimization)
         self.subfunctions = CrossSubfunctions(self)
+        self.calculation = Calculations(self)
 
         self._release = release
         self.default_lib_prefix = "libcross_"

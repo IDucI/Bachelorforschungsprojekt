@@ -7,8 +7,6 @@ algorithms = ["RSDP", "RSDPG"]
 categories = [1, 3, 5]
 optimizations = ["fast", "balanced", "small"]
 
-
-
 if len(sys.argv) == 4:
     algorithm = sys.argv[1]
     category = int(sys.argv[2])
@@ -22,6 +20,7 @@ if len(sys.argv) == 4:
     )
 
     sk, pk = c.keygen()
+    print(len(pk))
 
     message = list(b"Hello CROSS")
     signature = c.sign(sk, message)

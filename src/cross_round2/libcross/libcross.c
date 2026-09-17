@@ -136,6 +136,10 @@ extern "C" {
         csprng_fp_vec_chall_1(res, csprng_state);
     }
 
+    void cross_fp_dz_norm(FP_ELEM v[N]) {
+        fp_dz_norm(v);
+    }
+
     void cross_pack_fp_vec(uint8_t out[DENSELY_PACKED_FP_VEC_SIZE], const FP_ELEM in[N]) {
         pack_fp_vec(out, in);
     }
