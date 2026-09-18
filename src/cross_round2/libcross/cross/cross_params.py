@@ -108,6 +108,10 @@ class CrossParams:
     def csprng_domain_sep_const(self) -> int:
         return 0
 
+    @property
+    def hash_domain_sep_const (self) -> int:
+        return 32768
+
 # ==================== Input normalization and validation ====================
 
 def normalize_algorithm(algorithm: str) -> str:

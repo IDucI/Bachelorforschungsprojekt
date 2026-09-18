@@ -85,6 +85,9 @@ class CrossSubfunctions:
         self.cross.c_cross.cross_csprng_fp_vec_chall_1.argtypes = [POINTER(self.FP_ELEM), POINTER(c_csprng_state)]
         self.cross.c_cross.cross_csprng_fp_vec_chall_1.restype = None
 
+        self.cross.c_cross.cross_fp_dz_norm.argtypte = [POINTER(self.FP_ELEM)]
+        self.cross.c_cross.cross_fp_dz_norm.restype = None
+
         self.cross.c_cross.cross_pack_fp_vec.argtypes = [POINTER(c_uint8), POINTER(self.FP_ELEM)]
         self.cross.c_cross.cross_pack_fp_vec.restype = None
 
@@ -200,10 +203,11 @@ class CrossSubfunctions:
         self.cross.c_cross.cross_seed_leaves(c_round_seeds, c_seed_tree)
         return bytes(c_round_seeds)
 
-    def csprng_initialize(self, seed: bytes, seed_len_bytes: int, dsc: int) -> c_csprng_state:
-        if len(seed) != seed_len_bytes:
-            raise ValueError(f"Expected seed to have length {seed_len_bytes}, got {len(seed)}")
-
+    def csprng_initialize(self, seed: bytes, dsc: int) -> c_csprng_state:
+        #seed_len_bytes = self.seed_length_bytes + self.salt_length_bytes
+        #if len(seed) != seed_len_bytes:
+        #    raise ValueError(f"Expected seed to have length {seed_len_bytes}, got {len(seed)}")
+        seed_len_bytes = len(seed)
         c_state = c_csprng_state()
         c_seed  = (c_uint8 * len(seed))(*seed)
         
@@ -227,15 +231,15 @@ class CrossSubfunctions:
     def csprng_fp_vec(self, csprng_state: c_csprng_state) -> List[int]:
         c_res = (self.FP_ELEM * self.n)()
         
-        self.cross.c_cross.csprng_fp_vec(c_res, csprng_state)
+        self.cross.c_cross.cross_csprng_fp_vec(c_res, csprng_state)
         return list(c_res)
 
     def fp_dz_norm_synd(self, v:List[int]) -> List[int]:
-        if len(v) != self.n:
-            raise ValueError(f"Expected v to have length {self.n}, got {len(v)}")
-        c_v = (self.FP_ELEM * self.n)(*v)
+        if len(v) != (self.n - self.k):
+            raise ValueError(f"Expected v to have length {(self.n -  self.k)}, got {len(v)}")
+        c_v = (self.FP_ELEM * (self.n- self.k))(*v)
 
-        self.cross.c_cross.cross_fz_dz_norm_synd(c_v)
+        self.cross.c_cross.cross_fp_dz_norm_synd(c_v)
         return list(c_v)
 
     def hash(self, m: bytes, dsc: int) -> bytes:
@@ -263,6 +267,14 @@ class CrossSubfunctions:
         self.cross.c_cross.cross_csprng_fp_vec_chall_1(c_res, csprng_state)
         return list(c_res)
 
+    def fp_dz_norm(self, v: List[int]) -> List[int]:
+        if len(v) != self.n:
+            raise ValueError(f"Expected v to have length {self.n}, got {len(v)}")
+
+        c_v = (self.FP_ELEM * self.n)(*v)
+        self.cross.c_cross.cross_fp_dz_norm(c_v)
+        return list(c_v)
+
     def pack_fp_vec(self, inp: List[int]) -> bytes:
         if len(inp) != self.n:
             raise ValueError(f"Expected inp to have length {self.n}, got {len(inp)}")
@@ -287,7 +299,7 @@ class CrossSubfunctions:
         res = self.cross.c_cross.cross_tree_proof(c_mtp, c_tree, c_leaves_to_reveal)
         return res, bytes(c_mtp)
 
-    def cross_seed_path(self, seed_tree: List[int], indices_to_publish: List[int]) -> tuple[int, bytes]:
+    def seed_path(self, seed_tree: List[int], indices_to_publish: List[int]) -> tuple[int, bytes]:
         seed_tree_size = self.num_nodes_seed_tree * self.seed_length_bytes
         if len(seed_tree) != seed_tree_size:
             raise ValueError(f"Expected seed_tree to have length {seed_tree_size}, got {len(seed_tree)}")
@@ -301,13 +313,13 @@ class CrossSubfunctions:
 
         res = self.cross.c_cross.cross_seed_path(c_seed_storage, c_seed_tree, c_indices_to_publish)
         # The reference returns the number of published seeds in res -> so we only return that written part of seed_storage.
-        return res, bytes(c_seed_storage[:res * self.seed_length_bytes])
+        return res, bytes(c_seed_storage[:self.tree_nodes_to_store * self.seed_length_bytes])
 
     def pack_fz_rsdp_g_vec (self, inp: List[int]) -> bytes:
         if len(inp) != self.m:
             raise ValueError(f"Expected inp to have length {self.m}, got {len(inp)}")
 
-        c_out = (c_uint8 * self.densely_packed_fz_rsdpg_g_vec_size)()
+        c_out = (c_uint8 * self.densely_packed_fz_rsdp_g_vec_size)()
         c_inp = (self.FZ_ELEM * self.m)(*inp)
 
         self.cross.c_cross.cross_pack_fz_rsdp_g_vec(c_out, c_inp)
