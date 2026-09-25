@@ -55,6 +55,26 @@ class CrossParams:
 
     # ========================= Derived parameter helpers =========================
 
+    @property 
+    def resp_0_size(self) -> int:
+        if self.algorithm == "RSDP":
+            return(self.densely_packed_fp_vec_size
+                   + self.densely_packed_fz_vec_size
+            )
+        return(self.densely_packed_fp_vec_size
+               + self.densely_packed_fz_rsdp_g_vec_size
+        )
+
+    @property
+    def sig_size(self) -> int:
+        return(self.salt_length_bytes # salt
+               + 2 * self.hash_digest_length # digest_cmt and digest_chall_2
+               + self.tree_nodes_to_store * self.seed_length_bytes # path
+               + self.hash_digest_length * self.tree_nodes_to_store # tree
+               + (self.t - self.w) * self.hash_digest_length # resp_1
+               + (self.t - self.w) * self.resp_0_size # resp_0
+        )
+
     @property
     def seed_length_bytes(self) -> int:
         return self.sec_margin_lambda//8

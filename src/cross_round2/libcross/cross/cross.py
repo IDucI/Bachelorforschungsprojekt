@@ -45,7 +45,7 @@ class Cross:
 
         self._release = release
         self.default_lib_prefix = "libcross_"
-        self.default_lib_path = Path().home() / ".local/lib/"
+        self.default_lib_path = Path(__file__).resolve().parent.parent / "build"
 
         self.select_lib(path, name, self.params.version, release)
 
@@ -83,19 +83,8 @@ class Cross:
             self.logger.error(f"Failed to load lib: {self.lib_path / self.lib_name}")
             self.logger.error(e)
             raise
-
-        sk_size = self.params.keypair_seed_length_bytes
-        pk_size = (self.params.keypair_seed_length_bytes + self.params.densely_packed_fp_syn_size)
-
-        self._sk_type = c_uint8 * sk_size
-        self._pk_type = c_uint8 * pk_size
-
-        self.sig_size = c_size_t.in_dll(
-            self.c_cross,
-            "cross_sigbytes"
-        ).value
         
-        self._sig_type = c_uint8 * self.sig_size
+        self._sig_type = c_uint8 * self.params.sig_size
 
         self.c_cross.cross_keygen.argtypes = [
             POINTER(c_uint8),
@@ -122,21 +111,28 @@ class Cross:
         self.subfunctions.load_dll()
 
     def keygen(self):
-        sk = self._sk_type()
-        pk = self._pk_type()
+        sk = (c_uint8 * self.params.keypair_seed_length_bytes)()
+        pk = (c_uint8 * (self.params.keypair_seed_length_bytes + self.params.densely_packed_fp_syn_size))()
         self.c_cross.cross_keygen(sk, pk)
         return list(sk), list(pk)
 
-    def sign(self, secret_key, m):
-        sk = self._sk_type(*secret_key)
+    def sign(self, seed_sk, m):
+        if len(seed_sk) != self.params.keypair_seed_length_bytes:
+            raise ValueError(f"Expected seed_sk to have length {self.params.keypair_seed_length_bytes}, got {len(seed_sk)}")
+        sk = (c_uint8 * self.params.keypair_seed_length_bytes)(*seed_sk)
         m = (c_uint8 * len(m))(*m)
         mlen = len(m)
         sig = self._sig_type()
         self.c_cross.cross_sign(sk, m, mlen, sig)
         return list(sig)
 
-    def verify(self, public_key, m, signature):
-        pk = self._pk_type(*public_key)
+    def verify(self, seed_pk, m, signature):
+        pk_size = self.params.keypair_seed_length_bytes + self.params.densely_packed_fp_syn_size
+        if len(seed_pk) != pk_size:
+            raise ValueError(f"Expected seed_pk to have length {pk_size}, got {len(seed_pk)}")
+        if len(signature) != self.params.sig_size:
+            raise ValueError(f"Expected signature to have length {self.params.sig_size}, got {len(signature)}")
+        pk = (c_uint8 * pk_size )(*seed_pk)
         m = (c_uint8 * len(m))(*m)
         mlen = len(m)
         sig = self._sig_type(*signature)

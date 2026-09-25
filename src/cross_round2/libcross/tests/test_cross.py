@@ -297,7 +297,7 @@ for algorithm in algorithms:
             resp_0_offset         = resp_1_offset + len(resp_1)
 
             # build signature from calculated inputs
-            sig_bytes = bytearray(c.sig_size)
+            sig_bytes = bytearray(c.params.sig_size)
 
             sig_bytes[salt_offset : salt_offset + len(salt)] = salt
             sig_bytes[digest_cmt_offset : digest_cmt_offset + len(digest_cmt)] = digest_cmt
