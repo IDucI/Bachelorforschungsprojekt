@@ -27,6 +27,22 @@ The goal of this project is not to implement the full algorithm, but to adapt an
 - Microcontroller: STM32F4 
 - Analysis Tooling: ChipWhisperer  
 
----
-
 ## Project Structure
+
+The project is seperated into many areas, same folder as this README we have an docs folder `.../Bachelorforschungsprojekt/docs`
+where we placed our scientific paper/report and proposal to read. If we go into the src folder we get to the important things, we can see all of the schemes which we analyzed and the libkyber libary which we get to used. 
+
+...Bachelorforschungsprojekt/
+├─ docs/                 (Folder with our documentation & other important PDFs)                           
+├─ src/                     
+│  ├─ cross_round2/      (CROSS scheme)                 
+│  ├─ less/              (LESS scheme)
+│  ├─ libkyber/          (Libkyber libary)
+│  └── ...               (Placeholder for further schemes)                      
+├─ README.md             (This current README)         
+│
+└── ...
+
+## Important
+
+Each scheme has its own README file in its respective folder. Please read these README files carefully and follow their instructions to understand the internal project structure, setup requirements, and how to work with the respective implementation.

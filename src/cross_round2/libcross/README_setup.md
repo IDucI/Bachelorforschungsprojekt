@@ -71,4 +71,3 @@ A small Python script can be used to check whether the Python interface can load
 Run it from WSL/Linux in the `libcross` directory:
 
 python3 try_cross.py
-

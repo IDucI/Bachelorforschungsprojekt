@@ -25,8 +25,8 @@ SHELL := /usr/bin/bash
 
 # Guaranteed clean console output with -j
 #
-# Parallel build setup (9 jobs) with line-synchronized output
-MAKEFLAGS += -j9 --output-sync=line
+# Parallel build setup (18 jobs here) with line-synchronized output
+MAKEFLAGS += -j --output-sync=line
 
 # Default values for platform & clock
 #
@@ -86,25 +86,26 @@ hex: $(HEXNAMES)
 # and creates a recursive sub-make execution for the specific sub-variant.
 $(HEXNAMES):
 	@RAW_VAR=$$(echo $@ | cut -d'_' -f2); \
-	if [ "$$RAW_VAR" = "rsdpg" ]; then VAR="RSDP_G"; else VAR="RSDP"; fi; \
+	if [ "$$RAW_VAR" = "rsdpg" ]; then VAR="RSDPG"; else VAR="RSDP"; fi; \
 	CAT=$$(echo $@ | cut -d'_' -f3); \
 	OPT_RAW=$$(echo $@ | cut -d'_' -f4); \
 	if [ "$$OPT_RAW" = "fast" ]; then OPT="SPEED"; elif [ "$$OPT_RAW" = "small" ]; then OPT="SIG_SIZE"; else OPT="BALANCED"; fi; \
 	CLEAN_NAME=$$(echo $@ | sed 's/^cross_//'); \
 	FULL_TARGET="$(DIRNAME)_$$CLEAN_NAME"; \
-	echo " Building Firmware Variant: $$FULL_TARGET"; \
+	echo "===== Building Firmware Variant: $$FULL_TARGET ====="; \
 	mkdir -p "objdir-$$FULL_TARGET"; \
 	$(MAKE) --no-print-directory \
 		BUILD_SUB_VARIANT=1 \
-		TARGET=$$FULL_TARGET \
-		OBJDIR="objdir-$$FULL_TARGET" \
-		SS_VER=SS_VER_2_1 \
-		MCU_CLK=$(MCU_CLK) \
-		PLATFORM=$(PLATFORM) \
-		CRYPTO_TARGET=NONE \
-		EXTRA_CFLAGS="-D$$VAR -DCATEGORY_$$CAT -D$$OPT" \
-		all || exit 1
- 
+    	TARGET=$$FULL_TARGET \
+    	OBJDIR="objdir-$$FULL_TARGET" \
+    	SS_VER=SS_VER_2_1 \
+    	MCU_CLK=$(MCU_CLK) \
+    	PLATFORM=$(PLATFORM) \
+    	CRYPTO_TARGET=NONE \
+    	EXTRA_CFLAGS="-D$$VAR -DCATEGORY_$$CAT -D$$OPT" \
+    	all || exit 1; \
+	echo "===== Finished Firmware Variant: $$FULL_TARGET ====="	
+	
 clean:
 	@echo "Cleaning up all build artifacts and variant directories..."
 	rm -rf objdir-*
@@ -138,10 +139,12 @@ SRC += main.c ledz.c  #hammingweight.c
 #
 # Define relative path to external CROSS reference C sources
 CROSS_LIB_DIR = ../../libcross/variants/Reference_Implementation/lib
-SRC += CROSS.c pack_unpack.c csprng_hash.c fips202.c keccakf1600.c sign.c
+CROSS_WRAPPER_DIR = ../../libcross
+SRC += CROSS.c pack_unpack.c csprng_hash.c fips202.c keccakf1600.c sign.c libcross.c
 
 # VPATH shows the compiler where the file directories are
 VPATH += $(CROSS_LIB_DIR)
+VPATH += $(CROSS_WRAPPER_DIR)
 
 # CROSS Reference Implementation Sources
 EXTRAINCDIRS += ../../libcross
@@ -150,8 +153,11 @@ EXTRAINCDIRS += ../../libcross/variants/Reference_Implementation/include
 EXTRAINCDIRS += ../../libcross/variants/Reference_Implementation/lib
 
 # Target compilation flags i.e Fallback CFLAGS
-CFLAGS ?= -DRSDP -DCATEGORY_1 -DSPEED
+ifeq ($(EXTRA_CFLAGS),)
+CFLAGS += -DRSDP -DCATEGORY_1 -DSPEED
+else
 CFLAGS += $(EXTRA_CFLAGS)
+endif
 CFLAGS += -DHIGH_SPEED_UART_BAUD=230400U
 
 # Basis-CFLAGS, which are always true
@@ -182,6 +188,9 @@ endif
 
 LDFLAGS += -Wl,--print-memory-usage
 ALL_CFLAGS += -fstack-usage # this creates %.su files with the stack allocations per function
+
+# Optimize for execution speed instead of code size.
+ALL_CFLAGS += -O3
 
 # We don't need hammingweight, so we commenting it out
 #

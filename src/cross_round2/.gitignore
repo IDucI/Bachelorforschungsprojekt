@@ -12,7 +12,7 @@
 *.pch
 
 # Compiled Dynamic libraries
-#*.so
+*.so
 *.dylib
 *.dll
 
@@ -70,3 +70,10 @@ objdir-*/
 
 # Python virtual environment
 cw-env/
+
+# Python Virtual Environments
+cw-env311/
+.venv/
+venv/
+__pycache__/
+*.pyc
