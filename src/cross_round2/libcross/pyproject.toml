@@ -14,7 +14,8 @@ readme="README.md"
 include-package-data = true
 
 [tool.setuptools.packages.find]
-where = ["cross"]
+where = ["."]
+include = ["cross*"]
 
 [tool.setuptools.dynamic]
-version = {attr = "__version__"}
+version = {attr = "cross.__version__"}
