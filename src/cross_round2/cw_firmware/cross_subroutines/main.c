@@ -29,20 +29,12 @@
 #include "restr_arith.h"
 #include "pack_unpack.h"
 
-// ------------------------------------------------------------------------------------------------------------------------
-// Manual declaration of expand_sk so that it is known due to compile problem 
-// ------------------------------------------------------------------------------------------------------------------------
-
-#if defined(RSDPG)
-    void expand_sk(FZ_ELEM e_bar[N], FZ_ELEM e_G_bar[M], FP_ELEM V_tr[K][N - K], FZ_ELEM W_mat[M][N - M], const uint8_t seed_sk[KEYPAIR_SEED_LENGTH_BYTES]);
-    void expand_pk(FP_ELEM V_tr[K][N-K], FZ_ELEM W_mat[M][N-M], const uint8_t seed_pk[KEYPAIR_SEED_LENGTH_BYTES]);
-#else
-    void expand_sk(FZ_ELEM e_bar[N], FP_ELEM V_tr[K][N - K], const uint8_t seed_sk[KEYPAIR_SEED_LENGTH_BYTES]);
-    void expand_pk(FP_ELEM V_tr[K][N-K], const uint8_t seed_pk[KEYPAIR_SEED_LENGTH_BYTES]);
-#endif
-
 // -----------------------------------------------------------------------------
 // Calculate maximum buffer size for all subroutines 
+// -----------------------------------------------------------------------------
+// These buffers are allocated statically to avoid placing large temporary
+// objects on the stack. The CCMRAM section is used for the main communication
+// and matrix buffers to reduce pressure on the regular SRAM/stack.
 // -----------------------------------------------------------------------------
 
 // For pure RSDP variants, this is enough for the entire buffer
@@ -52,7 +44,42 @@
 static uint8_t databuffer[TOTAL_BUFFER_SIZE] allocation;
 
 // Place the static buffer globally outside the subroutines function to avoid stack overflow
-static FP_ELEM matrix_V_tr_buf[K][N - K];
+static FP_ELEM matrix_V_tr_buf[K][N - K] allocation;
+
+
+// -----------------------------------------------------------------------------
+// Public-key expansion cache
+// -----------------------------------------------------------------------------
+// expand_pk() can produce an output larger than one SimpleSerial packet.
+// Therefore the result is transferred in several chunks.
+// The cache ensures that the expensive public-key expansion is performed only
+// once for a given seed. Subsequent chunk requests only read from the already
+// expanded matrix.
+// -----------------------------------------------------------------------------
+
+static uint8_t expand_pk_seed_cache[KEYPAIR_SEED_LENGTH_BYTES] allocation;
+static uint8_t expand_pk_cache_valid = 0;
+
+// -----------------------------------------------------------------------------
+// SimpleSerial output chunking
+// -----------------------------------------------------------------------------
+// SimpleSerial V2.1 cannot transport large result buffers in a single response.
+// Therefore, subroutines with outputs larger than the packet size return their
+// results in multiple 160-byte chunks.
+//
+// The host specifies the requested chunk using x[0]. The firmware calculates
+// the corresponding byte offset and transmits only that slice of the result.
+//
+// This chunking mechanism is used consistently for large outputs throughout
+// the subroutines below. Subroutine 0x15 is slightly different because its
+// result is normalized in-place directly inside databuffer.
+//
+// If the subroutine is using chunking it is marked with 
+// --- CHUNKING LOGIC BEGIN --- and end with // --- CHUNKING LOGIC END ---
+// This approach will be discussed further in the report.
+// -----------------------------------------------------------------------------
+
+#define SS_OUTPUT_CHUNK_SIZE 160
 
 #if defined(RSDPG)
 // FOR RSDPG SUPPORT: Buffer for generator matrix W to avoid stack overflow
@@ -63,22 +90,22 @@ static FZ_ELEM matrix_W_buf[M][N - M];
 // Subroutines-IDs
 // -----------------------------------------------------------------------------
 
-#define cross_convert_restr_vec_to_fp 0x03
-#define cross_restr_vec_by_fp_matrix 0x04
-#define cross_pack_fz_vec 0x05
-#define cross_pack_fp_syn 0x06
-#define cross_unpack_fz_vec 0x07          
-#define cross_fz_vec_sub_n 0x08
-#define cross_fp_vec_by_fp_matrix 0x09
-#define cross_fp_vec_by_fp_vec_pointwise 0x10
-#define cross_fz_vec_sub_m 0x11
-#define cross_fz_inf_w_by_fz_matrix 0x12
-#define cross_fp_vec_by_restr_vec_scaled 0x13
-#define cross_expand_digest_to_fixed_weight 0x14
-#define cross_fz_dz_norm_n 0x15
-#define cross_fz_dz_norm_m 0x16
-#define cross_expand_pk 0x17
-#define cross_expand_sk 0x18
+#define subroutine_convert_restr_vec_to_fp        0x03
+#define subroutine_restr_vec_by_fp_matrix         0x04
+#define subroutine_pack_fz_vec                    0x05
+#define subroutine_pack_fp_syn                    0x06
+#define subroutine_unpack_fz_vec                  0x07          
+#define subroutine_fz_vec_sub_n                   0x08
+#define subroutine_fp_vec_by_fp_matrix            0x09
+#define subroutine_fp_vec_by_fp_vec_pointwise     0x10
+#define subroutine_fz_vec_sub_m                   0x11
+#define subroutine_fz_inf_w_by_fz_matrix          0x12
+#define subroutine_fp_vec_by_restr_vec_scaled     0x13
+#define subroutine_expand_digest_to_fixed_weight  0x14
+#define subroutine_fz_dz_norm_n                   0x15
+#define subroutine_fz_dz_norm_m                   0x16
+#define subroutine_expand_pk                      0x17
+#define subroutine_expand_sk                      0x18
 
 // -----------------------------------------------------------------------------
 // Central subroutine control
@@ -91,21 +118,37 @@ uint8_t subroutines(uint8_t cmd, uint8_t scmd, uint8_t len, uint8_t* x) {
     // Subroutine 0x03: Convert Restricted Vector to Fp Element Vector
     // -------------------------------------------------------------------------
 
-    case cross_convert_restr_vec_to_fp: {
+    case subroutine_convert_restr_vec_to_fp: {
         led2_on();
 
-        // The mathematical result has the dimension (N)
+        // Local array for converted Fp vector elements
         FP_ELEM result[N];
 
-        // Pointer assignment within our received data buffer & read input restricted vector from shared buffer
-        FZ_ELEM* restr_input = (FZ_ELEM*)(databuffer);
+        // Execute element-wise conversion from FZ vector (in databuffer) to Fp vector
+        cross_convert_restr_vec_to_fp(result, (const FZ_ELEM*)databuffer);
 
-        // Convert restricted vector elements to full field elements (Fp)
-        convert_restr_vec_to_fp(result, restr_input);
+        // --- CHUNKING LOGIC BEGIN ---
+        const uint16_t output_len = (uint16_t)(N * sizeof(FP_ELEM));
 
-        // Return N field elements back to host
-        simpleserial_put('r', N * sizeof(FP_ELEM), (uint8_t*)result);
-        
+        const uint8_t chunk_index = (len >= 1) ? x[0] : 0;
+
+        const uint32_t offset = (uint32_t)chunk_index * SS_OUTPUT_CHUNK_SIZE;
+
+        // Bound-check: verify that requested offset does not exceed total data size
+        if (offset >= output_len) {
+            led2_off();
+            return SS_ERR_LEN;
+        }
+
+        // Compute transmission length: send 160 bytes or remaining trailing bytes
+        const uint16_t current_len = (output_len - offset < SS_OUTPUT_CHUNK_SIZE)
+                ? (uint16_t)(output_len - offset)
+                : SS_OUTPUT_CHUNK_SIZE;
+
+        // Transmit requested slice over SimpleSerial response command 'r'
+        simpleserial_put('r', current_len, ((uint8_t*)result) + offset);
+        // --- CHUNKING LOGIC END ---
+
         led2_off();
         return SS_ERR_OK;
     }
@@ -114,7 +157,7 @@ uint8_t subroutines(uint8_t cmd, uint8_t scmd, uint8_t len, uint8_t* x) {
     // Subroutine 0x04: Multiply Restricted Vector by Fp Matrix Transpose
     // -------------------------------------------------------------------------
 
-    case cross_restr_vec_by_fp_matrix: {
+    case subroutine_restr_vec_by_fp_matrix: {
         led2_on();
         
         // The mathematical result has the dimension (N - K)
@@ -125,9 +168,7 @@ uint8_t subroutines(uint8_t cmd, uint8_t scmd, uint8_t len, uint8_t* x) {
         FP_ELEM* matrix_V_tr  = (FP_ELEM*)(databuffer + (N * sizeof(FZ_ELEM)));
         
         // Actual function call with 3 arguments:
-        // 1. Output storage, 2. Input vector, 3. Input matrix
-        // Perform vector-matrix multiplication: result = restr_vector * V^T
-        restr_vec_by_fp_matrix(result, restr_vector, (uint8_t (*)[N-K]) matrix_V_tr);
+        cross_restr_vec_by_fp_matrix(result, restr_vector, (FP_ELEM (*)[N-K]) matrix_V_tr);
         
         // Return exactly (N - K) field elements
         simpleserial_put('r', (N - K) * sizeof(FP_ELEM), (uint8_t*)result);
@@ -140,28 +181,33 @@ uint8_t subroutines(uint8_t cmd, uint8_t scmd, uint8_t len, uint8_t* x) {
     // Note: This isn't checking a final mathematical result, just testing a helper function.
     // -------------------------------------------------------------------------
 
-    case cross_pack_fz_vec: {
+    case subroutine_pack_fz_vec: {
         led2_on();
 
-        // Read unpacked vector from shared buffer
-        FZ_ELEM* unpacked_input = (FZ_ELEM*)(databuffer);
-        uint8_t out[DENSELY_PACKED_FZ_VEC_SIZE];    
+        uint8_t result[DENSELY_PACKED_FZ_VEC_SIZE];
 
-        // Compress unpacked FZ vector into bit-packed representation
-        pack_fz_vec(out, unpacked_input);
+// Generator variant (RSDPG): Pack FZ vector using generator-specific packing layout
+#if defined(RSDPG)
+    uint8_t result_rsdp_g[DENSELY_PACKED_FZ_RSDP_G_VEC_SIZE];
+    pack_fz_rsdp_g_vec(result_rsdp_g, (const FZ_ELEM*)databuffer);
+    simpleserial_put('r', DENSELY_PACKED_FZ_RSDP_G_VEC_SIZE, result_rsdp_g);
 
-        // Return packed byte array back to host
-        simpleserial_put('r', DENSELY_PACKED_FZ_VEC_SIZE, out);
+// Standard variant (RSDP): Compress unpacked FZ vector into dense byte array
+#else
+    pack_fz_vec(result, (const FZ_ELEM*)databuffer);
+    simpleserial_put('r', DENSELY_PACKED_FZ_VEC_SIZE, result);
+#endif
 
         led2_off();
         return SS_ERR_OK;
     }
+
     // -------------------------------------------------------------------------
     // Subroutine 0x06: Pack Syndrome Vector (Fp) Into Dense Format
     // Note: This isn't checking a final mathematical result, just testing a helper function.
     // -------------------------------------------------------------------------
 
-    case cross_pack_fp_syn: {
+    case subroutine_pack_fp_syn: {
         led2_on();
 
         // Read unpacked Fp syndrome vector from shared buffer
@@ -169,7 +215,7 @@ uint8_t subroutines(uint8_t cmd, uint8_t scmd, uint8_t len, uint8_t* x) {
         uint8_t out[DENSELY_PACKED_FP_SYN_SIZE]; 
 
         // Compress unpacked Fp syndrome vector into bit-packed format
-        pack_fp_syn(out, unpacked_input);
+        cross_pack_fp_syn(out, unpacked_input);
 
         // Return packed syndrome byte array back to host
         simpleserial_put('r', DENSELY_PACKED_FP_SYN_SIZE, out);
@@ -177,26 +223,40 @@ uint8_t subroutines(uint8_t cmd, uint8_t scmd, uint8_t len, uint8_t* x) {
         led2_off();
         return SS_ERR_OK;
     }
+
     // -------------------------------------------------------------------------
     // Subroutine 0x07: Unpack Dense Format Into Restricted Element Vector (FZ)
     // -------------------------------------------------------------------------
 
-    case cross_unpack_fz_vec: {
+    case subroutine_unpack_fz_vec: {
         led2_on();
 
-        // Output unpacked vector has dimension (N)
+        // Buffer for decompressed FZ vector of length N
         FZ_ELEM result[N];
 
-        // Pointer to raw packed bytes in shared buffer
-        uint8_t* packed_input = (uint8_t*)(databuffer);
+        // Decompress dense input bytes from databuffer into raw FZ elements
+        cross_unpack_fz_vec(result,(const uint8_t*)databuffer);
 
-        // Expand packed byte array back into FZ vector elements
-        unpack_fz_vec(result, packed_input);
+        // --- CHUNKING LOGIC BEGIN ---
+        const uint16_t output_len = (uint16_t)(N * sizeof(FZ_ELEM));
 
-        // Return N unpacked FZ elements back to host
-        simpleserial_put('r', N * sizeof(FZ_ELEM), (uint8_t*)result);
+        const uint8_t chunk_index = (len >= 1) ? x[0] : 0;
 
-        led2_off();
+        const uint32_t offset = (uint32_t)chunk_index * SS_OUTPUT_CHUNK_SIZE;
+
+        if (offset >= output_len) {
+            led2_off();
+            return SS_ERR_LEN;
+        }
+
+        const uint16_t current_len = (output_len - offset < SS_OUTPUT_CHUNK_SIZE)
+            ? (uint16_t)(output_len - offset)
+            : SS_OUTPUT_CHUNK_SIZE;
+
+        simpleserial_put('r',current_len,((uint8_t*)result) + offset);
+        // --- CHUNKING LOGIC END ---
+
+         led2_off();
         return SS_ERR_OK;
     }
 
@@ -204,21 +264,34 @@ uint8_t subroutines(uint8_t cmd, uint8_t scmd, uint8_t len, uint8_t* x) {
     // Subroutine 0x08: Subtract Two Restricted Vectors (Dimension N)
     // -------------------------------------------------------------------------
 
-    case cross_fz_vec_sub_n: {
+    case subroutine_fz_vec_sub_n: {
         led2_on();
-
 
         FZ_ELEM result[N];
         
-        // Parse the two input vectors from shared buffer
+        // Slice input vectors a and b sequentially from shared databuffer
         FZ_ELEM* restr_vec_a = (FZ_ELEM*)(databuffer);
         FZ_ELEM* restr_vec_b = (FZ_ELEM*)(databuffer + (N * sizeof(FZ_ELEM)));
         
         // Compute element-wise vector subtraction: result = vec_a - vec_b (mod p)
-        fz_vec_sub_n(result, restr_vec_a, restr_vec_b);
+        cross_fz_vec_sub_n(result, restr_vec_a, restr_vec_b);
         
-        // Return exactly N elements (of type FZ_ELEM)
-        simpleserial_put('r', N * sizeof(FZ_ELEM), (uint8_t*)result);
+        const uint16_t output_len = (uint16_t)(N * sizeof(FZ_ELEM));
+
+        const uint8_t chunk_index = (len >= 1) ? x[0] : 0;
+
+        const uint32_t offset = (uint32_t)chunk_index * SS_OUTPUT_CHUNK_SIZE;
+
+        if (offset >= output_len) {
+            led2_off();
+            return SS_ERR_LEN;
+        }
+
+        const uint16_t current_len = (output_len - offset < SS_OUTPUT_CHUNK_SIZE)
+            ? (uint16_t)(output_len - offset)
+            : SS_OUTPUT_CHUNK_SIZE;
+
+        simpleserial_put('r',current_len,((uint8_t*)result) + offset);
         
         led2_off();
         return SS_ERR_OK;
@@ -228,17 +301,17 @@ uint8_t subroutines(uint8_t cmd, uint8_t scmd, uint8_t len, uint8_t* x) {
     // Subroutine 0x09: Multiply Fp Vector by Fp Matrix Transpose
     // -------------------------------------------------------------------------
 
-    case cross_fp_vec_by_fp_matrix: {
+    case subroutine_fp_vec_by_fp_matrix: {
         led2_on();
 
         FP_ELEM result[N - K];
 
-        // Parse input vector and matrix pointer from shared buffer
+        // Parse/Extract input vector and matrix pointer from shared buffer
         FP_ELEM* fp_vector = (FP_ELEM*)(databuffer);
         FP_ELEM* matrix_V_tr = (FP_ELEM*)(databuffer + (N * sizeof(FP_ELEM)));
 
-        // Perform vector-matrix multiplication: result = fp_vector * V^T
-        fp_vec_by_fp_matrix(result, fp_vector, (uint8_t (*)[N-K]) matrix_V_tr);
+        // Perform vector-matrix multiplication
+        cross_fp_vec_by_fp_matrix(result, fp_vector, (FP_ELEM (*)[N-K]) matrix_V_tr);
 
         // Return (N - K) field elements back to host
         simpleserial_put('r', (N - K) * sizeof(FP_ELEM), (uint8_t*)result);
@@ -251,21 +324,37 @@ uint8_t subroutines(uint8_t cmd, uint8_t scmd, uint8_t len, uint8_t* x) {
     // Subroutine 0x10: Pointwise Multiplication of Two Fp Vectors
     // -------------------------------------------------------------------------
 
-    case cross_fp_vec_by_fp_vec_pointwise: {
+    case subroutine_fp_vec_by_fp_vec_pointwise: {
         led2_on();
 
         FP_ELEM result[N];
         
-        // Set pointer to the two input vectors in the data buffer
+        // Slice input vectors a and b from shared databuffer
         FP_ELEM* fp_vec_a = (FP_ELEM*)(databuffer);
         FP_ELEM* fp_vec_b = (FP_ELEM*)(databuffer + (N * sizeof(FP_ELEM)));
         
-        // Call the pointwise multiplication of the shared library
-        fp_vec_by_fp_vec_pointwise(result, fp_vec_a, fp_vec_b);
+        // Perform element-wise multiplication: result[i] = vec_a[i] * vec_b[i] (mod p)
+        cross_fp_vec_by_fp_vec_pointwise(result, fp_vec_a, fp_vec_b);
         
-        // Send the result (N elements of type FP_ELEM) back to Python
-        simpleserial_put('r', N * sizeof(FP_ELEM), (uint8_t*)result);
-    
+        // --- CHUNKING LOGIC BEGIN ---
+        const uint16_t output_len = (uint16_t)(N * sizeof(FP_ELEM));
+
+        const uint8_t chunk_index = (len >= 1) ? x[0] : 0;
+
+        const uint32_t offset = (uint32_t)chunk_index * SS_OUTPUT_CHUNK_SIZE;
+
+        if (offset >= output_len) {
+            led2_off();
+            return SS_ERR_LEN;
+        }
+
+        const uint16_t current_len = (output_len - offset < SS_OUTPUT_CHUNK_SIZE)
+            ? (uint16_t)(output_len - offset)
+            : SS_OUTPUT_CHUNK_SIZE;
+
+        simpleserial_put('r',current_len,((uint8_t*)result) + offset);
+        // --- CHUNKING LOGIC END ---
+
         led2_off();
         return SS_ERR_OK;
     }
@@ -274,7 +363,7 @@ uint8_t subroutines(uint8_t cmd, uint8_t scmd, uint8_t len, uint8_t* x) {
     // Subroutine 0x11: Vector Subtraction M 
     // -------------------------------------------------------------------------
 
-     case cross_fz_vec_sub_m: {
+     case subroutine_fz_vec_sub_m: {
 #if defined(RSDPG)
 
         led2_on();
@@ -288,7 +377,7 @@ uint8_t subroutines(uint8_t cmd, uint8_t scmd, uint8_t len, uint8_t* x) {
         FZ_ELEM result[M];
 
         // Execute module-specific vector subtraction
-        fz_vec_sub_m(result, vec_a, vec_b);
+        cross_fz_vec_sub_m(result, vec_a, vec_b);
 
         simpleserial_put('r', M * sizeof(FZ_ELEM), (uint8_t*)result);
 
@@ -303,7 +392,7 @@ uint8_t subroutines(uint8_t cmd, uint8_t scmd, uint8_t len, uint8_t* x) {
     // Subroutine 0x12: Matrix Multiplication W (only for RSDPG)
     // -------------------------------------------------------------------------
 
-    case cross_fz_inf_w_by_fz_matrix: {
+    case subroutine_fz_inf_w_by_fz_matrix: {
 #if defined(RSDPG)
         led2_on();
 
@@ -316,11 +405,27 @@ uint8_t subroutines(uint8_t cmd, uint8_t scmd, uint8_t len, uint8_t* x) {
         FZ_ELEM (*matrix_W)[N - M] = (FZ_ELEM(*)[N - M])(all_elements + M);
         FZ_ELEM result[N];
 
-        // Perform specialized product of Restricted Vector e with generator matrix W
-        // Expanding length M input to full length N representation.
-        fz_inf_w_by_fz_matrix(result, vec_e, matrix_W);
+        // Multiply vector e with generator matrix W to expand dimension M to N
+        cross_fz_inf_w_by_fz_matrix(result, vec_e, matrix_W);
 
-        simpleserial_put('r', N * sizeof(FZ_ELEM), (uint8_t*)result);
+        // --- CHUNKING LOGIC BEGIN ---
+        const uint16_t output_len = (uint16_t)(N * sizeof(FZ_ELEM));
+
+        const uint8_t chunk_index = (len >= 1) ? x[0] : 0;
+
+        const uint32_t offset = (uint32_t)chunk_index * SS_OUTPUT_CHUNK_SIZE;
+
+        if (offset >= output_len) {
+            led2_off();
+            return SS_ERR_LEN;
+        }
+
+        const uint16_t current_len = (output_len - offset < SS_OUTPUT_CHUNK_SIZE)
+            ? (uint16_t)(output_len - offset)
+            : SS_OUTPUT_CHUNK_SIZE;
+
+        simpleserial_put('r',current_len,((uint8_t*)result) + offset);
+        // --- CHUNKING LOGIC END ---
 
         led2_off();
         return SS_ERR_OK;
@@ -333,7 +438,7 @@ uint8_t subroutines(uint8_t cmd, uint8_t scmd, uint8_t len, uint8_t* x) {
     // Subroutine 0x13: Scaled Vector Addition (Fp Vector by Restricted Vector)
     // -------------------------------------------------------------------------
 
-    case cross_fp_vec_by_restr_vec_scaled: {
+    case subroutine_fp_vec_by_restr_vec_scaled: {
         led2_on();
 
         FP_ELEM result[N];
@@ -342,19 +447,35 @@ uint8_t subroutines(uint8_t cmd, uint8_t scmd, uint8_t len, uint8_t* x) {
         // Vector e (length N)
         const FZ_ELEM* vec_e = (const FZ_ELEM*)(databuffer);
 
-        // Scalar challenge_1
+        // Parse challenge scalar and vector arguments sequentially
         uint32_t offset_chall = N * sizeof(FZ_ELEM);
         FP_ELEM chall_1 = *(FP_ELEM*)(databuffer + offset_chall);
 
-        // Vector u_prime (length N - K)
+        // Vector u_prime (dimension N - K)
         uint32_t offset_u_prime = offset_chall + sizeof(FP_ELEM);
         const FP_ELEM* vec_u_prime = (const FP_ELEM*)(databuffer + offset_u_prime);
 
-        // Perform combined scaling operation
-        fp_vec_by_restr_vec_scaled(result, vec_e, chall_1, vec_u_prime);
+        // Compute combined scaling operation: result = convert(e) + (chall_1 * u_prime)
+        cross_fp_vec_by_restr_vec_scaled(result, vec_e, chall_1, vec_u_prime);
 
-        // Return N field elements back to host
-        simpleserial_put('r', N * sizeof(FP_ELEM), (uint8_t*)result);
+        // --- CHUNKING LOGIC BEGIN ---
+        const uint16_t output_len = (uint16_t)(N * sizeof(FP_ELEM));
+
+        const uint8_t chunk_index = (len >= 1) ? x[0] : 0;
+
+        const uint32_t offset = (uint32_t)chunk_index * SS_OUTPUT_CHUNK_SIZE;
+
+        if (offset >= output_len) {
+            led2_off();
+            return SS_ERR_LEN;
+        }
+
+        const uint16_t current_len = (output_len - offset < SS_OUTPUT_CHUNK_SIZE)
+            ? (uint16_t)(output_len - offset)
+            : SS_OUTPUT_CHUNK_SIZE;
+
+        simpleserial_put('r',current_len,((uint8_t*)result) + offset);
+        // --- CHUNKING LOGIC END ---
 
         led2_off();
         return SS_ERR_OK;
@@ -364,16 +485,31 @@ uint8_t subroutines(uint8_t cmd, uint8_t scmd, uint8_t len, uint8_t* x) {
     // Subroutine 0x14: Expand Digest to Fixed Weight Vector
     // -------------------------------------------------------------------------
 
-    case cross_expand_digest_to_fixed_weight: {
+    case subroutine_expand_digest_to_fixed_weight: {
         led2_on();
 
+        // Fixed-weight vector output array of size T
         uint8_t result[T];
 
-        // Expand input seed/digest in shared buffer into fixed-weight vector
-        expand_digest_to_fixed_weight(result, databuffer);
+        // Hash, expand seed in databuffer into fixed-weight binary position vector
+        cross_expand_digest_to_fixed_weight(result, databuffer);
 
-        // Send result back to Python (T bytes)
-        simpleserial_put('r', T * sizeof(uint8_t), result);
+        // --- CHUNKING LOGIC BEGIN ---
+        uint16_t chunk_size = SS_OUTPUT_CHUNK_SIZE;
+        uint16_t chunk_index = (len >= 1) ? x[0] : 0;
+        uint32_t offset = (uint32_t)chunk_index * chunk_size;
+
+        if (offset >= T) {
+            led2_off();
+            return SS_ERR_LEN;
+        }
+
+        uint16_t current_len = (T - offset < chunk_size)
+            ? (uint16_t)(T - offset)
+            : chunk_size;
+
+        simpleserial_put('r', current_len, result + offset);
+        // --- CHUNKING LOGIC END ---
 
         led2_off();
         return SS_ERR_OK;
@@ -381,16 +517,46 @@ uint8_t subroutines(uint8_t cmd, uint8_t scmd, uint8_t len, uint8_t* x) {
 
     // -------------------------------------------------------------------------
     // Subroutine 0x15: Normalize Restricted Vector (In-Place, Dimension N)
+    //
+    // IMPORTANT:
+    // SimpleSerial V2.1 cannot transport all N elements in one packet
+    // when N > 249 bytes.
+    //
+    // Therefore the result is returned in chunks.
+    //
+    // chunk 0 -> bytes 0 .. 159
+    // chunk 1 -> bytes 160 .. N-1
     // -------------------------------------------------------------------------
 
-    case cross_fz_dz_norm_n: {
+    case subroutine_fz_dz_norm_n: {
         led2_on();
 
-        // Normalize raw representation into standard range in-place
-        fz_dz_norm_n( (FZ_ELEM*)(databuffer));
+        // Execute the actual fz_dz_norm_n operation on the input vector.
+        //
+        // The vector is stored directly in the data buffer and is modified
+        // in place by the function.
+        cross_fz_dz_norm_n((FZ_ELEM*)databuffer);
 
-        // Return normalized N elements back to host
-        simpleserial_put('r', N * sizeof(FZ_ELEM), databuffer);
+        // --- CHUNKING LOGIC BEGIN ---
+        // The normalized vector is already stored in databuffer.
+        // Only the requested 160-byte slice is transmitted.
+        uint16_t chunk_index = (len >= 1) ? x[0] : 0;
+
+        uint32_t offset = (uint32_t)chunk_index * SS_OUTPUT_CHUNK_SIZE;
+
+        uint16_t total_output_size = N * sizeof(FZ_ELEM);
+
+        if (offset >= total_output_size) {
+            led2_off();
+            return SS_ERR_LEN;
+        }
+        uint16_t current_len = (total_output_size - offset < SS_OUTPUT_CHUNK_SIZE)
+            ? (uint16_t)(total_output_size - offset)
+            : SS_OUTPUT_CHUNK_SIZE;
+
+        // Transmit normalized slice directly from databuffer
+        simpleserial_put('r', current_len, ((uint8_t*)databuffer) + offset);
+        // --- CHUNKING LOGIC END ---
 
         led2_off();
         return SS_ERR_OK;
@@ -400,16 +566,32 @@ uint8_t subroutines(uint8_t cmd, uint8_t scmd, uint8_t len, uint8_t* x) {
     // Subroutine 0x16: Normalize M 
     // -------------------------------------------------------------------------
 
-    case cross_fz_dz_norm_m: {
+    case subroutine_fz_dz_norm_m: {
 #if defined(RSDPG)
         led2_on();
 
         // In-place normalization of raw elements modulo p across dimension M
         // Ensures element representations strictly conform to canonical range.
-        fz_dz_norm_m((FZ_ELEM*)(databuffer));
+        cross_fz_dz_norm_m((FZ_ELEM*)(databuffer));
 
-        // Transmit normalized vector of length M back 
-        simpleserial_put('r', M * sizeof(FZ_ELEM), databuffer);
+        // --- CHUNKING LOGIC BEGIN ---
+        const uint16_t output_len = (uint16_t)(M * sizeof(FZ_ELEM));
+
+        const uint8_t chunk_index = (len >= 1) ? x[0] : 0;
+
+        const uint32_t offset = (uint32_t)chunk_index * SS_OUTPUT_CHUNK_SIZE;
+
+        if (offset >= output_len) {
+            led2_off();
+            return SS_ERR_LEN;
+        }
+
+        const uint16_t current_len = (output_len - offset < SS_OUTPUT_CHUNK_SIZE)
+            ? (uint16_t)(output_len - offset)
+            : SS_OUTPUT_CHUNK_SIZE;
+
+        simpleserial_put('r', current_len, ((uint8_t*)databuffer) + offset);
+        // --- CHUNKING LOGIC END ---
 
         led2_off();
         return SS_ERR_OK;
@@ -418,29 +600,51 @@ uint8_t subroutines(uint8_t cmd, uint8_t scmd, uint8_t len, uint8_t* x) {
 #endif
     } 
 
-    // -------------------------------------------------------------------------
+    // -----------------------------------------------------------------------------
     // Subroutine 0x17: Expand Public Key
-    // -------------------------------------------------------------------------
+    // -----------------------------------------------------------------------------
+    // The pk expansion is potentially expensive, because the complete public key
+    // is larger than the SimpleSerial2 packet limit, the result is transferred 
+    // in multiple chunks.
+    // IMPORTANT:
+    // cross_expand_pk() must only be executed once for a given seed.
+    // Otherwise every requested chunk would recompute the complete public key.
+    //
+    // The cache consists of:
+    //   - matrix_V_tr_buf, matrix_W_buf (RSDPG only) and expand_pk_seed_cache
+    //
+    // Chunk requests only read from the already expanded matrix.
+    // -----------------------------------------------------------------------------
 
-    case cross_expand_pk: {
+    case subroutine_expand_pk: {
         led2_on();
 
         const uint8_t* seed_pk = (const uint8_t*)databuffer;
-        
-#if defined(RSDPG)
-        // FOR RSDPG SUPPORT: Pass additional matrix_W_buf parameter
-        expand_pk(matrix_V_tr_buf, matrix_W_buf, seed_pk);
-#else
-        expand_pk(matrix_V_tr_buf, seed_pk);
-#endif
 
-        uint16_t pk_len = (uint16_t)(K * (N - K) * sizeof(FP_ELEM));
+        // CACHING MECHANISM:
+        // Public key expansion is computationally expensive and produces large matrices.
+        // If the requested seed matches the cached seed, skip expansion and reuse matrix_V_tr_buf.
+        if (!expand_pk_cache_valid || memcmp(expand_pk_seed_cache, seed_pk, KEYPAIR_SEED_LENGTH_BYTES) != 0) {
+#if defined(RSDPG)
+        cross_expand_pk(matrix_V_tr_buf, matrix_W_buf, seed_pk);
+#else
+        cross_expand_pk(matrix_V_tr_buf, seed_pk);
+#endif
+            // Update cache seed and set validity flag
+            memcpy(expand_pk_seed_cache, seed_pk, KEYPAIR_SEED_LENGTH_BYTES);
+            expand_pk_cache_valid = 1;
+        }
+
+        // --- CHUNKING LOGIC BEGIN ---
+        // Public key matrices can be several kilobytes and exceed SimpleSerial frame limits
+        const uint16_t pk_len =(uint16_t)(K * (N - K) * sizeof(FP_ELEM));
+
         uint8_t* data_ptr = (uint8_t*)matrix_V_tr_buf;
 
-        // The chunk index arrives as the first payload byte (x[0]); defaults to 0 if no payload was sent. Chunking is required here because 
-        // the full matrix (up to several KB) exceeds SimpleSerial2's single-packet limit (~249 bytes) - each chunk is requested via its own 'b' call.
-        uint16_t chunk_size = 200;  // safely under the ~249-byte SSv2.1 limit
+        const uint16_t chunk_size = 160;
+
         uint16_t chunk_index = (len >= 1) ? x[0] : 0;
+
         uint32_t offset = (uint32_t)chunk_index * chunk_size;
 
         if (offset >= pk_len) {
@@ -448,8 +652,12 @@ uint8_t subroutines(uint8_t cmd, uint8_t scmd, uint8_t len, uint8_t* x) {
             return SS_ERR_LEN;
         }
 
-        uint16_t current_len = (pk_len - offset < chunk_size) ? (uint16_t)(pk_len - offset) : chunk_size;
+        uint16_t current_len = (pk_len - offset < chunk_size)
+                ? (uint16_t)(pk_len - offset)
+                : chunk_size;
+        // Transmit requested segment of the cached public key matrix
         simpleserial_put('r', current_len, data_ptr + offset);
+        // --- CHUNKING LOGIC END ---
 
         led2_off();
         return SS_ERR_OK;
@@ -459,7 +667,7 @@ uint8_t subroutines(uint8_t cmd, uint8_t scmd, uint8_t len, uint8_t* x) {
     // Subroutine 0x18: Expand Secret Key (seed_sk -> secret vector e)
     // -------------------------------------------------------------------------
 
-    case cross_expand_sk: {
+    case subroutine_expand_sk: {
         led2_on();
 
         // Input: seed for the secret key
@@ -473,20 +681,37 @@ uint8_t subroutines(uint8_t cmd, uint8_t scmd, uint8_t len, uint8_t* x) {
         FZ_ELEM secret_vec_e_G[M];
 
         // Call expand_sk with all 5 required parameters
-        expand_sk(secret_vec_e, secret_vec_e_G, matrix_V_tr_buf, matrix_W_buf, seed_sk);
+        cross_expand_sk(secret_vec_e, secret_vec_e_G, matrix_V_tr_buf, matrix_W_buf, seed_sk);
 #else
         // RSDP variant: Call expand_sk with 3 parameters
-        expand_sk(secret_vec_e, matrix_V_tr_buf, seed_sk);
+        cross_expand_sk(secret_vec_e, matrix_V_tr_buf, seed_sk);
 #endif
 
-        // Return the expanded secret vector e back to the host
-        simpleserial_put('r', N * sizeof(FZ_ELEM), (uint8_t*)secret_vec_e);
+        // --- CHUNKING LOGIC BEGIN ---
+        const uint16_t output_len = (uint16_t)(N * sizeof(FZ_ELEM));
+
+        const uint8_t chunk_index = (len >= 1) ? x[0] : 0;
+
+        const uint32_t offset = (uint32_t)chunk_index * SS_OUTPUT_CHUNK_SIZE;
+
+        if (offset >= output_len) {
+            led2_off();
+            return SS_ERR_LEN;
+        }
+
+        const uint16_t current_len = (output_len - offset < SS_OUTPUT_CHUNK_SIZE)
+                ? (uint16_t)(output_len - offset)
+                : SS_OUTPUT_CHUNK_SIZE;
+
+        simpleserial_put('r', current_len, ((uint8_t*)secret_vec_e) + offset);
+        // --- CHUNKING LOGIC END ---
+
+        // Invalidate public key cache as state has changed
+        expand_pk_cache_valid = 0;
 
         led2_off();
         return SS_ERR_OK;
     }
-
-    
     default:
         return SS_ERR_CMD;
     }
@@ -511,9 +736,13 @@ uint8_t metainfo(uint8_t cmd, uint8_t scmd, uint8_t len, uint8_t* x) {
 // little endian
 // V2 max data packet 249 bytes. USB buffer is 200.
 
+// ----------------------------------------------------------------------------
+// That was provided to us, but a small explaination from us:
+// The host transfers large inputs in 160-byte packets.
+// The packet index encoded in scmd determines the destination offset
+// within the shared databuffer.
 // -----------------------------------------------------------------------------
-// SimpleSerial Handlers & Main Loop
-// -----------------------------------------------------------------------------
+
 #define USB_PACKET_DATABUFFER_SIZE 160
 uint8_t set_value(uint8_t cmd, uint8_t scmd, uint8_t len, uint8_t* x) {
     led1_on();

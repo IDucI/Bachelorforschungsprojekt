@@ -12,7 +12,7 @@
 *.pch
 
 # Compiled Dynamic libraries
-#*.so
+*.so
 *.dylib
 *.dll
 
@@ -40,7 +40,7 @@
 # Python egg metadata, regenerated from source files by setuptools.
 *.egg-info/
 
-
+*.csv
 *.json
 *.log
 *.kate-swp
@@ -70,3 +70,10 @@ objdir-*/
 
 # Python virtual environment
 cw-env/
+
+# Python Virtual Environments
+cw-env311/
+.venv/
+venv/
+__pycache__/
+*.pyc

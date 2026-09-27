@@ -1,42 +1,21 @@
-import logging
-import time
 from pathlib import Path
-import chipwhisperer as cw
+import time
 import sys
-
-# =============================================================================
-# PATH SETUP & IMPORTS
-# =============================================================================
-
-# Determine directory of the current script (.../cw_firmware/cross_subroutines)
-HERE = Path(__file__).resolve().parent
-
-# Calculate path to libcross: two levels up to project root, then into "libcross"
-LIBCROSS_DIR = HERE.parent.parent / "libcross"
-BUILD_DIR = LIBCROSS_DIR / "build"  
-
-
-# MUST append to sys.path BEFORE importing modules from libcross
-if str(LIBCROSS_DIR) not in sys.path:
-    sys.path.insert(0, str(LIBCROSS_DIR))
-
-# Define directory containing the test vector JSON files
-TESTS_DIR = LIBCROSS_DIR
-
-# Import ChipWhisperer and local libcross modules
 import chipwhisperer as cw
-from cross import Cross, Calculations
+import subprocess
+
 
 # =============================================================================
-# LOGGING SETUP
+# Path setup
 # =============================================================================
 
-logging.getLogger("chipwhisperer").setLevel(logging.ERROR)
-
-HERE = Path(__file__).resolve().parent
+# Get the directory in which this Python script is located.
+# This ensures that the firmware files can be found independently
+# of the directory from which the script is executed.
+here = Path(__file__).resolve().parent
 
 # =============================================================================
-# CROSS PARAMETER SETS (family, category, variant)
+# CROSS PARAMETER SETS
 # =============================================================================
 
 PARAMETER_SETS = [
@@ -60,127 +39,143 @@ PARAMETER_SETS = [
     ("RSDPG", 5, "small"),
 ]
 
-BAUDRATE = 230400
 
-def run_tests_for_variant(target, family: str, category: int, variant: str) -> bool:
-    """
-    Run functional and reference test vectors directly on the connected target.
-    """
-    print(f"Starting tests for {family} Cat-{category} ({variant})...")
-    
-    # Initialize Cross instance with the active serial target
-    c = Cross(
-        path=str(BUILD_DIR),
-        algorithm=family,
-        category=category,
-        optimization=variant,
-        release="_6.6.87.so"
-    )
-
-    # Assign Target to the subfunctions object (or directly to c)
-    if hasattr(c, "subfunctions"):
-        c.subfunctions.target = target
-    else:
-        c.target = target
-
-    # Keygen -> Sign -> Verify workflow
-    print("  -> Testing Keygen, Sign & Verify...")
-    sk, pk = c.keygen()
-    message = list(b"Hello CROSS")
-    signature = c.sign(sk, message)
-    is_valid = c.verify(pk, message, signature)
-
-    if not is_valid:
-        print("Error: Signature verification failed.")
-        return False
-    print("Signature verification successful.")
-
-    # Validate intermediate calculations against static JSON test vectors
-    json_path = TESTS_DIR / f"cross_{family.lower()}_{category}_{variant}.json"
-    if json_path.exists():
-        import json
-        print(f"  -> Validating vectors against {json_path.name}...")
-        with open(json_path, "r") as f:
-            data = json.load(f)
-
-        calc = Calculations(c.subfunctions)
-        seed_sk = bytes.fromhex(data["seed_sk"])
-        root_seed = bytes.fromhex(data["root_seed"])
-        salt = bytes.fromhex(data["salt"])
-
-        # Compute v_bar_pre_norm on board hardware
-        v_bar_pre_norm = calc.v_bar_pre_norm(seed_sk, root_seed, salt)
-        v_bar_pre_norm_ref = data["v_bar_pre_norm"]
-
-        if v_bar_pre_norm == v_bar_pre_norm_ref:
-            print("Vector-Match (v_bar_pre_norm): MATCH")
-        else:
-            print("Error: Vector-Match (v_bar_pre_norm): MISMATCH")
-            return False
-    else:
-        print(f"Warning: No JSON test vector file found at {json_path}")
-
-    return True
+# Communication baud rate used by the STM32 programmer.
+baudrate = 230400
 
 # =============================================================================
-# MAIN ENTRY POINT
+# USB / CDC-ACM driver handling
+# =============================================================================
+
+def release_cdc_acm() -> None:
+    """
+    Unload the Linux CDC-ACM driver.
+    The ChipWhisperer Nano shares its USB device with the Linux
+    CDC-ACM serial driver. If this driver is attached to the device,
+    ChipWhisperer may not be able to access the USB interfaces directly.
+    The driver is therefore unloaded before each connection attempt.
+    """
+    subprocess.run(["sudo", "modprobe", "-r", "cdc_acm"], check=False)
+
+# =============================================================================
+# Firmware flashing
+# =============================================================================
+
+def flash_firmware(hex_path: Path) -> bool:
+    """
+    Flash one firmware image onto the STM32F target.
+    """
+    # Check whether the specified firmware file exists.
+    if not hex_path.exists():
+        print(f"Error: Target file '{hex_path.name}' does not exist!")
+        return False
+
+    print(" Connecting to Scope & Target hardware...")
+
+    # Scope object is initialized as None so that it can safely
+    # be checked in the finally block.
+    scope = None
+
+    try:
+        # Release the CDC-ACM driver before accessing the
+        # ChipWhisperer USB device.
+        release_cdc_acm()
+
+        # Establish a connection to the ChipWhisperer scope.
+        scope = cw.scope()
+
+        # Apply ChipWhisperer's default scope configuration.
+        scope.default_setup()
+
+        # Configure the output clock used by the target.
+        scope.io.clkout = 15e6
+
+        # Give the target a short amount of time to stabilize
+        # after the clock configuration.
+        time.sleep(0.2)
+
+        print(f"Flashing image: {hex_path.name}...")
+
+        # Program the STM32F target with the selected firmware.
+        # STM32F Programmer is used for the STM32F4 target on the Riscure Piñata board.
+        cw.program_target(scope, cw.programmers.STM32FProgrammer, str(hex_path), baud = baudrate)
+
+        print("Firmware flashing completed successfully.")
+        return True
+
+    except Exception as err:
+        # Catch any error during USB communication, scope
+        # initialization or firmware flashing.
+        print(f"Flashing process failed: {err}")
+        return False
+
+    finally:
+        # Always disconnect the ChipWhisperer scope after the
+        # flashing attempt if a connection was successfully created.
+        if scope is not None:
+            scope.dis()
+            print("Scope disconnected.")
+
+# =============================================================================
+# Main
 # =============================================================================
 
 def main() -> None:
-    print("Connecting to ChipWhisperer Scope...")
-    scope = cw.scope()
-    scope.default_setup()
-    scope.io.clkout = 15e6
-    print("clkout:", scope.io.clkout)
-    time.sleep(0.5)
+    """
+    If a firmware file is provided as a command-line argument, only that file is flashed.
+    Without an argument, all configurations defined in PARAMETER_SETS are flashed sequentially.
+    """
 
-    try:
-        for family, category, variant in PARAMETER_SETS:
-            param_key = (family, category, variant)
-            hex_filename = f"cross_subroutines_{family.lower()}_{category}_{variant}-PINATA.hex"
-            hex_path = HERE / hex_filename
+    # Single-file mode
+    # Example: python3 flash.py firmware.hex
+    # In this mode, only the specified firmware image is flashed.
+    if len(sys.argv) > 1:
+        single_file = Path(sys.argv[1])
+        flash_firmware(single_file)
+        return
+    
+    # Batch mode
+    # If no firmware file was specified, automatically process, all CROSS parameter configurations.
+    print("Starting automated batch flashing sequence...\n")
 
-            if not hex_path.exists():
-                print(f"\nFirmware not found: {hex_filename} - skipping {param_key}")
-                continue
+    for family, category, variant in PARAMETER_SETS:
+        # Store the current configuration for readable
+        # status and error messages.
+        param_key = (family, category, variant)
 
-            print("\n" + "=" * 60)
-            print(f" Flashing and testing set: {param_key} ".center(60, "="))
-            print("=" * 60)
+        # Construct the expected firmware filename.
+        #
+        # Example:
+        #   cross_subroutines_rsdp_1_fast-PINATA.hex
+        hex_filename = (f"cross_subroutines_{family.lower()}_{category}_{variant}-PINATA.hex")
 
-            # Flash target firmware
-            print(f"[*] Flashing target with: {hex_filename}...")
-            cw.program_target(
-                scope,
-                cw.programmers.STM32FProgrammer,
-                str(hex_path),
-                baud=BAUDRATE,
-            )
-            print("Flashing successful!")
+        # Build the complete path to the firmware file.
+        hex_path = here / hex_filename
 
-            # SimpleSerial Target connection setup
-            target = cw.target(scope, cw.targets.SimpleSerial2)
-            target.baud = BAUDRATE
-            target.flush()
+        # Print a separator and the configuration currently
+        # being processed.
+        print("=" * 60)
+        print(f" Flashing Configuration: {param_key} ".center(60, "="))
+        print("=" * 60)
 
-            # Execute test workflow for current firmware iteration
-            success = run_tests_for_variant(target, family, category, variant)
+        # Skip the configuration if the corresponding HEX file
+        # does not exist.
+        if not hex_path.exists():
+            print(f"Binary missing: {hex_filename} -> Skipping configuration.")
+            continue
 
-            if success:
-                print(f"\n[PASS] {param_key} fully functional")
-            else:
-                print(f"\n[FAIL] {param_key} didn't pass the test")
+        # Flash the current firmware image.
+        success = flash_firmware(hex_path)
 
-            # Disconnect target interface to prepare for next flash cycle
-            target.dis()
-            
-    except Exception as err:
-        print(f"\n[-] Critical error: {err}")
+        # Stop the batch process if flashing fails.
+        # This prevents subsequent configurations from being
+        # flashed after a potentially problematic hardware state.
+        if not success:
+            print(f"Aborting batch execution at {param_key} due to an error.\n")
+            break
 
-    finally:
-        scope.dis()
-        print("Scope safely disconnected.")
-
+        print("\n" + "-" * 60 + "\n")
 
 if __name__ == "__main__":
     main()
+
