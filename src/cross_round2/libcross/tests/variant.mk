@@ -1,7 +1,8 @@
 LIB_DIR    := ../variants/$(ALG_VERSION)/lib/
 LIB_OBJECTS := $(wildcard $(LIB_DIR)*.s.o)
 
-TEST_SRC := test_cross.c
+TEST_SRC  := generate_reference_data.c
+TEST_NAME := generate_reference_data
 
 ALG_DIR := ../variants/Reference_Implementation/
 
@@ -20,7 +21,7 @@ OPTIMIZATION := $(word 4, $(VARIANT_PARTS))
 
 BUILD_DIR := build/
 OBJ_DIR   := $(BUILD_DIR)$(ALG_VERSION)/
-TEST_BIN  := $(OBJ_DIR)cross_test
+TEST_BIN  := $(OBJ_DIR)$(TEST_NAME)
 
 $(info ALG_VERSION = $(ALG_VERSION))
 $(info ALG_DIR     = $(ALG_DIR))

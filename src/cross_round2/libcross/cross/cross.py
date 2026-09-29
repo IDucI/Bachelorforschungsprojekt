@@ -114,7 +114,7 @@ class Cross:
         sk = (c_uint8 * self.params.keypair_seed_length_bytes)()
         pk = (c_uint8 * (self.params.keypair_seed_length_bytes + self.params.densely_packed_fp_syn_size))()
         self.c_cross.cross_keygen(sk, pk)
-        return list(sk), list(pk)
+        return bytes(sk), bytes(pk)
 
     def sign(self, seed_sk, m):
         if len(seed_sk) != self.params.keypair_seed_length_bytes:
@@ -124,7 +124,7 @@ class Cross:
         mlen = len(m)
         sig = self._sig_type()
         self.c_cross.cross_sign(sk, m, mlen, sig)
-        return list(sig)
+        return bytes(sig)
 
     def verify(self, seed_pk, m, signature):
         pk_size = self.params.keypair_seed_length_bytes + self.params.densely_packed_fp_syn_size

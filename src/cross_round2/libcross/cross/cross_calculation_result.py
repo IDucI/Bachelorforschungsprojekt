@@ -138,7 +138,7 @@ class SignCalculationResult:
     """
     # Original seeds and salt used to generate this set of intermediates
     seed_sk  : bytes
-    seed_pk  : bytes
+    pk  : bytes
     root_seed: bytes
     salt     : bytes
     signature: bytes = field(init=False)

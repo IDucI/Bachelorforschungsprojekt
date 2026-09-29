@@ -1,3 +1,4 @@
+from enum import verify
 import json
 from pathlib import Path
 from cross import Cross
@@ -8,6 +9,7 @@ categories = [1, 3, 5]
 optimizations = ["fast", "balanced", "small"]
 
 test_dir = Path(__file__).parent
+build_dir = test_dir.parent / "build"
 
 sign_success_count = 0
 keygen_success_count = 0
@@ -16,7 +18,7 @@ def test_keygen(c: Cross, data):
     global keygen_success_count
 
     seed_sk   = bytes.fromhex(data["seed_sk"])
-    pk   = bytes.fromhex(data["seed_pk"])
+    pk   = bytes.fromhex(data["public_key"])
 
     result = c.calculation.keygen(seed_sk)
     
@@ -72,14 +74,13 @@ def test_keygen(c: Cross, data):
 def test_sign(c: Cross, data):
     global sign_success_count
 
+    m         = bytes.fromhex(data["m"])
     seed_sk   = bytes.fromhex(data["seed_sk"])
-    seed_pk   = bytes.fromhex(data["seed_pk"])
+    pk   = bytes.fromhex(data["public_key"])
     root_seed = bytes.fromhex(data["root_seed"])
-    salt = bytes.fromhex(data["salt"])
+    salt      = bytes.fromhex(data["salt"])
 
-    m = b"Hello Cross"
-
-    result = c.calculation.sign(m, seed_sk=seed_sk, seed_pk=seed_pk, root_seed=root_seed, salt=salt)
+    result = c.calculation.sign(m, seed_sk=seed_sk, pk=pk, root_seed=root_seed, salt=salt)
             
     sig = result.signature
 
@@ -356,9 +357,43 @@ def test_sign(c: Cross, data):
     sig = c._sig_type(*sig_bytes)
     c_sig = bytes(data["signature"])
     assert sig_bytes == c_sig == result.signature # compare reconstructed, C reference, and calculation signatures
-    assert c.verify(seed_pk, m, sig)  # verify signature validity
+    assert c.verify(pk, m, sig)  # verify signature validity
     sign_success_count += 1
 
+c_verify_input = {}  # stores message, public_key, and signature generated through the high-level and calculation APIs for later verification in C
+
+def test_high_level_api_to_c(c: Cross):
+    seed_sk, pk = c.keygen()
+
+    length = secrets.randbelow(10000) + 1
+    m = secrets.token_bytes(length)
+
+    sig = c.sign(seed_sk, m)
+
+    return {
+        "message": m.hex(),
+        "public_key": pk.hex(),
+        "signature": sig.hex(),
+    }
+
+def test_calculation_api_to_c(c: Cross):
+    keygen_result = c.calculation.keygen()
+    pk = keygen_result.pk
+    seed_sk = keygen_result.seed_sk
+
+    length = secrets.randbelow(10000) + 1
+    m = secrets.token_bytes(length)
+
+    sign_result = c.calculation.sign(m, seed_sk=seed_sk, pk=pk)
+    sig = sign_result.signature
+
+    return {
+        "message": m.hex(),
+        "public_key": pk.hex(),
+        "signature": sig.hex(),
+    }
+
+print("Start testing ...")
 for algorithm in algorithms:
     for category in categories:
         for optimization in optimizations:
@@ -368,7 +403,7 @@ for algorithm in algorithms:
                 data = json.load(f)
 
             c = Cross(
-                path="build",
+                path=str(build_dir),
                 algorithm=algorithm,
                 category=category,
                 optimization=optimization,
@@ -377,23 +412,30 @@ for algorithm in algorithms:
             test_sign(c, data)
             test_keygen(c, data)
 
+            variant = f"cross_{algorithm.lower()}_{category}_{optimization}"
+            c_verify_input[variant] = {
+                "high_level_api": [],
+                "calculation_api": []
+            }
+            for _ in range(1):
+                c_verify_input[variant]["high_level_api"].append(test_high_level_api_to_c(c))
+                c_verify_input[variant]["calculation_api"].append(test_calculation_api_to_c(c))
+
+with open(test_dir / "c_verify_py.json", "w") as f:
+    json.dump(c_verify_input, f, indent=4)
+
 if sign_success_count == 18:
-    print("\033[1;92m=============================================")
-    print("           ALL SIGN TESTS PASSED")
-    print("=============================================\033[0m")
+    print("All sign tests passed.")
 else:
-    print("\033[1;91m=============================================")
-    print("           SOME SIGN TESTS FAILED")
-    print("=============================================\033[0m")
+    print("Some sign tests failed.")
 
 if keygen_success_count == 18:
-    print("\033[1;92m=============================================")
-    print("           ALL KEYGEN TESTS PASSED")
-    print("=============================================\033[0m")
+    print("All keygen tests passed.")
 else:
-    print("\033[1;91m=============================================")
-    print("           SOME KEYGEN TESTS FAILED")
-    print("=============================================\033[0m")
+    print("Some keygen tests failed.")
+
+if sign_success_count != 18 or keygen_success_count != 18:
+    raise SystemExit(1)
 
 
             

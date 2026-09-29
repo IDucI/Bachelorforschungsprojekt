@@ -17,6 +17,9 @@ class Calculations:
         if seed_sk == None:
             seed_sk = c.subfunctions.randombytes(c.params.keypair_seed_length_bytes)
 
+        if len(seed_sk) != c.params.keypair_seed_length_bytes:
+            raise ValueError("Invalid seed_sk length.")
+
         result = KeygenCalculationResult(seed_sk = seed_sk)
 
         #/* Expansion of sk->seed, explicit domain separation for CSPRNG */
@@ -69,28 +72,40 @@ class Calculations:
              m: bytes, 
              *, 
              seed_sk: bytes | None = None,
-             seed_pk: bytes | None = None,
+             pk: bytes | None = None,
              root_seed: bytes | None = None,
              salt: bytes | None = None
              ):
         c = self.cross
 
-        values = (seed_sk, seed_pk, root_seed, salt)
-        
-        if all(value is None for value in values):
-            seed_sk, seed_pk = c.keygen
+        if seed_sk is None and pk is None:
+            seed_sk, pk = c.keygen
+        elif seed_sk is None or pk is None:
+            raise ValueError("seed_sk and pk must be provided together.")
+        if root_seed is None:
             root_seed = c.subfunctions.randombytes(c.params.seed_length_bytes)
+
+        if salt is None:
             salt = c.subfunctions.randombytes(c.params.salt_length_bytes)
 
-        elif any(value is None for value in values):
-            raise ValueError("Either provide seed_sk, seed_pk, root_seed, salt, or provide none of them.")
+        if len(seed_sk) != c.params.keypair_seed_length_bytes:
+            raise ValueError("Invalid seed_sk length.")
+
+        if len(pk) != c.params.keypair_seed_length_bytes + c.params.densely_packed_fp_syn_size:
+            raise ValueError("Invalid pk length.")
+
+        if len(root_seed) != c.params.seed_length_bytes:
+            raise ValueError("Invalid root_seed length.")
+
+        if len(salt) != c.params.salt_length_bytes:
+            raise ValueError("Invalid salt length.")
            
         mlen = len(m)
         #sig  = c._sig_type
 
         result = SignCalculationResult(
             seed_sk = seed_sk,
-            seed_pk = seed_pk,
+            pk = pk,
             root_seed = root_seed,
             salt = salt,
         )
