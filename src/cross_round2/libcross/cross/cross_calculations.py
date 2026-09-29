@@ -1,5 +1,5 @@
 from typing import TYPE_CHECKING
-from .cross_calculation_result import CalculationResult, KeygenCalculationResult, SignCalculationResult
+from .cross_calculation_result import KeygenCalculationResult, SignCalculationResult
 import ctypes
 
 if TYPE_CHECKING:
@@ -48,20 +48,19 @@ class Calculations:
         elif c.params.algorithm == "RSDPG":
             e_G_bar = c.subfunctions.csprng_fz_inf_w(csprng_state_e_bar)
             e_bar = c.subfunctions.fz_inf_w_by_fz_matrix(e_G_bar, W_mat)
-            result.fz_inf_w_by_fz_matrix.e_bar = e_bar.copy
+            result.fz_inf_w_by_fz_matrix.e_bar = e_bar.copy()
             result.fz_inf_w_by_fz_matrix.e_G_bar = e_G_bar
             
             e_bar = c.subfunctions.fz_dz_norm_n(e_bar)
             result.fz_dz_norm_n.e_bar_out = e_bar
 
         s = c.subfunctions.restr_vec_by_fp_matrix(e_bar, V_tr)
-        result.restr_vec_by_fp_matrix.s = s.copy
+        result.restr_vec_by_fp_matrix.s = s.copy()
         s = c.subfunctions.fp_dz_norm_synd(s)
         s = c.subfunctions.pack_fp_syn(s)
 
         # Build public key as seed_pk || s
-        result.pk.extend(seed_pk)
-        result.pk.extend(s)
+        result.pk = seed_pk + s
 
         return result
 
