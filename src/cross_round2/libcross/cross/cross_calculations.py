@@ -1,5 +1,5 @@
 from typing import TYPE_CHECKING
-from .cross_calculation_result import CalculationResult
+from .cross_calculation_result import CalculationResult, KeygenCalculationResult, SignCalculationResult
 import ctypes
 
 if TYPE_CHECKING:
@@ -11,7 +11,60 @@ class Calculations:
         self.cross = cross
         self.subfunctions = cross.subfunctions
         
-    
+    def keygen(self, seed_sk: bytes | None = None):
+        c = self.cross
+
+        if seed_sk == None:
+            seed_sk = c.subfunctions.randombytes(c.params.keypair_seed_length_bytes)
+
+        result = KeygenCalculationResult(seed_sk = seed_sk)
+
+        #/* Expansion of sk->seed, explicit domain separation for CSPRNG */
+        dsc_csprng_seed_sk = c.params.csprng_domain_sep_const + (3 * c.params.t + 1)
+
+        csprng_state = c.subfunctions.csprng_initialize(seed_sk, dsc_csprng_seed_sk)
+        seed_e_seed_pk = c.subfunctions.csprng_randombytes(2*c.params.keypair_seed_length_bytes, csprng_state)
+        seed_pk = seed_e_seed_pk[c.params.keypair_seed_length_bytes : 2 * c.params.keypair_seed_length_bytes]
+
+        # /* expansion of matrix/matrices */
+        if c.params.algorithm == "RSDP":
+            V_tr = c.subfunctions.expand_pk(seed_pk)
+            result.expand_pk.V_tr = V_tr
+            result.expand_pk.seed_pk = seed_pk
+        elif c.params.algorithm == "RSDPG":
+            V_tr, W_mat = c.subfunctions.expand_pk(seed_pk)
+            result.expand_pk.V_tr = V_tr
+            result.expand_pk.W_mat = W_mat
+            result.expand_pk.seed_pk = seed_pk
+        
+        # /* expansion of secret key material */ 
+        # /* Expansion of seede, explicit domain separation for CSPRNG */
+        dsc_csprng_seed_e = c.params.csprng_domain_sep_const + (3 * c.params.t + 3)
+
+        csprng_state_e_bar = c.subfunctions.csprng_initialize(seed_e_seed_pk[: c.params.keypair_seed_length_bytes], dsc_csprng_seed_e)
+
+        if c.params.algorithm == "RSDP":
+            e_bar = c.subfunctions.csprng_fz_vec(csprng_state_e_bar)
+        elif c.params.algorithm == "RSDPG":
+            e_G_bar = c.subfunctions.csprng_fz_inf_w(csprng_state_e_bar)
+            e_bar = c.subfunctions.fz_inf_w_by_fz_matrix(e_G_bar, W_mat)
+            result.fz_inf_w_by_fz_matrix.e_bar = e_bar.copy
+            result.fz_inf_w_by_fz_matrix.e_G_bar = e_G_bar
+            
+            e_bar = c.subfunctions.fz_dz_norm_n(e_bar)
+            result.fz_dz_norm_n.e_bar_out = e_bar
+
+        s = c.subfunctions.restr_vec_by_fp_matrix(e_bar, V_tr)
+        result.restr_vec_by_fp_matrix.s = s.copy
+        s = c.subfunctions.fp_dz_norm_synd(s)
+        s = c.subfunctions.pack_fp_syn(s)
+
+        # Build public key as seed_pk || s
+        result.pk.extend(seed_pk)
+        result.pk.extend(s)
+
+        return result
+
 
     def sign(self, 
              m: bytes, 
@@ -36,7 +89,7 @@ class Calculations:
         mlen = len(m)
         #sig  = c._sig_type
 
-        result = CalculationResult(
+        result = SignCalculationResult(
             seed_sk = seed_sk,
             seed_pk = seed_pk,
             root_seed = root_seed,
@@ -280,7 +333,7 @@ class Calculations:
         sig_bytes[salt_offset : salt_offset + len(salt)] = salt
         sig_bytes[digest_cmt_offset : digest_cmt_offset + len(digest_cmt)] = digest_cmt
         sig_bytes[digest_chall_2_offset : digest_chall_2_offset + len(digest_chall_2)] = digest_chall_2
-        # path ist nur 960 Bytes; Rest des 1312-Byte-Feldes bleibt 0 vllt ist der kommentar lost und stimmt nur im spezialfall also rsdp1 fast usw nicht mehr rsdp3 ...
+        # path may be smaller than the fixed-size field, remaining bytes stay zero
         sig_bytes[path_offset : path_offset +  len(path)] = path
         sig_bytes[proof_offset : proof_offset + len(proof)] = proof
         sig_bytes[resp_1_offset : resp_1_offset + len(resp_1)] = resp_1

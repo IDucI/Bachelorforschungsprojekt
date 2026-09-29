@@ -83,6 +83,8 @@ extern "C" {
     #if defined(RSDPG)
     void cross_pack_fz_rsdp_g_vec(uint8_t out[DENSELY_PACKED_FZ_RSDP_G_VEC_SIZE], const FZ_ELEM in[M]);
     #endif
+
+    void cross_csprng_randombytes(unsigned char* const x, unsigned long long xlen, CSPRNG_STATE_T* const csprng_state);
     // -----------------------------------------------------------------------
     // Subroutines
     // -----------------------------------------------------------------------

@@ -1,6 +1,7 @@
 import ctypes
 from ctypes import c_uint16, c_uint32, c_uint64, c_uint8, POINTER, c_ulonglong
 from pickletools import uint8
+from re import S
 from typing import List, Tuple
 from .cross_params import get_params
 
@@ -100,6 +101,9 @@ class CrossSubfunctions:
         if self.algorithm == "RSDPG":
             self.cross.c_cross.cross_pack_fz_rsdp_g_vec.argtypes = [POINTER(c_uint8), POINTER(self.FZ_ELEM)]
             self.cross.c_cross.cross_pack_fz_rsdp_g_vec.restype = None
+
+        self.cross.c_cross.cross_csprng_randombytes.argtypes = [POINTER(c_uint8), c_ulonglong, POINTER(c_csprng_state)]
+        self.cross.c_cross.cross_csprng_randombytes.restype = None
             
         # ------------------------------------------------------------------------
         #  Subroutines
@@ -325,6 +329,12 @@ class CrossSubfunctions:
         self.cross.c_cross.cross_pack_fz_rsdp_g_vec(c_out, c_inp)
         return bytes(c_out)
 
+    def csprng_randombytes(self, xlen: int, csprng_state: c_csprng_state) -> bytes:
+        c_x = (c_uint8 * xlen)()
+        self.cross.c_cross.cross_csprng_randombytes(c_x, xlen, csprng_state)
+        return bytes(c_x)
+        
+        
     # ------------------------------------------------------------------------
     #  Subroutines
     # ------------------------------------------------------------------------

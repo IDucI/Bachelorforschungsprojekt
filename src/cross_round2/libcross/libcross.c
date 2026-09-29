@@ -156,6 +156,10 @@ extern "C" {
         pack_fz_rsdp_g_vec(out, in);
     }
     #endif
+
+    void cross_csprng_randombytes(unsigned char* const x, unsigned long long xlen, CSPRNG_STATE_T* const csprng_state) {
+        csprng_randombytes(x, xlen, csprng_state);
+    }
     // -----------------------------------------------------------------------
     // Subroutines
     // -----------------------------------------------------------------------

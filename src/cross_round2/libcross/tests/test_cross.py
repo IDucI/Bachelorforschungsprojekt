@@ -302,7 +302,7 @@ for algorithm in algorithms:
             sig_bytes[salt_offset : salt_offset + len(salt)] = salt
             sig_bytes[digest_cmt_offset : digest_cmt_offset + len(digest_cmt)] = digest_cmt
             sig_bytes[digest_chall_2_offset : digest_chall_2_offset + len(digest_chall_2)] = digest_chall_2
-            # path ist nur 960 Bytes; Rest des 1312-Byte-Feldes bleibt 0 vllt ist der kommentar lost und stimmt nur im spezialfall also rsdp1 fast usw nicht mehr rsdp3 ...
+            # path may be smaller than the fixed-size field, remaining bytes stay zero
             sig_bytes[path_offset : path_offset +  len(path)] = path
             sig_bytes[proof_offset : proof_offset + len(proof)] = proof
             sig_bytes[resp_1_offset : resp_1_offset + len(resp_1)] = resp_1
