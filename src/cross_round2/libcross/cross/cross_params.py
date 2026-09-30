@@ -1,6 +1,5 @@
 from dataclasses import dataclass
 from typing import Optional
-from xml.sax.handler import property_declaration_handler
 
 
 VALID_ALGORITHMS = {"RSDP", "RSDPG"}

@@ -41,9 +41,6 @@ extern "C" {
     */
     int cross_verify(const uint8_t* PK, const uint8_t* m, uint64_t mlen, const uint8_t* sig);
 
-    // size of CROSS_sig_t, used by Python to allocate memory
-    extern const size_t cross_sigbytes;
-
     // -----------------------------------------------------------------------
     // Functions for internal state calculation
     // -----------------------------------------------------------------------
@@ -64,7 +61,7 @@ extern "C" {
 
     void cross_csprng_fp_vec(FP_ELEM res[N], CSPRNG_STATE_T* const csprng_state);
 
-    void cross_fp_dz_norm_synd(FP_ELEM v[N]);
+    void cross_fp_dz_norm_synd(FP_ELEM v[N-K]);
 
     void cross_hash(uint8_t digest[HASH_DIGEST_LENGTH], const unsigned char* const m, const uint64_t mlen, const uint16_t dsc);
 
@@ -83,6 +80,8 @@ extern "C" {
     #if defined(RSDPG)
     void cross_pack_fz_rsdp_g_vec(uint8_t out[DENSELY_PACKED_FZ_RSDP_G_VEC_SIZE], const FZ_ELEM in[M]);
     #endif
+
+    void cross_csprng_randombytes(unsigned char* const x, unsigned long long xlen, CSPRNG_STATE_T* const csprng_state);
     // -----------------------------------------------------------------------
     // Subroutines
     // -----------------------------------------------------------------------
