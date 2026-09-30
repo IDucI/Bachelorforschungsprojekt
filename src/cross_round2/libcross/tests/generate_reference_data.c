@@ -2,6 +2,7 @@
 #include "CROSS.h"
 #include "csprng_hash.h"
 #include "fp_arith.h"
+#include "merkle_tree.h"
 #include "restr_arith.h"
 #include "seedtree.h"
 #include "pack_unpack.h"

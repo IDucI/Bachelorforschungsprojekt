@@ -1,6 +1,5 @@
 import sys
 import subprocess
-import time
 import random
 from pathlib import Path
 import chipwhisperer as cw
@@ -87,293 +86,6 @@ def release_cdc_acm() -> None:
     """
     subprocess.run(["sudo", "modprobe", "-r", "cdc_acm"], check=False)
 
-# =============================================================================
-# Simpleserial V2.1
-# =============================================================================
-
-def ss_crc(data: bytes) -> int:
-    """
-    Calculate the SimpleSerial V2.1 crc.
-    The crc implementation follows the crc calculation used by the reference implementation in simpleserial.c.
-    SimpleSerial V2.1 uses polynomial 0x4D. The crc is calculated over the complete packet excluding the crc byte itself.
-    """
-    crc = 0x00
-
-    # Process every byte of the packet.
-    for byte in data:
-        crc = crc ^ byte
-
-        # Process all eight bits of the current byte.
-        for _ in range(8):
-            if crc & 0x80:
-                crc = ((crc << 1) ^ 0x4D) & 0xFF
-            else:
-                crc = (crc << 1) & 0xFF
-    return crc
-
-
-def cobs_encode(data: bytes) -> bytes:
-    """
-    COBS-encode one SimpleSerial V2.1 packet.
-    SimpleSerial V2.1 uses Consistent Overhead Byte Stuffing (COBS) before transmission. The encoded frame is terminated with 0x00.
-    This is required because 0x00 is used as the frame delimiter in the SimpleSerial V2.1 protocol.
-    """
-    data = bytes(data)
-    output = bytearray()
-
-    # Index of the COBS code byte that describes the following data block.
-    code_index = 0
-
-    # Reserve the first byte for the initial COBS code.
-    output.append(0)
-    code = 1
-
-    for byte in data:
-
-        # A zero byte terminates the current COBS block.
-        if byte == 0:
-            output[code_index] = code
-            # Start a new COBS block.
-            code_index = len(output)
-            output.append(0)
-            code = 1
-        else:
-            output.append(byte)
-            code = code + 1
-            # COBS blocks can contain at most 254 data bytes.
-            if code == 0xFF:
-                output[code_index] = code
-                code_index = len(output)
-                output.append(0)
-                code = 1
-
-    # Write the code byte of the final block.
-    output[code_index] = code
-
-    # 0x00 marks the end of the SimpleSerial frame.
-    output.append(0)
-
-    return bytes(output)
-
-def cobs_decode(frame: bytes) -> bytes:
-    """
-    Decode one COBS-encoded SimpleSerial V2.1 frame.
-    The function reverses the transformation performed by cobs_encode() and restores the original packet 
-    containing command, length, data and CRC.
-    """
-    frame = bytes(frame)
-
-    # A valid frame must contain the 0x00 frame delimiter.
-    if not frame:
-        raise ValueError("Empty COBS frame.")
-    
-    if frame[-1] != 0x00:
-        raise ValueError("Frame does not end with 0x00.")
-
-     # Remove the frame delimiter before decoding.
-    encoded = frame[:-1]
-
-    if not encoded:
-        raise ValueError("Empty COBS payload.")
-
-    decoded = bytearray()
-    index = 0
-
-    while index < len(encoded):
-
-        # Each COBS block starts with a code byte.
-        code = encoded[index]
-
-        if code == 0:
-            raise ValueError("Invalid COBS packet.")
-
-        index = index + 1
-
-        # The code byte specifies how many bytes belong to this block.
-        end = index + code - 1
-
-        if end > len(encoded):
-            raise ValueError("Invalid COBS code.")
-
-        # Copy the block's data into the decoded packet.
-        decoded.extend(encoded[index:end])
-
-        index = end
-
-        # A code smaller than 0xFF indicates that a zero byte was removed
-        # between this block and the next block during encoding.
-        if code < 0xFF and index < len(encoded):
-            decoded.append(0)
-
-    return bytes(decoded)
-
-
-def ss_write_raw(target, packet: bytes) -> None:
-    """
-    Send already encoded SimpleSerial bytes to the target.
-    No additional protocol processing is performed here. The packet is written directly to the serial interface.
-    """
-    target.ser.write(packet)
-
-
-def ss_send_cmd(target, cmd: int, scmd: int, data: bytes = b"") -> None:
-    """
-    Construct and send one SimpleSerial V2.1 command.
-    The packet structure follows the format used by the reference
-    SimpleSerial V2.1 implementation:
-        [cmd, scmd, data_length, data, CRC]
-    After constructing the packet, the CRC is appended and the complete packet is COBS-encoded before transmission.
-    """
-    data = bytes(data)
-
-    #the SimpleSerial package in its original structure, before COBS encoding happens
-    raw_packet = bytearray()
-
-    # Command identifier.
-    raw_packet.append(cmd & 0xFF)
-
-    # Sub-command identifier.
-    raw_packet.append(scmd & 0xFF)
-
-    # Length of the payload in bytes.
-    raw_packet.append(len(data))
-
-    # Actual command payload.
-    raw_packet.extend(data)
-
-    # Calculate the CRC over all packet fields except the CRC itself.
-    crc = ss_crc(raw_packet)
-
-    # Append the calculated CRC to the packet.
-    raw_packet.append(crc)
-
-    # COBS-encode the complete packet and add the frame delimiter.
-    encoded_packet = cobs_encode(bytes(raw_packet))
-
-    # Send the encoded frame to the STM32.
-    ss_write_raw(target, encoded_packet)
-
-
-def ss_read_raw(target, timeout_ms: int = 2000) -> bytes:
-    """
-    Read exactly one complete SimpleSerial V2.1 COBS frame.
-    Reception continues until the 0x00 frame delimiter is received. A timeout prevents the test program from waiting 
-    indefinitely if the target does not respond.
-    """
-    start_time = time.monotonic()
-
-    received = bytearray()
-
-    while True:
-        # Check the overall timeout.
-        elapsed_ms = (time.monotonic() - start_time) * 1000
-
-        if elapsed_ms > timeout_ms:
-            raise TimeoutError("Timeout waiting for SimpleSerial response.")
-        # Read one byte from the serial interface.
-        try:
-            chunk = target.ser.read(1, timeout=10)
-        except TypeError:
-            chunk = target.ser.read(1)
-
-        if chunk is None:
-            continue
-
-        if isinstance(chunk, str):
-            chunk = chunk.encode("latin-1")
-
-        chunk = bytes(chunk)
-
-        if not chunk:
-            continue
-
-        received.extend(chunk)
-
-        # SimpleSerial V2.1 frames are terminated by 0x00.
-        if received[-1] == 0x00:
-            return bytes(received)
-
-
-def ss_parse_packet(frame: bytes):
-    """
-    Decode and validate one SimpleSerial V2.1 response.
-    A response packet has the following structure:
-        [cmd, data_length, data, CRC]
-    The function:
-      -COBS-decodes the received frame.
-      -Checks the packet length.
-      -Extracts the command and payload.
-      -Recalculates and verifies the CRC.
-    """
-    # Restore the original SimpleSerial packet.
-    decoded = cobs_decode(frame)
-
-    # Minimum packet: command + length + CRC
-    if len(decoded) < 3:
-        raise RuntimeError("Response too short.")
-
-    # Extract command and payload length.
-    cmd = decoded[0]
-    data_len = decoded[1]
-
-    # Expected packet size:
-    #   1 byte command
-    # + 1 byte length
-    # + N bytes data
-    # + 1 byte CRC
-    expected_length = 2 + data_len + 1
-
-    if len(decoded) != expected_length:
-        raise RuntimeError(f"Invalid packet length: expected {expected_length}, got {len(decoded)}")
-
-    # Extract the payload.
-    data = decoded[2:2 + data_len]
-
-    # The final byte contains the CRC sent by the STM32.
-    received_crc = decoded[-1]
-
-    # Calculate the CRC over all fields except the received CRC.
-    calculated_crc = ss_crc(decoded[:-1])
-
-    # Verify integrity of the received packet.
-    if received_crc != calculated_crc:
-        raise RuntimeError("CRC mismatch.")
-
-    return cmd, bytes(data)
-
-
-def ss_read_packet(target, timeout_ms: int = 2000):
-    """
-    Receive, decode and validate one SimpleSerial V2.1 response.
-    This combines the raw frame reception and packet parsing steps.
-    """
-    frame = ss_read_raw(target, timeout_ms=timeout_ms)
-
-    return ss_parse_packet(frame)
-
-
-def wait_for_ack(target, timeout_ms: int = 2000) -> None:
-    """
-    Wait for and validate the SimpleSerial V2.1 error/acknowledgement packet.
-    According to the SimpleSerial V2.1 protocol, the target sends:
-        ['e', 0x01, error_code, CRC]
-    The error code 0x00 indicates successful execution. Any non-zero error code indicates an error reported by the STM32.
-    """
-    cmd, data = ss_read_packet(target, timeout_ms=timeout_ms)
-
-    # The target must respond with the SimpleSerial error command 'e'.
-    if cmd != ord("e"):
-        raise RuntimeError("Expected ACK 'e', " f"received 0x{cmd:02X}")
-
-    # The error response contains exactly one byte: the error code.
-    if len(data) != 1:
-        raise RuntimeError("Invalid ACK payload length: "f"{len(data)}")
-
-    error_code = data[0]
-
-    # 0x00 means successful execution.
-    if error_code != 0:
-        raise RuntimeError("STM32 returned SimpleSerial error: " f"0x{error_code:02X}")
 
 # =============================================================================
 # BUFFER & BOARD COMMUNICATIONS
@@ -397,74 +109,75 @@ def reset_serial_communication(target) -> None:
             print("        WARNING: flush() failed:", flush_err)
 
 
-def board_write_buffer(target,data: bytes) -> None:
+def board_write_buffer(target, data: bytes) -> None:
     """
-    Write input data into STM32 databuffer.
-    Firmware:
-        set_value(cmd, scmd, len, x)
-    accepts:
-        len == 160
-        len == 3
-    For normal data we therefore send 160-byte chunks.
+    Write input data to the STM32 buffer in 160-byte chunks.
     """
     data = bytes(data)
 
     if not data:
         raise ValueError("Can't write empty buffer.")
 
-    # Split the input into firmware compatible chunks.
     for chunk_index, offset in enumerate(range(0, len(data), input_chunk_size)):
-        chunk = data[offset: offset + input_chunk_size]
+        # Split input into firmware-compatible chunks.
+        chunk = data[offset:offset + input_chunk_size]
 
-        # Pad the final chunk to the required input size.
+        # Pad the final chunk to the required 160-byte size.
         if len(chunk) < input_chunk_size:
-            chunk = chunk + bytes(input_chunk_size - len(chunk))
+            chunk += bytes(input_chunk_size - len(chunk))
 
-        # 's' writes one chunk into the firmware data buffer.
-        ss_send_cmd(target, ord("s"), chunk_index, chunk)
+        # Send the input chunk using the ChipWhisperer SimpleSerial2 library.
+        target.send_cmd(ord("s"), chunk_index, chunk)
 
-        wait_for_ack(target)
+        # Read and validate the firmware acknowledgement.
+        cmd, ack_data = target.read_cmd(timeout=2000)
+
+        if cmd != ord("e"):
+            raise RuntimeError(f"Expected ACK 'e', got 0x{cmd:02X}")
+
+        if len(ack_data) != 1 or ack_data[0] != 0:
+            raise RuntimeError(f"STM32 returned error: {ack_data!r}")
 
 
 def board_run_subroutine(
-        target, 
-        subroutine_id: int, 
-        input_data: bytes, 
-        output_len: int, 
-        timeout_ms: int = 5000
+    target,
+    subroutine_id: int,
+    input_data: bytes,
+    output_len: int,
+    timeout_ms: int = 5000
 ) -> bytes:
     """
-    Execute one firmware subroutine and return its complete output.
-    The input is written to the board buffer first. The selected subroutine is then executed and its result is read back.
+    Execute one firmware subroutine and return its output.
     """
-    # Write the input data into the board buffer.
+    # Write the complete input to the STM32 buffer.
     board_write_buffer(target, input_data)
 
-    # Execute selected subroutine
-    ss_send_cmd(target, ord("b"), subroutine_id, b"")
+    # Trigger the selected subroutine.
+    target.send_cmd(ord("b"), subroutine_id, b"")
 
-    # Read result
-    cmd, data = ss_read_packet(target, timeout_ms=timeout_ms)
+    # Read the subroutine result.
+    cmd, data = target.read_cmd(timeout=timeout_ms)
 
     if cmd != ord("r"):
-        # Report firmware errors explicitly.
-        if cmd == ord("e"):
+        raise RuntimeError(f"Expected result command 'r', got 0x{cmd:02X}")
 
-            error_code = data[0] if len(data) == 1 else None
-
-            raise RuntimeError("Board rejected 'b' command. " f"Error code = {error_code!r}")
-
-        raise RuntimeError("Expected result command 'r', " f"received 0x{cmd:02X}")
-    # Verify that the firmware returned the expected amount of data.
+    # Verify that the firmware returned the expected output size.
     if len(data) != output_len:
-        raise RuntimeError("Wrong board output length: " f"expected {output_len}, " f"got {len(data)}")
+        raise RuntimeError(
+            f"Wrong board output length: "
+            f"expected {output_len}, got {len(data)}"
+        )
 
-    actual = bytes(data)
+    # Read and validate the final acknowledgement.
+    ack_cmd, ack_data = target.read_cmd(timeout=timeout_ms)
 
-    # Final ACK
-    wait_for_ack(target, timeout_ms=timeout_ms)
+    if ack_cmd != ord("e"):
+        raise RuntimeError(f"Expected ACK 'e', got 0x{ack_cmd:02X}")
 
-    return actual
+    if len(ack_data) != 1 or ack_data[0] != 0:
+        raise RuntimeError(f"STM32 returned error: {ack_data!r}")
+
+    return bytes(data)
 
 def board_run_chunked_subroutine(
     target,
@@ -475,12 +188,7 @@ def board_run_chunked_subroutine(
     timeout_ms=5000
 ):
     """
-    Execute a subroutine whose output must be requested in chunks.
-    The firmware uses x[0] as the output-chunk index. Since normal
-    firmware writes are limited to 160 bytes and command payloads
-    to 3 bytes, each output request is sent as:
-        [chunk_index, 0, 0]
-    The firmware uses the chunk index to calculate the output offset.
+    Execute a subroutine whose output must be requested in multiple chunks.
     """
     # The complete input is written before requesting output chunks.
     board_write_buffer(target, bytes(input_data))
@@ -494,13 +202,13 @@ def board_run_chunked_subroutine(
         if chunk_index > 0x7F:
             raise ValueError("More than 128 output chunks are not supported.")
 
-        # x[0] contains the requested output chunk index.
+        # Request the current output chunk from the firmware.
         request = bytes([chunk_index, 0, 0])
 
-        ss_send_cmd(target, ord("b"), subroutine_id, request)
+        target.send_cmd(ord("b"), subroutine_id, request)
 
         while True:
-            cmd, data = ss_read_packet(target, timeout_ms=timeout_ms)
+            cmd, data = target.read_cmd(timeout=timeout_ms)
 
             # 'd' indicates an intermediate data/status message.
             if cmd == ord("d"):
@@ -533,10 +241,17 @@ def board_run_chunked_subroutine(
                 f"got {len(data)}"
             )
 
+        # Append the received chunk to the complete output.
         output.extend(data)
 
-        # Every chunk is followed by an ack
-        wait_for_ack(target, timeout_ms = timeout_ms)
+        # Read and validate the acknowledgement for this chunk.
+        ack_cmd, ack_data = target.read_cmd(timeout=timeout_ms)
+
+        if ack_cmd != ord("e"):
+            raise RuntimeError(f"Expected ACK 'e', got 0x{ack_cmd:02X}")
+
+        if len(ack_data) != 1 or ack_data[0] != 0:
+            raise RuntimeError(f"STM32 returned error: {ack_data!r}")
 
     return bytes(output)
 
