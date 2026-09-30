@@ -26,39 +26,7 @@ To start the analysis, navigate to the following folder:
 
 ## Starting the Evaluation
 
-Run:
 
-`make`
-
-This creates four `.csv` files containing the results of the evaluation:
-
-`variant_analysis.csv`: Contains the firmware-level memory consumption of the different CROSS variants. It reports the Flash, SRAM, and CCMRAM usage of each compiled firmware variant and allows the memory requirements of the different parameter sets and implementation variants to be compared.
-
-`subroutine_analysis.csv`: Contains the code size of the selected CROSS subroutines extracted from the compiled firmware. The code size is given in bytes and represents the Flash footprint of each selected subroutine.
-
-`stack_usage_analysis.csv`: Contains the compiler-estimated static stack usage of the selected CROSS subroutines. The values are obtained from the GCC .su files generated during compilation and indicate the stack frame size estimated for each function.
-
-`runtime_measurement.csv`: Contains the measured execution times of the selected CROSS subroutines on the STM32F4 microcontroller. These measurements can be used to compare the runtime of the different subroutines and to assess their suitability for side-channel analysis.
-
-The resulting `.csv`files are stored in:
-
-`.../Bachelorforschungsprojekt/src/cross_round2/cw_firmware/cross_subroutines/evaluation/results`
-
-.../Bachelorforschungsprojekt/
-└── src/
-    └── cross_round2/
-        └── cw_firmware/
-            └── cross_subroutines/
-                ├── evaluation/
-                │   └── results/
-                │       └── ...
-
-## Rebuilding the Evaluation
-
-If files are modified and the results need to be regenerated, run:
-
-`make clean`
-`make`
 
 ## Testing the board communication
 
