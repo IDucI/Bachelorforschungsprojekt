@@ -84,8 +84,6 @@ extern "C" {
         return CROSS_verify(&pk, (const char*)m, mlen, &signature);
     }
 
-    const size_t cross_sigbytes = sizeof(CROSS_sig_t);
-
     // -----------------------------------------------------------------------
     // Functions for internal state calculation
     // -----------------------------------------------------------------------
@@ -120,7 +118,7 @@ extern "C" {
         csprng_fp_vec(res, csprng_state);
     }
 
-    void cross_fp_dz_norm_synd(FP_ELEM v[N]) {
+    void cross_fp_dz_norm_synd(FP_ELEM v[N-K]) {
         fp_dz_norm_synd(v);
     }
 
@@ -145,12 +143,13 @@ extern "C" {
     }
 
     uint16_t cross_tree_proof(uint8_t mtp[HASH_DIGEST_LENGTH * TREE_NODES_TO_STORE], const uint8_t tree[NUM_NODES_MERKLE_TREE * HASH_DIGEST_LENGTH], const uint8_t leaves_to_reveal[T]) {
-        tree_proof(mtp, tree, leaves_to_reveal);
+        return tree_proof(mtp, tree, leaves_to_reveal);
     }
 
     int cross_seed_path(unsigned char* seed_storage, const unsigned char seed_tree[NUM_NODES_SEED_TREE * SEED_LENGTH_BYTES], const unsigned char indices_to_publish[T]) {
-        seed_path(seed_storage, seed_tree, indices_to_publish);
+        return seed_path(seed_storage, seed_tree, indices_to_publish);
     }
+
     #if defined(RSDPG)
     void cross_pack_fz_rsdp_g_vec(uint8_t out[DENSELY_PACKED_FZ_RSDP_G_VEC_SIZE], const FZ_ELEM in[M]) {
         pack_fz_rsdp_g_vec(out, in);

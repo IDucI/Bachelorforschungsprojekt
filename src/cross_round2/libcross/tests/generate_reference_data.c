@@ -233,7 +233,7 @@ void sign(const sk_t* SK,
 	uint8_t cmt_1[T * HASH_DIGEST_LENGTH] = { 0 };
 
 	CSPRNG_STATE_T csprng_state;
-	for (uint16_t i = 0; i < T; i++) {// changed T -> 1
+	for (uint16_t i = 0; i < T; i++) {
 		/* CSPRNG is fed with concat(seed,salt,round index) represented
 		 * as a 2 bytes little endian unsigned integer */
 		uint8_t csprng_input[SEED_LENGTH_BYTES + SALT_LENGTH_BYTES];
@@ -375,6 +375,11 @@ int main(void) {
 	snprintf(filename, sizeof(filename), "%s.json", ALG_VERSION);
 	FILE* json = fopen(filename, "w");
 
+	if (json == NULL) {
+		perror("Could not open output file");
+		return 1;
+	}
+
 	// Generate random root seed and salt for both C and Python calculations.
 	sk_t SK;
 	pk_t PK;
@@ -389,6 +394,9 @@ int main(void) {
 
 	int valid = CROSS_verify(&PK, (const char*)m, mlen, &sig);
 	printf("verify: %s\n", valid ? "OK" : "FAILED");
+	if (!valid) {
+		return 1;
+	}
 
 	fprintf(json, "{\n");
 	write_hex(json, "m", m, sizeof(m), false);

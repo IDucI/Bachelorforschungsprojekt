@@ -81,6 +81,7 @@ int main(void) {
 		}
 		else {
 			printf(RED "High-level API: FAIL\n" RESET);
+			return 1;
 		}
 
 		free(message);
@@ -102,6 +103,9 @@ int main(void) {
 		pk_t pk;
 		CROSS_sig_t sig;
 
+		assert(public_key_len == sizeof(pk));
+		assert(signature_len == sizeof(sig));
+
 		memcpy(&pk, public_key, sizeof(pk));
 		memcpy(&sig, signature, sizeof(sig));
 
@@ -111,6 +115,7 @@ int main(void) {
 		}
 		else {
 			printf(RED "Calculation API: FAIL\n" RESET);
+			return 1;
 		}
 
 		free(message);

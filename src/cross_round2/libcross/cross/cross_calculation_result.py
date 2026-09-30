@@ -5,8 +5,8 @@ class ExpandSkData:
     e_bar: list = field(default_factory=list)
     V_tr: list = field(default_factory=list)
     # RSDPG parts (optional)
-    e_G_bar: list | None = field(default_factory=list)
-    W_mat: list | None = field(default_factory=list)
+    e_G_bar: list = field(default_factory=list)
+    W_mat: list = field(default_factory=list)
 
 @dataclass
 class FzVecSubNData:
@@ -21,8 +21,8 @@ class ConvertRestrVecToFpData:
 
 @dataclass
 class KeygenFzDzNormNData:
-    e_bar_in: list  | None = field(init=False)
-    e_bar_out: list  | None = field(default_factory=list)
+    e_bar_in: list = field(init=False)
+    e_bar_out: list = field(default_factory=list)
 
 # Contains the intermediate values for both calls in Cross_sign 
 @dataclass
@@ -30,8 +30,8 @@ class SignFzDzNormNData:
     v_bar_in: list = field(init=False)
     v_bar_out: list = field(default_factory=list)
 
-    e_bar_prime_in: list | None = field(init=False)
-    e_bar_prime_out: list  | None = field(default_factory=list)
+    e_bar_prime_in: list = field(init=False)
+    e_bar_prime_out: list = field(default_factory=list)
 
 @dataclass
 class FpVecByFpVecPointwiseData:
@@ -64,43 +64,43 @@ class ExpandDigestToFixedWeightData:
 
 @dataclass
 class PackFzVecData:
-    v_bar_in: list | None = field(init=False)
-    v_bar_out: list |None = field(default_factory=list)
+    v_bar_in: list = field(init=False)
+    v_bar_out: list = field(default_factory=list)
 
 @dataclass
 class PackFzRsdpGVecData:
-    v_G_bar_in: list | None = field(init=False)
-    v_G_bar_out: list | None = field(default_factory=list)
+    v_G_bar_in: list = field(init=False)
+    v_G_bar_out: list = field(default_factory=list)
 
 @dataclass
 class FzVecSubMData:
-    e_G_bar: list | None = field(init=False)
-    e_G_bar_prime: list  | None = field(default_factory=list)
-    v_G_bar: list  | None = field(default_factory=list)
+    e_G_bar: list = field(init=False)
+    e_G_bar_prime: list = field(default_factory=list)
+    v_G_bar: list = field(default_factory=list)
 
 @dataclass
 class FzDzNormMData:
-    v_G_bar_in: list | None = field(init=False)
-    v_G_bar_out: list | None = field(default_factory=list)
+    v_G_bar_in: list = field(init=False)
+    v_G_bar_out: list = field(default_factory=list)
 
 @dataclass
 class SignFzInfWByFzMatrixData:
-    e_G_bar_prime: list | None = field(init=False)
-    e_bar_prime: list | None = field(default_factory=list)
-    W_mat: list | None = field(init=False)
+    e_G_bar_prime: list = field(init=False)
+    e_bar_prime: list = field(default_factory=list)
+    W_mat: list = field(init=False)
 
 @dataclass
 class ExpandPkData:
     V_tr: list = field(default_factory=list)
-    seed_pk: list = field(default_factory=list)
+    seed_pk: bytes = field(default_factory=bytes)
     # RSDPG parts (optional)
-    W_mat: list | None = field(default_factory=list)
+    W_mat: list = field(default_factory=list)
 
 @dataclass
 class KeygenFzInfWByFzMatrixData:
-    e_bar: list | None = field(default_factory=list)
-    e_G_bar: list | None = field(default_factory=list)
-    W_mat: list | None = field(init=False)
+    e_bar: list = field(default_factory=list)
+    e_G_bar: list = field(default_factory=list)
+    W_mat: list = field(init=False)
 
 @dataclass
 class RestrVecByFpMatrixData:

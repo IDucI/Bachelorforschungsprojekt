@@ -1,15 +1,13 @@
 import ctypes
-from ctypes import c_uint16, c_uint32, c_uint64, c_uint8, POINTER, c_ulonglong
-from pickletools import uint8
-from re import S
+from ctypes import c_uint16, c_uint32, c_uint64, c_uint8, POINTER, c_ulonglong, c_int
 from typing import List, Tuple
-from .cross_params import get_params
 
 
 # CSPRNG_STATE_T maps to shake128incctx for Category 1 and shake256incctx for Category 3/5.
 # Both use uint64_t ctx[26].
 class c_csprng_state(ctypes.Structure):
     _fields_ =[("ctx", ctypes.c_uint64 *26)]
+
 
 class CrossSubfunctions:
     def __init__(self, cross) -> None:
@@ -74,7 +72,7 @@ class CrossSubfunctions:
         self.cross.c_cross.cross_csprng_fp_vec.argtypes = [POINTER(self.FP_ELEM), POINTER(c_csprng_state)]
         self.cross.c_cross.cross_csprng_fp_vec.restype = None
 
-        self.cross.c_cross.cross_fp_dz_norm_synd.artypes = [POINTER(self.FP_ELEM)]
+        self.cross.c_cross.cross_fp_dz_norm_synd.argtypes = [POINTER(self.FP_ELEM)]
         self.cross.c_cross.cross_fp_dz_norm_synd.restype = None
 
         self.cross.c_cross.cross_hash.argtypes = [POINTER(c_uint8), POINTER(c_uint8), c_uint64, c_uint16]
@@ -86,7 +84,7 @@ class CrossSubfunctions:
         self.cross.c_cross.cross_csprng_fp_vec_chall_1.argtypes = [POINTER(self.FP_ELEM), POINTER(c_csprng_state)]
         self.cross.c_cross.cross_csprng_fp_vec_chall_1.restype = None
 
-        self.cross.c_cross.cross_fp_dz_norm.argtypte = [POINTER(self.FP_ELEM)]
+        self.cross.c_cross.cross_fp_dz_norm.argtypes = [POINTER(self.FP_ELEM)]
         self.cross.c_cross.cross_fp_dz_norm.restype = None
 
         self.cross.c_cross.cross_pack_fp_vec.argtypes = [POINTER(c_uint8), POINTER(self.FP_ELEM)]
@@ -96,11 +94,7 @@ class CrossSubfunctions:
         self.cross.c_cross.cross_tree_proof.restype = c_uint16
 
         self.cross.c_cross.cross_seed_path.argtypes = [POINTER(c_uint8), POINTER(c_uint8), POINTER(c_uint8)]
-        self.cross.c_cross.cross_seed_path.restype = int
-
-        if self.algorithm == "RSDPG":
-            self.cross.c_cross.cross_pack_fz_rsdp_g_vec.argtypes = [POINTER(c_uint8), POINTER(self.FZ_ELEM)]
-            self.cross.c_cross.cross_pack_fz_rsdp_g_vec.restype = None
+        self.cross.c_cross.cross_seed_path.restype = c_int
 
         self.cross.c_cross.cross_csprng_randombytes.argtypes = [POINTER(c_uint8), c_ulonglong, POINTER(c_csprng_state)]
         self.cross.c_cross.cross_csprng_randombytes.restype = None
@@ -108,6 +102,10 @@ class CrossSubfunctions:
         # ------------------------------------------------------------------------
         #  Subroutines
         # ------------------------------------------------------------------------
+
+        if self.algorithm == "RSDPG":
+            self.cross.c_cross.cross_pack_fz_rsdp_g_vec.argtypes = [POINTER(c_uint8), POINTER(self.FZ_ELEM)]
+            self.cross.c_cross.cross_pack_fz_rsdp_g_vec.restype = None
 
         # Vector conversion
         self.cross.c_cross.cross_convert_restr_vec_to_fp.argtypes = [POINTER(self.FP_ELEM), POINTER(self.FZ_ELEM)]
@@ -316,18 +314,9 @@ class CrossSubfunctions:
         c_indices_to_publish = (c_uint8 * self.t)(*indices_to_publish)
 
         res = self.cross.c_cross.cross_seed_path(c_seed_storage, c_seed_tree, c_indices_to_publish)
-        # The reference returns the number of published seeds in res -> so we only return that written part of seed_storage.
+        # res is the number of published seeds, but the signature uses a fixed-size path field.
+        # Any unused bytes in the path field must remain zero.
         return res, bytes(c_seed_storage[:self.tree_nodes_to_store * self.seed_length_bytes])
-
-    def pack_fz_rsdp_g_vec (self, inp: List[int]) -> bytes:
-        if len(inp) != self.m:
-            raise ValueError(f"Expected inp to have length {self.m}, got {len(inp)}")
-
-        c_out = (c_uint8 * self.densely_packed_fz_rsdp_g_vec_size)()
-        c_inp = (self.FZ_ELEM * self.m)(*inp)
-
-        self.cross.c_cross.cross_pack_fz_rsdp_g_vec(c_out, c_inp)
-        return bytes(c_out)
 
     def csprng_randombytes(self, xlen: int, csprng_state: c_csprng_state) -> bytes:
         c_x = (c_uint8 * xlen)()
@@ -338,6 +327,18 @@ class CrossSubfunctions:
     # ------------------------------------------------------------------------
     #  Subroutines
     # ------------------------------------------------------------------------
+
+    def pack_fz_rsdp_g_vec (self, inp: List[int]) -> bytes:
+        if self.algorithm == "RSDP":
+            raise ValueError("pack_fz_rsdp_g_vec is only available for RSDPG")
+        if len(inp) != self.m:
+            raise ValueError(f"Expected inp to have length {self.m}, got {len(inp)}")
+
+        c_out = (c_uint8 * self.densely_packed_fz_rsdp_g_vec_size)()
+        c_inp = (self.FZ_ELEM * self.m)(*inp)
+
+        self.cross.c_cross.cross_pack_fz_rsdp_g_vec(c_out, c_inp)
+        return bytes(c_out)
         
     def convert_restr_vec_to_fp(self, inp: List[int]) -> List[int]:
         """Maps a vector from the restricted subgroup (FZ) to the full field (FP) of length N."""
@@ -391,14 +392,13 @@ class CrossSubfunctions:
         if len(V_tr) != matrix_size:
             raise ValueError(f"Expected V_tr to have length {matrix_size}, got {len(V_tr)}")
         
-        # The mathematical result length of such a vector-matrix multiplication
-        # (vector of length K times matrix K x (N-K) gives a vector of length N-K)
+        # The input vector has length N. The result is initialized with e[K:N]
+        # and then e[0:K] is multiplied by the K x (N-K) matrix V_tr and added to it.
 
         c_res = (self.FP_ELEM * (self.n - self.k))()
         c_e = (self.FP_ELEM * self.n)(*e)
         c_V_tr = (self.FP_ELEM * matrix_size)(*V_tr)
 
-        # C-Function call up 
         self.cross.c_cross.cross_fp_vec_by_fp_matrix(c_res, c_e, c_V_tr)
 
         return list(c_res)
@@ -419,8 +419,6 @@ class CrossSubfunctions:
 
     def expand_sk(self, seed_sk: bytes) -> Tuple[List[int], List[int]] | Tuple[List[int], List[int], List[int], List[int]]:
         """Expands seed_sk into e_bar and V_tr, RSDPG additionally returns e_G_bar and W_mat."""
-        # Security check for the seed length (usually 32 bytes at level 1)
-        # Replace 'self.seed_length' with your variable or the fixed value (e.g., 32)
         if len(seed_sk) != self.keypair_seed_length_bytes: 
             raise ValueError(f"Expected seed_sk to have length {self.keypair_seed_length_bytes}, got {len(seed_sk)}")
 
@@ -463,7 +461,7 @@ class CrossSubfunctions:
         return list(c_res)
     
     def expand_digest_to_fixed_weight(self, digest: bytes) -> List[int]:
-        """Expands a seed/digest string into a challenge string of fixed weight T."""
+        """Expands a digest into a challenge string of length T and fixed weight W."""
         # T-size for fixed_weight_string (selft.t)
         if len(digest) != self.hash_digest_length:
             raise ValueError(f"Expected digest to have length {self.hash_digest_length}, got {len(digest)}")

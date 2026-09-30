@@ -1,4 +1,3 @@
-from enum import verify
 import json
 from pathlib import Path
 from cross import Cross
@@ -14,7 +13,7 @@ build_dir = test_dir.parent / "build"
 sign_success_count = 0
 keygen_success_count = 0
 
-def test_keygen(c: Cross, data):
+def keygen_test(c: Cross, data):
     global keygen_success_count
 
     seed_sk   = bytes.fromhex(data["seed_sk"])
@@ -30,14 +29,14 @@ def test_keygen(c: Cross, data):
 
     # /* expansion of matrix/matrices */
     if c.params.algorithm == "RSDP":
+        assert result.expand_pk.seed_pk == seed_pk
         V_tr = c.subfunctions.expand_pk(seed_pk)
         assert result.expand_pk.V_tr == V_tr
-        assert result.expand_pk.seed_pk == seed_pk
     elif c.params.algorithm == "RSDPG":
+        assert result.expand_pk.seed_pk == seed_pk
         V_tr, W_mat = c.subfunctions.expand_pk(seed_pk)
         assert result.expand_pk.V_tr == V_tr
         assert result.expand_pk.W_mat == W_mat
-        assert result.expand_pk.seed_pk == seed_pk
         
     # /* expansion of secret key material */ 
     # /* Expansion of seede, explicit domain separation for CSPRNG */
@@ -49,13 +48,17 @@ def test_keygen(c: Cross, data):
         e_bar = c.subfunctions.csprng_fz_vec(csprng_state_e_bar)
     elif c.params.algorithm == "RSDPG":
         e_G_bar = c.subfunctions.csprng_fz_inf_w(csprng_state_e_bar)
+        assert result.fz_inf_w_by_fz_matrix.W_mat == W_mat
         e_bar = c.subfunctions.fz_inf_w_by_fz_matrix(e_G_bar, W_mat)
         assert result.fz_inf_w_by_fz_matrix.e_bar == e_bar
         assert result.fz_inf_w_by_fz_matrix.e_G_bar == e_G_bar
             
+        assert result.fz_dz_norm_n.e_bar_in == e_bar
         e_bar = c.subfunctions.fz_dz_norm_n(e_bar)
         assert result.fz_dz_norm_n.e_bar_out == e_bar
 
+    assert result.restr_vec_by_fp_matrix.e_bar == e_bar
+    assert result.restr_vec_by_fp_matrix.V_tr == V_tr
     s = c.subfunctions.restr_vec_by_fp_matrix(e_bar, V_tr)
     assert result.restr_vec_by_fp_matrix.s == s
     s = c.subfunctions.fp_dz_norm_synd(s)
@@ -71,7 +74,7 @@ def test_keygen(c: Cross, data):
     
     
 
-def test_sign(c: Cross, data):
+def sign_test(c: Cross, data):
     global sign_success_count
 
     m         = bytes.fromhex(data["m"])
@@ -102,11 +105,11 @@ def test_sign(c: Cross, data):
     # expand_sk
     assert seed_sk == result.seed_sk
 
-    if algorithm == "RSDP":
+    if c.params.algorithm == "RSDP":
         e_bar, V_tr = c.subfunctions.expand_sk(seed_sk)
         assert e_bar == result.expand_sk.e_bar
         assert V_tr == result.expand_sk.V_tr
-    elif algorithm == "RSDPG":
+    elif c.params.algorithm == "RSDPG":
         e_bar, e_G_bar, V_tr, W_mat = c.subfunctions.expand_sk(seed_sk)
         assert e_bar == result.expand_sk.e_bar
         assert e_G_bar == result.expand_sk.e_G_bar
@@ -116,12 +119,12 @@ def test_sign(c: Cross, data):
     seed_tree = c.subfunctions.gen_seed_tree(root_seed, salt)
     round_seeds = c.subfunctions.seed_leaves(seed_tree)
 
-    if algorithm == "RSDP":
+    if c.params.algorithm == "RSDP":
         cmt_0_i_input = bytearray(c.params.densely_packed_fp_syn_size +
                                     c.params.densely_packed_fz_vec_size +
                                     c.params.salt_length_bytes)
         offset_salt = c.params.densely_packed_fp_syn_size + c.params.densely_packed_fz_vec_size
-    elif algorithm == "RSDPG":
+    elif c.params.algorithm == "RSDPG":
         cmt_0_i_input = bytearray(c.params.densely_packed_fp_syn_size +
                                     c.params.densely_packed_fz_rsdp_g_vec_size +
                                     c.params.salt_length_bytes)
@@ -157,10 +160,10 @@ def test_sign(c: Cross, data):
         csprng_state = c.subfunctions.csprng_initialize(csprng_input, domain_sep_csprng)
 
         #/* expand e_bar_prime */
-        if algorithm == "RSDP":
+        if c.params.algorithm == "RSDP":
             e_bar_prime_i = c.subfunctions.csprng_fz_vec(csprng_state)
             e_bar_prime_replay.append(e_bar_prime_i)
-        elif algorithm == "RSDPG":
+        elif c.params.algorithm == "RSDPG":
             e_G_bar_prime = c.subfunctions.csprng_fz_inf_w(csprng_state)
             # fz_vec_sub_m
             assert e_G_bar == result.fz_vec_sub_m.e_G_bar
@@ -230,7 +233,7 @@ def test_sign(c: Cross, data):
 
         cmt_0_i_input[0 : c.params.densely_packed_fp_syn_size] = packed_s_prime
 
-        if algorithm == "RSDP":
+        if c.params.algorithm == "RSDP":
             # pack_fz_vec
             assert v_bar_i == result.pack_fz_vec.v_bar_in[i]
             packed_v_bar_i = c.subfunctions.pack_fz_vec(v_bar_i)
@@ -238,7 +241,7 @@ def test_sign(c: Cross, data):
             # cmt_0_i_input looks like DENSELY_PACKED_FP_SYN_SIZE + DENSELY_PACKED_FZ_VEC_SIZE+ SALT_LENGTH_BYTES
             #                          s_prime || v_bar or v_G_bar || salt
             cmt_0_i_input[c.params.densely_packed_fp_syn_size : c.params.densely_packed_fp_syn_size + c.params.densely_packed_fz_vec_size] = packed_v_bar_i
-        elif algorithm == "RSDPG":
+        elif c.params.algorithm == "RSDPG":
             # pack_fz_rsdp_g_vec
             assert v_G_bar_i == result.pack_fz_rsdp_g_vec.v_G_bar_in[i]
             packed_v_G_bar_i = c.subfunctions.pack_fz_rsdp_g_vec(v_G_bar_i)
@@ -283,7 +286,6 @@ def test_sign(c: Cross, data):
     #/* Computation of the first round of responses */
     y =[]
     for i in range(c.params.t):
-        # e_bar_prime, u_prime style bad xD refactor!
         # fp_vec_by_restr_vec_scaled
         assert e_bar_prime_replay[i] == result.fp_vec_by_restr_vec_scaled.e_bar_prime[i]
         assert chall_1[i] == result.fp_vec_by_restr_vec_scaled.chall_1[i]
@@ -319,10 +321,10 @@ def test_sign(c: Cross, data):
     for i in range(c.params.t):
         if chall_2[i] == 0:
             assert(published_rsps < c.params.t - c.params.w)
-            if algorithm == "RSDP":
+            if c.params.algorithm == "RSDP":
                 resp_0.extend(c.subfunctions.pack_fp_vec(y[i]))
                 resp_0.extend(c.subfunctions.pack_fz_vec(v_bar_replay[i]))
-            if algorithm == "RSDPG":
+            if c.params.algorithm == "RSDPG":
                 resp_0.extend(c.subfunctions.pack_fp_vec(y[i]))
                 resp_0.extend(c.subfunctions.pack_fz_rsdp_g_vec(v_G_bar_replay[i]))
             resp_1.extend(cmt_1[i * c.params.hash_digest_length : (i + 1) * c.params.hash_digest_length])   
@@ -362,7 +364,7 @@ def test_sign(c: Cross, data):
 
 c_verify_input = {}  # stores message, public_key, and signature generated through the high-level and calculation APIs for later verification in C
 
-def test_high_level_api_to_c(c: Cross):
+def high_level_api_to_c_test(c: Cross):
     seed_sk, pk = c.keygen()
 
     length = secrets.randbelow(10000) + 1
@@ -376,7 +378,7 @@ def test_high_level_api_to_c(c: Cross):
         "signature": sig.hex(),
     }
 
-def test_calculation_api_to_c(c: Cross):
+def calculation_api_to_c_test(c: Cross):
     keygen_result = c.calculation.keygen()
     pk = keygen_result.pk
     seed_sk = keygen_result.seed_sk
@@ -409,8 +411,8 @@ for algorithm in algorithms:
                 optimization=optimization,
             )
             print(algorithm, category, optimization) # show the current parameter set for easier debugging
-            test_sign(c, data)
-            test_keygen(c, data)
+            sign_test(c, data)
+            keygen_test(c, data)
 
             variant = f"cross_{algorithm.lower()}_{category}_{optimization}"
             c_verify_input[variant] = {
@@ -418,21 +420,21 @@ for algorithm in algorithms:
                 "calculation_api": []
             }
             for _ in range(1):
-                c_verify_input[variant]["high_level_api"].append(test_high_level_api_to_c(c))
-                c_verify_input[variant]["calculation_api"].append(test_calculation_api_to_c(c))
+                c_verify_input[variant]["high_level_api"].append(high_level_api_to_c_test(c))
+                c_verify_input[variant]["calculation_api"].append(calculation_api_to_c_test(c))
 
 with open(test_dir / "c_verify_py.json", "w") as f:
     json.dump(c_verify_input, f, indent=4)
 
 if sign_success_count == 18:
-    print("All sign tests passed.")
+    print("\033[92mAll sign tests passed.\033[0m")
 else:
-    print("Some sign tests failed.")
+    print("\033[91mSome sign tests failed.\033[0m")
 
 if keygen_success_count == 18:
-    print("All keygen tests passed.")
+    print("\033[92mAll keygen tests passed.\033[0m")
 else:
-    print("Some keygen tests failed.")
+    print("\033[91mSome keygen tests failed.\033[0m")
 
 if sign_success_count != 18 or keygen_success_count != 18:
     raise SystemExit(1)

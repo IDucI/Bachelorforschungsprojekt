@@ -1,4 +1,3 @@
-import ctypes
 from ctypes import *
 from pathlib import Path
 import logging

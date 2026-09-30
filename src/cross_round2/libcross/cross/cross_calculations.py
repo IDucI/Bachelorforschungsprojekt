@@ -1,6 +1,5 @@
 from typing import TYPE_CHECKING
 from .cross_calculation_result import KeygenCalculationResult, SignCalculationResult
-import ctypes
 
 if TYPE_CHECKING:
     from .cross import Cross
@@ -32,12 +31,12 @@ class Calculations:
         # /* expansion of matrix/matrices */
         if c.params.algorithm == "RSDP":
             V_tr = c.subfunctions.expand_pk(seed_pk)
-            result.expand_pk.V_tr = V_tr
+            result.expand_pk.V_tr[:] = V_tr
             result.expand_pk.seed_pk = seed_pk
         elif c.params.algorithm == "RSDPG":
             V_tr, W_mat = c.subfunctions.expand_pk(seed_pk)
-            result.expand_pk.V_tr = V_tr
-            result.expand_pk.W_mat = W_mat
+            result.expand_pk.V_tr[:] = V_tr
+            result.expand_pk.W_mat[:] = W_mat
             result.expand_pk.seed_pk = seed_pk
         
         # /* expansion of secret key material */ 
@@ -51,12 +50,13 @@ class Calculations:
         elif c.params.algorithm == "RSDPG":
             e_G_bar = c.subfunctions.csprng_fz_inf_w(csprng_state_e_bar)
             e_bar = c.subfunctions.fz_inf_w_by_fz_matrix(e_G_bar, W_mat)
-            result.fz_inf_w_by_fz_matrix.e_bar = e_bar.copy()
+            result.fz_inf_w_by_fz_matrix.e_bar[:] = e_bar
             result.fz_inf_w_by_fz_matrix.e_G_bar = e_G_bar
             
             e_bar = c.subfunctions.fz_dz_norm_n(e_bar)
             result.fz_dz_norm_n.e_bar_out = e_bar
-
+        
+        result.restr_vec_by_fp_matrix.e_bar = e_bar
         s = c.subfunctions.restr_vec_by_fp_matrix(e_bar, V_tr)
         result.restr_vec_by_fp_matrix.s = s.copy()
         s = c.subfunctions.fp_dz_norm_synd(s)
@@ -79,7 +79,7 @@ class Calculations:
         c = self.cross
 
         if seed_sk is None and pk is None:
-            seed_sk, pk = c.keygen
+            seed_sk, pk = c.keygen()
         elif seed_sk is None or pk is None:
             raise ValueError("seed_sk and pk must be provided together.")
         if root_seed is None:
@@ -99,9 +99,6 @@ class Calculations:
 
         if len(salt) != c.params.salt_length_bytes:
             raise ValueError("Invalid salt length.")
-           
-        mlen = len(m)
-        #sig  = c._sig_type
 
         result = SignCalculationResult(
             seed_sk = seed_sk,
@@ -236,7 +233,7 @@ class Calculations:
 
             if c.params.algorithm == "RSDP":
                 # pack_fz_vec
-                packed_v_bar_i = c.subfunctions.pack_fz_vec(v_bar_i)# wieder umgeschrieben lol
+                packed_v_bar_i = c.subfunctions.pack_fz_vec(v_bar_i)
                 result.pack_fz_vec.v_bar_out.append(packed_v_bar_i)
                 # cmt_0_i_input looks like DENSELY_PACKED_FP_SYN_SIZE + DENSELY_PACKED_FZ_VEC_SIZE+ SALT_LENGTH_BYTES
                 #                          s_prime || v_bar or v_G_bar || salt
@@ -321,7 +318,6 @@ class Calculations:
                     resp_0.extend(c.subfunctions.pack_fp_vec(y[i]))
                     resp_0.extend(c.subfunctions.pack_fz_vec(v_bar_replay[i]))
                 if c.params.algorithm == "RSDPG":
-                    # v_G_bar_fz_dz_norm_n_out style bad refactor!
                     resp_0.extend(c.subfunctions.pack_fp_vec(y[i]))
                     resp_0.extend(c.subfunctions.pack_fz_rsdp_g_vec(v_G_bar_replay[i]))
                 resp_1.extend(cmt_1[i * c.params.hash_digest_length : (i + 1) * c.params.hash_digest_length])   
@@ -353,6 +349,6 @@ class Calculations:
         sig_bytes[resp_1_offset : resp_1_offset + len(resp_1)] = resp_1
         sig_bytes[resp_0_offset : resp_0_offset + len(resp_0)] = resp_0
 
-        result.signature = sig_bytes
+        result.signature = bytes(sig_bytes)
         
         return result
