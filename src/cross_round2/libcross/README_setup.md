@@ -24,7 +24,6 @@ Currently exposed subroutine:
 - `cross_expand_digest_to_fixed_weight`
 - `cross_pack_fp_syn`
 - `cross_pack_fz_vec`
-- `cross_unpack_fz_vec`
 - `cross_expand_pk` (with 2 parameters)
 
 In RSDP-(G):

@@ -93,19 +93,18 @@ static FZ_ELEM matrix_W_buf[M][N - M];
 #define subroutine_convert_restr_vec_to_fp        0x03
 #define subroutine_restr_vec_by_fp_matrix         0x04
 #define subroutine_pack_fz_vec                    0x05
-#define subroutine_pack_fp_syn                    0x06
-#define subroutine_unpack_fz_vec                  0x07          
-#define subroutine_fz_vec_sub_n                   0x08
-#define subroutine_fp_vec_by_fp_matrix            0x09
-#define subroutine_fp_vec_by_fp_vec_pointwise     0x10
-#define subroutine_fz_vec_sub_m                   0x11
-#define subroutine_fz_inf_w_by_fz_matrix          0x12
-#define subroutine_fp_vec_by_restr_vec_scaled     0x13
-#define subroutine_expand_digest_to_fixed_weight  0x14
-#define subroutine_fz_dz_norm_n                   0x15
-#define subroutine_fz_dz_norm_m                   0x16
-#define subroutine_expand_pk                      0x17
-#define subroutine_expand_sk                      0x18
+#define subroutine_pack_fp_syn                    0x06     
+#define subroutine_fz_vec_sub_n                   0x07
+#define subroutine_fp_vec_by_fp_matrix            0x08
+#define subroutine_fp_vec_by_fp_vec_pointwise     0x09
+#define subroutine_fz_vec_sub_m                   0x10
+#define subroutine_fz_inf_w_by_fz_matrix          0x11
+#define subroutine_fp_vec_by_restr_vec_scaled     0x12
+#define subroutine_expand_digest_to_fixed_weight  0x13
+#define subroutine_fz_dz_norm_n                   0x14
+#define subroutine_fz_dz_norm_m                   0x15
+#define subroutine_expand_pk                      0x16
+#define subroutine_expand_sk                      0x17
 
 // -----------------------------------------------------------------------------
 // Central subroutine control
@@ -189,10 +188,14 @@ uint8_t subroutines(uint8_t cmd, uint8_t scmd, uint8_t len, uint8_t* x) {
 // Generator variant (RSDPG): Pack FZ vector using generator-specific packing layout
 #if defined(RSDPG)
     uint8_t result_rsdp_g[DENSELY_PACKED_FZ_RSDP_G_VEC_SIZE];
+
+    // Pack the FZ vector using the RSDPG-specific packing function.
     pack_fz_rsdp_g_vec(result_rsdp_g, (const FZ_ELEM*)databuffer);
+
+    // Return the packed vector to the host.
     simpleserial_put('r', DENSELY_PACKED_FZ_RSDP_G_VEC_SIZE, result_rsdp_g);
 
-// Standard variant (RSDP): Compress unpacked FZ vector into dense byte array
+// Standard variant (RSDP): Use the standard FZ packing format.
 #else
     pack_fz_vec(result, (const FZ_ELEM*)databuffer);
     simpleserial_put('r', DENSELY_PACKED_FZ_VEC_SIZE, result);
@@ -225,43 +228,7 @@ uint8_t subroutines(uint8_t cmd, uint8_t scmd, uint8_t len, uint8_t* x) {
     }
 
     // -------------------------------------------------------------------------
-    // Subroutine 0x07: Unpack Dense Format Into Restricted Element Vector (FZ)
-    // -------------------------------------------------------------------------
-
-    case subroutine_unpack_fz_vec: {
-        led2_on();
-
-        // Buffer for decompressed FZ vector of length N
-        FZ_ELEM result[N];
-
-        // Decompress dense input bytes from databuffer into raw FZ elements
-        cross_unpack_fz_vec(result,(const uint8_t*)databuffer);
-
-        // --- CHUNKING LOGIC BEGIN ---
-        const uint16_t output_len = (uint16_t)(N * sizeof(FZ_ELEM));
-
-        const uint8_t chunk_index = (len >= 1) ? x[0] : 0;
-
-        const uint32_t offset = (uint32_t)chunk_index * SS_OUTPUT_CHUNK_SIZE;
-
-        if (offset >= output_len) {
-            led2_off();
-            return SS_ERR_LEN;
-        }
-
-        const uint16_t current_len = (output_len - offset < SS_OUTPUT_CHUNK_SIZE)
-            ? (uint16_t)(output_len - offset)
-            : SS_OUTPUT_CHUNK_SIZE;
-
-        simpleserial_put('r',current_len,((uint8_t*)result) + offset);
-        // --- CHUNKING LOGIC END ---
-
-         led2_off();
-        return SS_ERR_OK;
-    }
-
-    // -------------------------------------------------------------------------
-    // Subroutine 0x08: Subtract Two Restricted Vectors (Dimension N)
+    // Subroutine 0x07: Subtract Two Restricted Vectors (Dimension N)
     // -------------------------------------------------------------------------
 
     case subroutine_fz_vec_sub_n: {
@@ -298,7 +265,7 @@ uint8_t subroutines(uint8_t cmd, uint8_t scmd, uint8_t len, uint8_t* x) {
     }
 
     // -------------------------------------------------------------------------
-    // Subroutine 0x09: Multiply Fp Vector by Fp Matrix Transpose
+    // Subroutine 0x08: Multiply Fp Vector by Fp Matrix Transpose
     // -------------------------------------------------------------------------
 
     case subroutine_fp_vec_by_fp_matrix: {
@@ -321,7 +288,7 @@ uint8_t subroutines(uint8_t cmd, uint8_t scmd, uint8_t len, uint8_t* x) {
     }
 
     // -------------------------------------------------------------------------
-    // Subroutine 0x10: Pointwise Multiplication of Two Fp Vectors
+    // Subroutine 0x09: Pointwise Multiplication of Two Fp Vectors
     // -------------------------------------------------------------------------
 
     case subroutine_fp_vec_by_fp_vec_pointwise: {
@@ -360,7 +327,7 @@ uint8_t subroutines(uint8_t cmd, uint8_t scmd, uint8_t len, uint8_t* x) {
     }
 
     // -------------------------------------------------------------------------
-    // Subroutine 0x11: Vector Subtraction M 
+    // Subroutine 0x10: Vector Subtraction M 
     // -------------------------------------------------------------------------
 
      case subroutine_fz_vec_sub_m: {
@@ -389,7 +356,7 @@ uint8_t subroutines(uint8_t cmd, uint8_t scmd, uint8_t len, uint8_t* x) {
     } 
 
     // -------------------------------------------------------------------------
-    // Subroutine 0x12: Matrix Multiplication W (only for RSDPG)
+    // Subroutine 0x11: Matrix Multiplication W (only for RSDPG)
     // -------------------------------------------------------------------------
 
     case subroutine_fz_inf_w_by_fz_matrix: {
@@ -435,7 +402,7 @@ uint8_t subroutines(uint8_t cmd, uint8_t scmd, uint8_t len, uint8_t* x) {
     } 
 
     // -------------------------------------------------------------------------
-    // Subroutine 0x13: Scaled Vector Addition (Fp Vector by Restricted Vector)
+    // Subroutine 0x12: Scaled Vector Addition (Fp Vector by Restricted Vector)
     // -------------------------------------------------------------------------
 
     case subroutine_fp_vec_by_restr_vec_scaled: {
@@ -482,7 +449,7 @@ uint8_t subroutines(uint8_t cmd, uint8_t scmd, uint8_t len, uint8_t* x) {
     }
 
     // -------------------------------------------------------------------------
-    // Subroutine 0x14: Expand Digest to Fixed Weight Vector
+    // Subroutine 0x13: Expand Digest to Fixed Weight Vector
     // -------------------------------------------------------------------------
 
     case subroutine_expand_digest_to_fixed_weight: {
@@ -516,7 +483,7 @@ uint8_t subroutines(uint8_t cmd, uint8_t scmd, uint8_t len, uint8_t* x) {
     }
 
     // -------------------------------------------------------------------------
-    // Subroutine 0x15: Normalize Restricted Vector (In-Place, Dimension N)
+    // Subroutine 0x14: Normalize Restricted Vector (In-Place, Dimension N)
     //
     // IMPORTANT:
     // SimpleSerial V2.1 cannot transport all N elements in one packet
@@ -563,7 +530,7 @@ uint8_t subroutines(uint8_t cmd, uint8_t scmd, uint8_t len, uint8_t* x) {
     }
 
     // -------------------------------------------------------------------------
-    // Subroutine 0x16: Normalize M 
+    // Subroutine 0x15: Normalize M 
     // -------------------------------------------------------------------------
 
     case subroutine_fz_dz_norm_m: {
@@ -601,7 +568,7 @@ uint8_t subroutines(uint8_t cmd, uint8_t scmd, uint8_t len, uint8_t* x) {
     } 
 
     // -----------------------------------------------------------------------------
-    // Subroutine 0x17: Expand Public Key
+    // Subroutine 0x16: Expand Public Key
     // -----------------------------------------------------------------------------
     // The pk expansion is potentially expensive, because the complete public key
     // is larger than the SimpleSerial2 packet limit, the result is transferred 
@@ -664,7 +631,7 @@ uint8_t subroutines(uint8_t cmd, uint8_t scmd, uint8_t len, uint8_t* x) {
     }
 
     // -------------------------------------------------------------------------
-    // Subroutine 0x18: Expand Secret Key (seed_sk -> secret vector e)
+    // Subroutine 0x17: Expand Secret Key (seed_sk -> secret vector e)
     // -------------------------------------------------------------------------
 
     case subroutine_expand_sk: {

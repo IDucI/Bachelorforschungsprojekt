@@ -35,7 +35,8 @@ where we placed our scientific paper/report and proposal to read. If we go into 
 ...Bachelorforschungsprojekt/
 ├─ docs/                 (Folder with our documentation & other important PDFs)                           
 ├─ src/                     
-│  ├─ cross_round2/      (CROSS scheme)                 
+│  ├─ cross_round2/      (CROSS scheme)   
+│  ├─ cw-env311          (Virtual environment)    
 │  ├─ less/              (LESS scheme)
 │  ├─ libkyber/          (Libkyber libary)
 │  └── ...               (Placeholder for further schemes)                      
@@ -46,3 +47,9 @@ where we placed our scientific paper/report and proposal to read. If we go into 
 ## Important
 
 Each scheme has its own README file in its respective folder. Please read these README files carefully and follow their instructions to understand the internal project structure, setup requirements, and how to work with the respective implementation.
+
+Before inspecting or working with any of the schemes, activate the provided Python environment by running the following command `source cw-env311/bin/activate` in the terminal from the specific folder:
+
+`.../Bachelorforschungsprojekt/src`
+
+After activating the environment, you can work with the project and its provided components.
