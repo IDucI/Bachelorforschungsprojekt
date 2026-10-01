@@ -63,18 +63,17 @@ subroutine_convert_restr_vec_to_fp          = 0x03
 subroutine_restr_vec_by_fp_matrix           = 0x04 
 subroutine_pack_fz_vec                      = 0x05
 subroutine_pack_fp_syn                      = 0x06
-subroutine_unpack_fz_vec                    = 0x07
-subroutine_fz_vec_sub_n                     = 0x08
-subroutine_fp_vec_by_fp_matrix              = 0x09
-subroutine_fp_vec_by_fp_vec_pointwise       = 0x10
-subroutine_fz_vec_sub_m                     = 0x11
-subroutine_fz_inf_w_by_fz_matrix            = 0x12
-subroutine_fp_vec_by_restr_vec_scaled       = 0x13
-subroutine_expand_digest_to_fixed_weight    = 0x14
-subroutine_fz_dz_norm_n                     = 0x15
-subroutine_fz_dz_norm_m                     = 0x16
-subroutine_expand_pk                        = 0x17
-subroutine_expand_sk                        = 0x18
+subroutine_fz_vec_sub_n                     = 0x07
+subroutine_fp_vec_by_fp_matrix              = 0x08
+subroutine_fp_vec_by_fp_vec_pointwise       = 0x09
+subroutine_fz_vec_sub_m                     = 0x10
+subroutine_fz_inf_w_by_fz_matrix            = 0x11
+subroutine_fp_vec_by_restr_vec_scaled       = 0x12
+subroutine_expand_digest_to_fixed_weight    = 0x13
+subroutine_fz_dz_norm_n                     = 0x14
+subroutine_fz_dz_norm_m                     = 0x15
+subroutine_expand_pk                        = 0x16
+subroutine_expand_sk                        = 0x17
 
 # =============================================================================
 # USB / Chipwhisperer
@@ -416,22 +415,6 @@ def test_pack_fp_syn(target, c, rng):
     compare("pack_fp_syn", expected, actual)
 
 
-def test_unpack_fz_vec(target, c, rng):
-    """
-    Test unpacking of a packed F_z vector.
-    """
-    original = random_fz(rng, c, c.params.n)
-    packed = c.subfunctions.pack_fz_vec(original)
-    expected = c.subfunctions.unpack_fz_vec(packed)
-    actual = board_run_chunked_subroutine(
-        target,
-        subroutine_unpack_fz_vec,
-        packed,
-        c.params.n,
-        chunk_size = output_chunk_size
-    )
-    compare("unpack_fz_vec", expected, actual)
-
 
 def test_fz_vec_sub_n(target, c, rng):
     """
@@ -636,7 +619,6 @@ COMMON_RANDOM_TESTS = [
     ("restr_vec_by_fp_matrix", test_restr_vec_by_fp_matrix),
     ("pack_fz_vec", test_pack_fz_vec),
     ("pack_fp_syn", test_pack_fp_syn),
-    ("unpack_fz_vec", test_unpack_fz_vec),
     ("fz_vec_sub_n", test_fz_vec_sub_n),
     ("fp_vec_by_fp_matrix", test_fp_vec_by_fp_matrix),
     ("fp_vec_by_fp_vec_pointwise", test_fp_vec_by_fp_vec_pointwise),
