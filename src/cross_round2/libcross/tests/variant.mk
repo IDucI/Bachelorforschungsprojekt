@@ -1,8 +1,8 @@
 LIB_DIR    := ../variants/$(ALG_VERSION)/lib/
 LIB_OBJECTS := $(wildcard $(LIB_DIR)*.s.o)
 
-TEST_SRC  := generate_reference_data.c
-TEST_NAME := generate_reference_data
+TEST_SRC  := generate_c_test_data.c
+TEST_NAME := generate_c_test_data
 
 ALG_DIR := ../variants/Reference_Implementation/
 

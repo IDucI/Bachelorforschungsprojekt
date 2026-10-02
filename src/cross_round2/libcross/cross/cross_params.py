@@ -13,16 +13,18 @@ class CrossParams:
     category: int
     optimization: str 
 
-    # ============================== RSDP(G) Parameters ==============================
+    # ------------------------------------------------------------------------
+    # RSDP(G) Parameters
+    # ------------------------------------------------------------------------
 
-    p: int # Field size of Fp
-    z: int # Field size of Fz
-    n: int # Length of vectors in the full code space (N)
-    k: int # Dimension of the code (K); defines parity-check sizes
-    m: Optional[int] # Dimension of the subgroup G (Only used in RSDPG variants)
+    p: int
+    z: int
+    n: int
+    k: int
+    m: Optional[int] # None for RSDP
 
-    t: int # Number of protocol rounds
-    w: int # Weight of the second challenge
+    t: int
+    w: int
 
     @property
     def version(self) -> str:
@@ -36,6 +38,10 @@ class CrossParams:
             3: 192,
             5: 256,
             }[self.category]
+
+    # ------------------------------------------------------------------------
+    # Derived Parameters
+    # ------------------------------------------------------------------------
 
     @property
     def tree_nodes_to_store(self) -> int:
@@ -52,8 +58,6 @@ class CrossParams:
                 }
             }[self.algorithm][self.optimization][self.category]
 
-    # ========================= Derived parameter helpers =========================
-
     @property 
     def resp_0_size(self) -> int:
         if self.algorithm == "RSDP":
@@ -66,12 +70,13 @@ class CrossParams:
 
     @property
     def sig_size(self) -> int:
-        return(self.salt_length_bytes # salt
-               + 2 * self.hash_digest_length # digest_cmt and digest_chall_2
-               + self.tree_nodes_to_store * self.seed_length_bytes # path
-               + self.hash_digest_length * self.tree_nodes_to_store # tree
-               + (self.t - self.w) * self.hash_digest_length # resp_1
-               + (self.t - self.w) * self.resp_0_size # resp_0
+        # signature = salt || digest_cmt || digest_chall_2 || path || tree || resp_1 || resp_0
+        return(self.salt_length_bytes
+               + 2 * self.hash_digest_length
+               + self.tree_nodes_to_store * self.seed_length_bytes
+               + self.hash_digest_length * self.tree_nodes_to_store 
+               + (self.t - self.w) * self.hash_digest_length
+               + (self.t - self.w) * self.resp_0_size
         )
 
     @property
@@ -80,7 +85,6 @@ class CrossParams:
 
     @property
     def keypair_seed_length_bytes(self) -> int:
-        # Seedsk and Seedpk are 2 * lambda bits long
         return 2 * (self.sec_margin_lambda // 8) 
 
     @property
@@ -121,6 +125,8 @@ class CrossParams:
 
     @property
     def densely_packed_fz_rsdp_g_vec_size(self) -> int:
+        if self.algorithm != "RSDPG":
+            raise ValueError("densely_packed_fz_rsdp_g_vec_size is only defined for RSDPG")
         return (self.m * (self.z - 1).bit_length() + 7) // 8
 
     @property
@@ -131,7 +137,9 @@ class CrossParams:
     def hash_domain_sep_const (self) -> int:
         return 32768
 
-# ==================== Input normalization and validation ====================
+# ------------------------------------------------------------------------
+# Input Normalization and Validation
+# ------------------------------------------------------------------------
 
 def normalize_algorithm(algorithm: str) -> str:
     normalized = algorithm.upper().replace("-", "").replace("(", "").replace(")", "")
@@ -166,6 +174,11 @@ def get_params(
         optimization=optimization,
         **params,)
 
+# ------------------------------------------------------------------------
+# Parameter Sets
+# ------------------------------------------------------------------------
+
+# Parameter values from the CROSS reference implementation.
 PARAMETER_SETS = {
     ("RSDP", 1, "fast"): dict(p=127, z=7, n=127, k=76, m=None, t=157, w=82),
     ("RSDP", 1, "balanced"): dict(p=127, z=7, n=127, k=76, m=None, t=256, w=215),

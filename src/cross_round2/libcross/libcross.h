@@ -77,14 +77,15 @@ extern "C" {
 
     int cross_seed_path(unsigned char* seed_storage, const unsigned char seed_tree[NUM_NODES_SEED_TREE * SEED_LENGTH_BYTES], const unsigned char indices_to_publish[T]);
 
-    #if defined(RSDPG)
-    void cross_pack_fz_rsdp_g_vec(uint8_t out[DENSELY_PACKED_FZ_RSDP_G_VEC_SIZE], const FZ_ELEM in[M]);
-    #endif
-
     void cross_csprng_randombytes(unsigned char* const x, unsigned long long xlen, CSPRNG_STATE_T* const csprng_state);
-    // -----------------------------------------------------------------------
-    // Subroutines
-    // -----------------------------------------------------------------------
+
+    // ------------------------------------------------------------------------
+    //  Firmware Subroutines
+    // ------------------------------------------------------------------------
+
+#if defined(RSDPG)
+    void cross_pack_fz_rsdp_g_vec(uint8_t out[DENSELY_PACKED_FZ_RSDP_G_VEC_SIZE], const FZ_ELEM in[M]);
+#endif
 
     void cross_convert_restr_vec_to_fp(FP_ELEM res[N], const FZ_ELEM in[N]);
 
@@ -105,8 +106,6 @@ extern "C" {
     void cross_pack_fp_syn(uint8_t out[DENSELY_PACKED_FP_SYN_SIZE], const FP_ELEM in[N-K]);
 
     void cross_pack_fz_vec(uint8_t out[DENSELY_PACKED_FZ_VEC_SIZE], const FZ_ELEM in[N]);
-
-    uint8_t cross_unpack_fz_vec(FZ_ELEM out[N], const uint8_t in[DENSELY_PACKED_FZ_VEC_SIZE]);
 
     #if defined(RSDPG)
         void cross_fz_inf_w_by_fz_matrix(FZ_ELEM res[N], const FZ_ELEM e[M], FZ_ELEM W_mat[M][N-M]);

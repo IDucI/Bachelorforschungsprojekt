@@ -1,3 +1,10 @@
+"""Data containers for intermediate values collected during CROSS key generation
+and signing.
+
+The result objects group firmware-relevant subroutine inputs and outputs and
+link shared values between containers.
+"""
+
 from dataclasses import dataclass, field
 
 @dataclass
@@ -111,6 +118,12 @@ class RestrVecByFpMatrixData:
 
 @dataclass
 class KeygenCalculationResult:
+    """
+    Stores intermediate values for all board-relevant subroutines while reproducing CROSS_keygen().
+
+    Each subroutine has its own data container.
+    Shared values are linked between containers in post_init to mirror the data flow of the reference implementation.
+    """
     seed_sk  : bytes
     pk  : bytes = field(default_factory=bytes) #seed_pk || s
 

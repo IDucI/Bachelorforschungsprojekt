@@ -1,3 +1,11 @@
+/*
+ * Generates C test data for validating the Python calculation API in
+ * test_cross.py.
+ *
+ * Key generation and signing outputs, including root seed and salt, are
+ * written to a JSON file for the current parameter set.
+ */
+
 #include "parameters.h"
 #include "CROSS.h"
 #include "csprng_hash.h"

@@ -109,13 +109,15 @@ class Cross:
 
         self.subfunctions.load_dll()
 
-    def keygen(self):
+    def keygen(self) -> tuple[bytes, bytes]:
+        """Generate and return a secret-key seed and public key."""
         sk = (c_uint8 * self.params.keypair_seed_length_bytes)()
         pk = (c_uint8 * (self.params.keypair_seed_length_bytes + self.params.densely_packed_fp_syn_size))()
         self.c_cross.cross_keygen(sk, pk)
         return bytes(sk), bytes(pk)
 
-    def sign(self, seed_sk, m):
+    def sign(self, seed_sk, m) -> bytes:
+        """Sign message m using the secret-key seed."""
         if len(seed_sk) != self.params.keypair_seed_length_bytes:
             raise ValueError(f"Expected seed_sk to have length {self.params.keypair_seed_length_bytes}, got {len(seed_sk)}")
         sk = (c_uint8 * self.params.keypair_seed_length_bytes)(*seed_sk)
@@ -125,7 +127,8 @@ class Cross:
         self.c_cross.cross_sign(sk, m, mlen, sig)
         return bytes(sig)
 
-    def verify(self, seed_pk, m, signature):
+    def verify(self, seed_pk, m, signature) -> int:
+        """Verify a signature for message m. 1 indicates a valid signature."""
         pk_size = self.params.keypair_seed_length_bytes + self.params.densely_packed_fp_syn_size
         if len(seed_pk) != pk_size:
             raise ValueError(f"Expected seed_pk to have length {pk_size}, got {len(seed_pk)}")
