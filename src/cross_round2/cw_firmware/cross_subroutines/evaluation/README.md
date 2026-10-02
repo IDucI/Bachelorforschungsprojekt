@@ -44,11 +44,11 @@ In the following folder:
 
 The file `run_board_test.py` can be used to test the communication between the PC and the STM32 board as well as the correctness of the implemented subroutines.
 
-The test workflow uses `flash.py` to flash the corresponding firmware onto the board and `board_test.py` to execute the board reference tests. For each test, randomly generated input data is sent to the board. The corresponding output is calculated using the host-side CROSS reference implementation and then compared with the output returned by the board.
+The test workflow uses the firmware previously flashed during the flashing and verification procedure. If the firmware has not been flashed yet, or if the board has been disconnected from the PC and the firmware needs to be restored, go back to the cross_subroutines folder: `cd ".../Bachelorforschungsprojekt/src/cross_round2/cw_firmware/cross_subroutines"`, and follow the flashing and verification procedure described in its README. If the firmware already has been flashed you can ignore this part then.
 
-If the expected and actual outputs match, the tested subroutine and the associated communication path have produced the expected result. If they do not match, the test reports a failure, which can indicate a problem with the communication, the firmware implementation, or the computation itself.
+The test uses intermediate values obtained from an actual CROSS computation. For each tested subroutine, the corresponding input intermediate is extracted from the calculations implementation and sent to the board. The subroutine is then executed on the STM32 and its output is compared with the corresponding expected intermediate output from the implementation.
 
-To reduce the possibility that a test passes only for a particular input, multiple rounds are executed with independently generated test inputs. Each round uses a different seed, resulting in different input data while still allowing a failing test to be reproduced using the reported seed.
+Although the underlying CROSS computations use randomly generated seeds and messages, the values sent to the individual subroutines are not independently generated random test values. They are intermediate values that occur during an actual key-generation or signing computation.
 
 To execute the file and test all 18 variants, run:
 

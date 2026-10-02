@@ -78,7 +78,10 @@ PH0    -> HS2 -> This isn't necessary anymore, because we don't use an external 
 
 ## Flashing and Verification
 
-The firmware can be flashed and tested from Windows PowerShell using Python 3.12.
+The firmware must be flashed and verified before performing the board communication tests.
+
+Important: Do not unplug the board or the ChipWhisperer from the PC after flashing. Otherwise, the firmware may need to be flashed again before communication with the board can be established.
+
 Run the verification script from the firmware project folder:
 `cd ".../Bachelorforschungsprojekt/src/cross_round2/cw_firmware/cross_subroutines"`
 `python/py flash.py`

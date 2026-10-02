@@ -11,7 +11,6 @@ from pathlib import Path
 evaluation_dir = Path(__file__).resolve().parent
 project_dir = evaluation_dir.parent
 
-flash_script = project_dir / "flash.py"
 board_test_script = evaluation_dir / "board_test.py"
 results_csv = evaluation_dir / "board_test_results.csv"
 
@@ -55,7 +54,6 @@ def initialize_results_csv() -> None:
                 "category",
                 "variant",
                 "hex_exists",
-                "flash_passed",
                 "board_test_passed",
                 "error"
             ]
@@ -66,7 +64,6 @@ def log_result(
     category: int,
     variant: str,
     hex_exists: bool,
-    flash_passed: bool,
     board_test_passed: bool,
     error: str
 ) -> None:
@@ -82,7 +79,6 @@ def log_result(
                 category,
                 variant,
                 hex_exists,
-                flash_passed,
                 board_test_passed,
                 error
             ]
@@ -97,38 +93,6 @@ def get_hex_path(family: str, category: int, variant: str) -> Path:
     filename = (f"cross_subroutines_{family.lower()}_{category}_{variant}-PINATA.hex")
 
     return project_dir / filename
-
-# =============================================================================
-# Flash
-# =============================================================================
-
-def flash_firmware(hex_path: Path) -> bool:
-
-    print()
-    print("=" * 70)
-    print(" Flash")
-    print("=" * 70)
-
-    print(f"Flashing: {hex_path.name}")
-
-    result = subprocess.run(
-        [
-            sys.executable,
-            str(flash_script),
-            str(hex_path),
-        ],
-        cwd = project_dir
-    )
-
-    if result.returncode != 0:
-
-        print("Firmware flashing failed.")
-
-        return False
-
-    print("Firmware flashing successful.")
-
-    return True
 
 # =============================================================================
 # BOARD TEST
@@ -235,10 +199,9 @@ def main() -> int:
                 family,
                 category,
                 variant,
-                hex_exists=False,
-                flash_passed=False,
-                board_test_passed=False,
-                error="HEX file missing"
+                hex_exists = False,
+                board_test_passed = False,
+                error = "HEX file missing"
             )
 
             results.append(
@@ -254,34 +217,6 @@ def main() -> int:
             # Continue with the next configuration.
             continue
 
-        # Flash
-        flash_ok = flash_firmware(hex_path)
-
-        if not flash_ok:
-
-            log_result(
-                family,
-                category,
-                variant,
-                hex_exists=True,
-                flash_passed=False,
-                board_test_passed=False,
-                error="Flashing failed"
-            )
-
-            results.append(
-                (
-                    family,
-                    category,
-                    variant,
-                    False,
-                    "Flashing failed"
-                )
-            )
-
-            # Continue with the next configuration.
-            continue
-
         # Board test
         board_ok = run_board_test(family, category, variant)
 
@@ -290,10 +225,9 @@ def main() -> int:
                 family,
                 category,
                 variant,
-                hex_exists=True,
-                flash_passed=True,
-                board_test_passed=True,
-                error=""
+                hex_exists = True,
+                board_test_passed = True,
+                error = ""
             )
             results.append(
                 (
@@ -309,10 +243,9 @@ def main() -> int:
                 family,
                 category,
                 variant,
-                hex_exists=True,
-                flash_passed=True,
-                board_test_passed=False,
-                error="Board reference test failed"
+                hex_exists = True,
+                board_test_passed = False,
+                error = "Board reference test failed"
             )
             results.append(
                 (
