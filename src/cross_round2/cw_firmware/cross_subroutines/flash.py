@@ -94,6 +94,14 @@ def flash_firmware(hex_path: Path) -> bool:
         # after the clock configuration.
         time.sleep(0.2)
 
+        # Put the STM32 into programming mode.
+        scope.io.pdic = "high"
+
+        # Power-cycle the target before programming.
+        scope.io.target_pwr = False
+        time.sleep(1)
+        scope.io.target_pwr = True
+
         print(f"Flashing image: {hex_path.name}...")
 
         # Program the STM32F target with the selected firmware.
@@ -108,13 +116,6 @@ def flash_firmware(hex_path: Path) -> bool:
         # initialization or firmware flashing.
         print(f"Flashing process failed: {err}")
         return False
-
-    finally:
-        # Always disconnect the ChipWhisperer scope after the
-        # flashing attempt if a connection was successfully created.
-        if scope is not None:
-            scope.dis()
-            print("Scope disconnected.")
 
 # =============================================================================
 # Main
