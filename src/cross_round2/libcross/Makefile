@@ -38,6 +38,8 @@ ifeq ($(DEBUG), 1)
 	CPPFLAGS += -g -O1 -mno-sse4.1 -fsanitize=undefined
 #don't add -mno-sse4.1 because of valgrind illegal instruction error, valgrind version 3.18.1
 	CPPFLAGS := $(filter-out -O3,$(CPPFLAGS))
+else
+	CPPFLAGS += -DSKIP_ASSERT
 endif
 LDFLAGS=-lcrypto
 
@@ -92,7 +94,6 @@ EDITABLE := -e
 ALG_DIR = $(ALG_PATH)$f/
 
 # the below variables are made availabe to the makefiles called from inside this one
-DEBUG = -g
 # export ALG_VERSION via CMDLINE
 export ALG_PATH
 export DEBUG

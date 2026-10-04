@@ -12,6 +12,10 @@ CXX?=/usr/bin/g++
 CFLAGS += -std=c11
 CPPFLAGS += -I $(ALG_DIR) -I $(ALG_DIR)include
 
+ifeq ($(DEBUG), 1)
+	CPPFLAGS += -g -O1 -mno-sse4.1 -fsanitize=undefined
+endif
+
 # determine compiler flags from ALG_VERSION in the format cross_<algorithm>_<category>_<optimization> e.g. cross_rsdp_1_fast
 VARIANT_PARTS := $(subst _, ,$(ALG_VERSION))
 

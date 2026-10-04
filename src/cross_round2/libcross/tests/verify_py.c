@@ -59,7 +59,11 @@ int main(void) {
 
 	char* json_data = malloc((size_t)file_size + 1);
 	
-	fread(json_data, 1, (size_t)file_size, json);
+	if (fread(json_data, 1, (size_t)file_size, json) != (size_t)file_size){
+		free(json_data);
+		fclose(json);
+		return 1;
+	}
 	json_data[file_size] = '\0';
 
 	fclose(json);
