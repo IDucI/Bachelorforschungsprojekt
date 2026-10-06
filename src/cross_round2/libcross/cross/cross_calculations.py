@@ -70,7 +70,9 @@ class Calculations:
         s = c.subfunctions.restr_vec_by_fp_matrix(e_bar, V_tr)
         result.restr_vec_by_fp_matrix.s = s.copy()
         s = c.subfunctions.fp_dz_norm_synd(s)
+        result.pack_fp_syn.s_in[:] = s
         s = c.subfunctions.pack_fp_syn(s)
+        result.pack_fp_syn.s_out = s
 
         # Build public key as seed_pk || s
         result.pk = seed_pk + s
