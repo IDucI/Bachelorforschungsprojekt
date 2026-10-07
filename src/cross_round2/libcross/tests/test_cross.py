@@ -39,6 +39,7 @@ def keygen_test(c: Cross, data):
     seed_pk = seed_e_seed_pk[c.params.keypair_seed_length_bytes : 2 * c.params.keypair_seed_length_bytes]
 
     # expansion of matrix/matrices
+    # expand_pk
     if c.params.algorithm == "RSDP":
         assert result.expand_pk.seed_pk == seed_pk
         V_tr = c.subfunctions.expand_pk(seed_pk)
@@ -58,21 +59,26 @@ def keygen_test(c: Cross, data):
     if c.params.algorithm == "RSDP":
         e_bar = c.subfunctions.csprng_fz_vec(csprng_state_e_bar)
     elif c.params.algorithm == "RSDPG":
+        # fz_inf_w_by_fz_matrix
         e_G_bar = c.subfunctions.csprng_fz_inf_w(csprng_state_e_bar)
         assert result.fz_inf_w_by_fz_matrix.W_mat == W_mat
         e_bar = c.subfunctions.fz_inf_w_by_fz_matrix(e_G_bar, W_mat)
         assert result.fz_inf_w_by_fz_matrix.e_bar == e_bar
         assert result.fz_inf_w_by_fz_matrix.e_G_bar == e_G_bar
-            
+
+        # fz_dz_norm_n
         assert result.fz_dz_norm_n.e_bar_in == e_bar
         e_bar = c.subfunctions.fz_dz_norm_n(e_bar)
         assert result.fz_dz_norm_n.e_bar_out == e_bar
 
+    # restr_vec_by_fp_matrix
     assert result.restr_vec_by_fp_matrix.e_bar == e_bar
     assert result.restr_vec_by_fp_matrix.V_tr == V_tr
     s = c.subfunctions.restr_vec_by_fp_matrix(e_bar, V_tr)
     assert result.restr_vec_by_fp_matrix.s == s
+
     s = c.subfunctions.fp_dz_norm_synd(s)
+    # pack_fp_syn
     assert result.pack_fp_syn.s_in == s
     s = c.subfunctions.pack_fp_syn(s)
     assert result.pack_fp_syn.s_out == s

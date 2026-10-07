@@ -39,6 +39,7 @@ class Calculations:
         seed_pk = seed_e_seed_pk[c.params.keypair_seed_length_bytes : 2 * c.params.keypair_seed_length_bytes]
 
         # expansion of matrix/matrices
+        # expand_pk
         if c.params.algorithm == "RSDP":
             V_tr = c.subfunctions.expand_pk(seed_pk)
             result.expand_pk.V_tr[:] = V_tr
@@ -50,7 +51,7 @@ class Calculations:
             result.expand_pk.seed_pk = seed_pk
         
         # expansion of secret key material
-        # Expansion of seede, explicit domain separation for CSPRNG
+        # Expansion of seed_e, explicit domain separation for CSPRNG
         dsc_csprng_seed_e = c.params.csprng_domain_sep_const + (3 * c.params.t + 3)
 
         csprng_state_e_bar = c.subfunctions.csprng_initialize(seed_e_seed_pk[: c.params.keypair_seed_length_bytes], dsc_csprng_seed_e)
@@ -59,17 +60,22 @@ class Calculations:
             e_bar = c.subfunctions.csprng_fz_vec(csprng_state_e_bar)
         elif c.params.algorithm == "RSDPG":
             e_G_bar = c.subfunctions.csprng_fz_inf_w(csprng_state_e_bar)
+            # fz_inf_w_by_fz_matrix
             e_bar = c.subfunctions.fz_inf_w_by_fz_matrix(e_G_bar, W_mat)
             result.fz_inf_w_by_fz_matrix.e_bar[:] = e_bar
             result.fz_inf_w_by_fz_matrix.e_G_bar = e_G_bar
-            
+
+            # fz_dz_norm_n
             e_bar = c.subfunctions.fz_dz_norm_n(e_bar)
             result.fz_dz_norm_n.e_bar_out = e_bar
-        
+
+        # restr_vec_by_fp_matrix
         result.restr_vec_by_fp_matrix.e_bar = e_bar
         s = c.subfunctions.restr_vec_by_fp_matrix(e_bar, V_tr)
         result.restr_vec_by_fp_matrix.s = s.copy()
+
         s = c.subfunctions.fp_dz_norm_synd(s)
+        # pack_fp_syn
         result.pack_fp_syn.s_in[:] = s
         s = c.subfunctions.pack_fp_syn(s)
         result.pack_fp_syn.s_out = s
