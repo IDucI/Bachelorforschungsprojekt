@@ -1,3 +1,12 @@
+"""Convenience layer for reproducing CROSS key generation and signing while
+collecting firmware-relevant intermediate values.
+
+The calculations follow the CROSS reference implementation and store the
+inputs and outputs required to exercise isolated firmware subroutines in
+result objects. These values can then be accessed directly for firmware
+testing and validation.
+"""
+
 from typing import TYPE_CHECKING
 from .cross_calculation_result import KeygenCalculationResult, SignCalculationResult
 
@@ -11,6 +20,7 @@ class Calculations:
         self.subfunctions = cross.subfunctions
         
     def keygen(self, seed_sk: bytes | None = None):
+        """Run CROSS key generation and collect firmware-relevant intermediate values."""
         c = self.cross
 
         if seed_sk == None:
@@ -21,14 +31,15 @@ class Calculations:
 
         result = KeygenCalculationResult(seed_sk = seed_sk)
 
-        #/* Expansion of sk->seed, explicit domain separation for CSPRNG */
+        # Expansion of sk->seed, explicit domain separation for CSPRNG
         dsc_csprng_seed_sk = c.params.csprng_domain_sep_const + (3 * c.params.t + 1)
 
         csprng_state = c.subfunctions.csprng_initialize(seed_sk, dsc_csprng_seed_sk)
         seed_e_seed_pk = c.subfunctions.csprng_randombytes(2*c.params.keypair_seed_length_bytes, csprng_state)
         seed_pk = seed_e_seed_pk[c.params.keypair_seed_length_bytes : 2 * c.params.keypair_seed_length_bytes]
 
-        # /* expansion of matrix/matrices */
+        # expansion of matrix/matrices
+        # expand_pk
         if c.params.algorithm == "RSDP":
             V_tr = c.subfunctions.expand_pk(seed_pk)
             result.expand_pk.V_tr[:] = V_tr
@@ -39,8 +50,8 @@ class Calculations:
             result.expand_pk.W_mat[:] = W_mat
             result.expand_pk.seed_pk = seed_pk
         
-        # /* expansion of secret key material */ 
-        # /* Expansion of seede, explicit domain separation for CSPRNG */
+        # expansion of secret key material
+        # Expansion of seed_e, explicit domain separation for CSPRNG
         dsc_csprng_seed_e = c.params.csprng_domain_sep_const + (3 * c.params.t + 3)
 
         csprng_state_e_bar = c.subfunctions.csprng_initialize(seed_e_seed_pk[: c.params.keypair_seed_length_bytes], dsc_csprng_seed_e)
@@ -49,18 +60,25 @@ class Calculations:
             e_bar = c.subfunctions.csprng_fz_vec(csprng_state_e_bar)
         elif c.params.algorithm == "RSDPG":
             e_G_bar = c.subfunctions.csprng_fz_inf_w(csprng_state_e_bar)
+            # fz_inf_w_by_fz_matrix
             e_bar = c.subfunctions.fz_inf_w_by_fz_matrix(e_G_bar, W_mat)
             result.fz_inf_w_by_fz_matrix.e_bar[:] = e_bar
             result.fz_inf_w_by_fz_matrix.e_G_bar = e_G_bar
-            
+
+            # fz_dz_norm_n
             e_bar = c.subfunctions.fz_dz_norm_n(e_bar)
             result.fz_dz_norm_n.e_bar_out = e_bar
-        
+
+        # restr_vec_by_fp_matrix
         result.restr_vec_by_fp_matrix.e_bar = e_bar
         s = c.subfunctions.restr_vec_by_fp_matrix(e_bar, V_tr)
         result.restr_vec_by_fp_matrix.s = s.copy()
+
         s = c.subfunctions.fp_dz_norm_synd(s)
+        # pack_fp_syn
+        result.pack_fp_syn.s_in[:] = s
         s = c.subfunctions.pack_fp_syn(s)
+        result.pack_fp_syn.s_out = s
 
         # Build public key as seed_pk || s
         result.pk = seed_pk + s
@@ -76,6 +94,7 @@ class Calculations:
              root_seed: bytes | None = None,
              salt: bytes | None = None
              ):
+        """Run CROSS signing and collect firmware-relevant intermediate values."""
         c = self.cross
 
         if seed_sk is None and pk is None:
@@ -148,21 +167,19 @@ class Calculations:
                                         c.params.salt_length_bytes)
             offset_salt = c.params.densely_packed_fp_syn_size + c.params.densely_packed_fz_rsdp_g_vec_size
 
-        #cmt_0_i_input is syndrome || v_bar resp. v_G_bar || salt ; place salt at the end
-        #write salt in cmt_0_i_input start: offset_salt end: ofset_salt+salt length_bytes
+        # cmt_0_i_input is syndrome || v_bar resp. v_G_bar || salt
         cmt_0_i_input[offset_salt : offset_salt + c.params.salt_length_bytes] = salt
 
         cmt_1_i_input = bytearray(c.params.seed_length_bytes + 
                                     c.params.salt_length_bytes)
 
-        # cmt_1_i_input is concat(seed,salt,round index + 2T-1)
+        # cmt_1_i_input = seed || salt
         cmt_1_i_input[c.params.seed_length_bytes : 
                         c.params.seed_length_bytes + 
                         c.params.salt_length_bytes] = salt
 
         for i in range(c.params.t):
-            #/* CSPRNG is fed with concat(seed,salt,round index) represented
-            # * as a 2 bytes little endian unsigned integer */
+            # csprng_input = seed || salt
             csprng_input = bytearray(c.params.seed_length_bytes +
                                         c.params.salt_length_bytes)
             csprng_input[0 : c.params.seed_length_bytes] = round_seeds[c.params.seed_length_bytes * i : 
@@ -172,10 +189,10 @@ class Calculations:
                             c.params.salt_length_bytes] = salt
 
             domain_sep_csprng = c.params.csprng_domain_sep_const + i + (2 * c.params.t -1)
-            # /* expand seed[i] into seed_e and seed_u */
+            # expand seed[i] into seed_e and seed_u
             csprng_state = c.subfunctions.csprng_initialize(csprng_input, domain_sep_csprng)
      
-            #/* expand e_bar_prime */
+            # expand e_bar_prime
             if c.params.algorithm == "RSDP":
                 e_bar_prime_i = c.subfunctions.csprng_fz_vec(csprng_state)
                 e_bar_prime_replay.append(e_bar_prime_i)
@@ -205,12 +222,12 @@ class Calculations:
             # convert_restr_vec_to_fp
             v = c.subfunctions.convert_restr_vec_to_fp(v_bar_i)
             result.convert_restr_vec_to_fp.v.append(v)
-            #fz_dz_norm_n
+            # fz_dz_norm_n
             v_bar_i = c.subfunctions.fz_dz_norm_n(v_bar_i)
             result.fz_dz_norm_n.v_bar_out.append(v_bar_i)
             v_bar_replay.append(v_bar_i) 
 
-            #/* expand u_prime */
+            # expand u_prime
             u_prime_i = c.subfunctions.csprng_fp_vec(csprng_state)
             u_prime_replay.append(u_prime_i)
 
@@ -218,7 +235,7 @@ class Calculations:
             u = c.subfunctions.fp_vec_by_fp_vec_pointwise(v, u_prime_i)
             result.fp_vec_by_fp_vec_pointwise.u.append(u)
             result.fp_vec_by_fp_vec_pointwise.u_prime.append(u_prime_i)
-            #fp_vec_by_fp_matrix
+            # fp_vec_by_fp_matrix
             s_prime = c.subfunctions.fp_vec_by_fp_matrix(u, V_tr)
             result.fp_vec_by_fp_matrix.s_prime.append(s_prime)
 
@@ -226,7 +243,7 @@ class Calculations:
 
             # pack_fp_syn
             packed_s_prime = c.subfunctions.pack_fp_syn(s_prime)
-            # /* cmt_0_i_input contains s_prime || v_bar resp. v_G_bar || salt */
+            # cmt_0_i_input contains s_prime || v_bar resp. v_G_bar || salt
             cmt_0_i_input[0 : c.params.densely_packed_fp_syn_size] = packed_s_prime
             result.pack_fp_syn.s_prime_in.append(s_prime)
             result.pack_fp_syn.s_prime_out.append(packed_s_prime)
@@ -239,13 +256,13 @@ class Calculations:
                 #                          s_prime || v_bar or v_G_bar || salt
                 cmt_0_i_input[c.params.densely_packed_fp_syn_size : c.params.densely_packed_fp_syn_size + c.params.densely_packed_fz_vec_size] = packed_v_bar_i
             elif c.params.algorithm == "RSDPG":
-                #pack_fz_rsdp_g_vec
+                # pack_fz_rsdp_g_vec
                 packed_v_G_bar = c.subfunctions.pack_fz_rsdp_g_vec(v_G_bar_i)
                 result.pack_fz_rsdp_g_vec.v_G_bar_out.append(packed_v_G_bar)
                 # cmt_0_i_input looks like DENSELY_PACKED_FP_SYN_SIZE + DENSELY_PACKED_FZ_RSDP_G_VEC_SIZE+ SALT_LENGTH_BYTES
                 #                          s_prime || v_bar or v_G_bar || salt
                 cmt_0_i_input[c.params.densely_packed_fp_syn_size : c.params.densely_packed_fp_syn_size + c.params.densely_packed_fz_rsdp_g_vec_size] = packed_v_G_bar
-            #/* Fixed endianness marshalling of round counter */
+
             domain_sep_hash = c.params.hash_domain_sep_const + i + (2 * c.params.t - 1)
 
             cmt_0.extend(c.subfunctions.hash(cmt_0_i_input, domain_sep_hash))
@@ -263,22 +280,22 @@ class Calculations:
         digest_cmt0_cmt1.extend(hash1)    
         digest_cmt = c.subfunctions.hash(digest_cmt0_cmt1, c.params.hash_domain_sep_const)
 
-        #/* first challenge extraction */
+        # first challenge extraction
         digest_msg_cmt_salt = bytearray()
-        #/* place digest_msg at the beginning of the input of the hash generating digest_chall_1 */
+
         digest_msg_cmt_salt.extend(c.subfunctions.hash(m, c.params.hash_domain_sep_const))
         digest_msg_cmt_salt.extend(digest_cmt)
         digest_msg_cmt_salt.extend(salt)
 
         digest_chall_1 = c.subfunctions.hash(digest_msg_cmt_salt, c.params.hash_domain_sep_const)
 
-        #// Domain separation unique for expanding chall_1
+        # Domain separation unique for expanding chall_1
         dsc_csprng_chall_1 = c.params.csprng_domain_sep_const + (3 * c.params.t -1)
             
         csprng_state = c.subfunctions.csprng_initialize(digest_chall_1, dsc_csprng_chall_1)
         chall_1 = c.subfunctions.csprng_fp_vec_chall_1(csprng_state)
 
-        #/* Computation of the first round of responses */
+        # Computation of the first round of responses
         # fp_vec_by_restr_vec_scaled
         result.fp_vec_by_restr_vec_scaled.chall_1 = chall_1
         y =[]
@@ -288,13 +305,13 @@ class Calculations:
 
             y.append(c.subfunctions.fp_dz_norm(y_i))
                 
-        # /* y vectors are packed before being hashed */
+        # y vectors are packed before being hashed
         y_digest_chall_1 = bytearray()
             
         for i in range(c.params.t):
             y_digest_chall_1.extend(c.subfunctions.pack_fp_vec(y[i]))
 
-        # /* Second challenge extraction */
+        # second challenge extraction
         y_digest_chall_1.extend(digest_chall_1)
 
         digest_chall_2 = c.subfunctions.hash(y_digest_chall_1, c.params.hash_domain_sep_const)
@@ -304,7 +321,7 @@ class Calculations:
         chall_2 = c.subfunctions.expand_digest_to_fixed_weight(digest_chall_2)
         result.expand_digest_to_fixed_weight.chall_2 = chall_2
 
-        #/* Computation of the second round of responses */
+        # Computation of the second round of responses
         _, proof = c.subfunctions.tree_proof(merkle_tree_0, chall_2)
         _, path  = c.subfunctions.seed_path(seed_tree, chall_2)
 
@@ -327,8 +344,7 @@ class Calculations:
         #  Cross sign end
         # ------------------------------------------------------------------------
 
-        # calculate offsets for signature 
-        # expected: salt || digest_cmt || digest_chall_2 || path || proof || resp_1 || resp_0
+        # Signature: salt || digest_cmt || digest_chall_2 || path || proof || resp_1 || resp_0
         salt_offset           = 0
         digest_cmt_offset     = salt_offset + len(salt)
         digest_chall_2_offset = digest_cmt_offset + len(digest_cmt)
@@ -337,7 +353,6 @@ class Calculations:
         resp_1_offset         = proof_offset + len(proof)
         resp_0_offset         = resp_1_offset + len(resp_1)
 
-        # build signature from calculated inputs
         sig_bytes = bytearray(c.params.sig_size)
 
         sig_bytes[salt_offset : salt_offset + len(salt)] = salt

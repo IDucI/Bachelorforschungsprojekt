@@ -1,3 +1,11 @@
+"""Tests the CROSS Python implementation using C-generated test data.
+
+Key generation and signing are reconstructed step by step to validate the
+intermediate values stored by the calculation API. Additional tests generate
+Python signatures and check that they are accepted by the C implementation's
+CROSS_verify().
+"""
+
 import json
 from pathlib import Path
 from cross import Cross
@@ -13,7 +21,9 @@ build_dir = test_dir.parent / "build"
 sign_success_count = 0
 keygen_success_count = 0
 
+
 def keygen_test(c: Cross, data):
+    """Reconstruct key generation from C-generated test data and validate the stored intermediate values and public key."""
     global keygen_success_count
 
     seed_sk   = bytes.fromhex(data["seed_sk"])
@@ -21,13 +31,15 @@ def keygen_test(c: Cross, data):
 
     result = c.calculation.keygen(seed_sk)
     
+    # Expansion of sk->seed, explicit domain separation for CSPRNG
     dsc_csprng_seed_sk = c.params.csprng_domain_sep_const + (3 * c.params.t + 1)
 
     csprng_state = c.subfunctions.csprng_initialize(seed_sk, dsc_csprng_seed_sk)
     seed_e_seed_pk = c.subfunctions.csprng_randombytes(2*c.params.keypair_seed_length_bytes, csprng_state)
     seed_pk = seed_e_seed_pk[c.params.keypair_seed_length_bytes : 2 * c.params.keypair_seed_length_bytes]
 
-    # /* expansion of matrix/matrices */
+    # expansion of matrix/matrices
+    # expand_pk
     if c.params.algorithm == "RSDP":
         assert result.expand_pk.seed_pk == seed_pk
         V_tr = c.subfunctions.expand_pk(seed_pk)
@@ -38,8 +50,8 @@ def keygen_test(c: Cross, data):
         assert result.expand_pk.V_tr == V_tr
         assert result.expand_pk.W_mat == W_mat
         
-    # /* expansion of secret key material */ 
-    # /* Expansion of seede, explicit domain separation for CSPRNG */
+    # expansion of secret key material 
+    # Expansion of seede, explicit domain separation for CSPRNG
     dsc_csprng_seed_e = c.params.csprng_domain_sep_const + (3 * c.params.t + 3)
 
     csprng_state_e_bar = c.subfunctions.csprng_initialize(seed_e_seed_pk[: c.params.keypair_seed_length_bytes], dsc_csprng_seed_e)
@@ -47,34 +59,39 @@ def keygen_test(c: Cross, data):
     if c.params.algorithm == "RSDP":
         e_bar = c.subfunctions.csprng_fz_vec(csprng_state_e_bar)
     elif c.params.algorithm == "RSDPG":
+        # fz_inf_w_by_fz_matrix
         e_G_bar = c.subfunctions.csprng_fz_inf_w(csprng_state_e_bar)
         assert result.fz_inf_w_by_fz_matrix.W_mat == W_mat
         e_bar = c.subfunctions.fz_inf_w_by_fz_matrix(e_G_bar, W_mat)
         assert result.fz_inf_w_by_fz_matrix.e_bar == e_bar
         assert result.fz_inf_w_by_fz_matrix.e_G_bar == e_G_bar
-            
+
+        # fz_dz_norm_n
         assert result.fz_dz_norm_n.e_bar_in == e_bar
         e_bar = c.subfunctions.fz_dz_norm_n(e_bar)
         assert result.fz_dz_norm_n.e_bar_out == e_bar
 
+    # restr_vec_by_fp_matrix
     assert result.restr_vec_by_fp_matrix.e_bar == e_bar
     assert result.restr_vec_by_fp_matrix.V_tr == V_tr
     s = c.subfunctions.restr_vec_by_fp_matrix(e_bar, V_tr)
     assert result.restr_vec_by_fp_matrix.s == s
+
     s = c.subfunctions.fp_dz_norm_synd(s)
+    # pack_fp_syn
+    assert result.pack_fp_syn.s_in == s
     s = c.subfunctions.pack_fp_syn(s)
+    assert result.pack_fp_syn.s_out == s
 
     # Build public key as seed_pk || s
     public_key = seed_pk + s 
     assert result.pk == pk == public_key # compare calculation, C reference, and reconstructed public keys
 
     keygen_success_count += 1
-
-
-    
     
 
 def sign_test(c: Cross, data):
+    """Reconstruct signing from C-generated test data and validate the stored intermediate values and signature."""
     global sign_success_count
 
     m         = bytes.fromhex(data["m"])
@@ -87,9 +104,9 @@ def sign_test(c: Cross, data):
             
     sig = result.signature
 
-    # # ------------------------------------------------------------------------
-    # #  Cross sign
-    # # ------------------------------------------------------------------------
+     # ------------------------------------------------------------------------
+     #  Cross sign
+     # ------------------------------------------------------------------------
 
     # Intermediate values required for signature generation
     cmt_0 = []
@@ -132,21 +149,19 @@ def sign_test(c: Cross, data):
             
     assert salt == result.salt
 
-    #cmt_0_i_input is syndrome || v_bar resp. v_g_bar || salt ; place salt at the end
-    #write salt in cmt_0_i_input start: offset_salt end: ofset_salt+salt length_bytes
+    # cmt_0_i_input is syndrome || v_bar resp. v_G_bar || salt
     cmt_0_i_input[offset_salt : offset_salt + c.params.salt_length_bytes] = salt
 
     cmt_1_i_input = bytearray(c.params.seed_length_bytes + 
                                 c.params.salt_length_bytes)
 
-    # cmt_1_i_input is concat(seed,salt,round index + 2t-1)
+   # cmt_1_i_input = seed || salt
     cmt_1_i_input[c.params.seed_length_bytes : 
                     c.params.seed_length_bytes + 
                     c.params.salt_length_bytes] = salt
 
     for i in range(c.params.t):
-        #/* CSPRNG is fed with concat(seed,salt,round index) represented
-        # * as a 2 bytes little endian unsigned integer */
+        # csprng_input = seed || salt
         csprng_input = bytearray(c.params.seed_length_bytes +
                                     c.params.salt_length_bytes)
         csprng_input[0 : c.params.seed_length_bytes] = round_seeds[c.params.seed_length_bytes * i : 
@@ -156,10 +171,10 @@ def sign_test(c: Cross, data):
                         c.params.salt_length_bytes] = salt
 
         domain_sep_csprng = c.params.csprng_domain_sep_const + i + (2 * c.params.t -1)
-        # /* expand seed[i] into seed_e and seed_u */
+        # expand seed[i] into seed_e and seed_u
         csprng_state = c.subfunctions.csprng_initialize(csprng_input, domain_sep_csprng)
 
-        #/* expand e_bar_prime */
+        # expand e_bar_prime
         if c.params.algorithm == "RSDP":
             e_bar_prime_i = c.subfunctions.csprng_fz_vec(csprng_state)
             e_bar_prime_replay.append(e_bar_prime_i)
@@ -200,14 +215,14 @@ def sign_test(c: Cross, data):
         v = c.subfunctions.convert_restr_vec_to_fp(v_bar_i)
         assert v == result.convert_restr_vec_to_fp.v[i]
 
-        #fz_dz_norm_n
+        # fz_dz_norm_n
         assert v_bar_i == result.fz_dz_norm_n.v_bar_in[i]
         v_bar_i = c.subfunctions.fz_dz_norm_n(v_bar_i)
         assert v_bar_i == result.fz_dz_norm_n.v_bar_out[i]
         v_bar_replay.append(v_bar_i) 
 
 
-        #/* expand u_prime */
+        # expand u_prime 
         u_prime_i = c.subfunctions.csprng_fp_vec(csprng_state)
         u_prime_replay.append(u_prime_i)
 
@@ -217,7 +232,7 @@ def sign_test(c: Cross, data):
         u = c.subfunctions.fp_vec_by_fp_vec_pointwise(v, u_prime_i)
         assert u == result.fp_vec_by_fp_vec_pointwise.u[i]
 
-        #fp_vec_by_fp_matrix
+        # fp_vec_by_fp_matrix
         assert u == result.fp_vec_by_fp_matrix.u[i]
         assert V_tr == result.fp_vec_by_fp_matrix.V_tr
         s_prime = c.subfunctions.fp_vec_by_fp_matrix(u, V_tr)
@@ -225,7 +240,7 @@ def sign_test(c: Cross, data):
 
         s_prime = c.subfunctions.fp_dz_norm_synd(s_prime)
 
-        # /* cmt_0_i_input contains s_prime || v_bar resp. v_G_bar || salt */
+        # cmt_0_i_input contains s_prime || v_bar resp. v_G_bar || salt
         # pack_fp_syn
         assert s_prime == result.pack_fp_syn.s_prime_in[i]
         packed_s_prime = c.subfunctions.pack_fp_syn(s_prime)
@@ -250,7 +265,6 @@ def sign_test(c: Cross, data):
             #                          s_prime || v_bar or v_G_bar || salt
             cmt_0_i_input[c.params.densely_packed_fp_syn_size : c.params.densely_packed_fp_syn_size + c.params.densely_packed_fz_rsdp_g_vec_size] = packed_v_G_bar_i
 
-        #/* Fixed endianness marshalling of round counter */
         domain_sep_hash = c.params.hash_domain_sep_const + i + (2 * c.params.t - 1)
 
         cmt_0.extend(c.subfunctions.hash(cmt_0_i_input, domain_sep_hash))
@@ -268,22 +282,22 @@ def sign_test(c: Cross, data):
     digest_cmt0_cmt1.extend(hash1)    
     digest_cmt = c.subfunctions.hash(digest_cmt0_cmt1, c.params.hash_domain_sep_const)
 
-    #/* first challenge extraction */
+    # first challenge extraction
     digest_msg_cmt_salt = bytearray()
-    #/* place digest_msg at the beginning of the input of the hash generating digest_chall_1 */
+
     digest_msg_cmt_salt.extend(c.subfunctions.hash(m, c.params.hash_domain_sep_const))
     digest_msg_cmt_salt.extend(digest_cmt)
     digest_msg_cmt_salt.extend(salt)
 
     digest_chall_1 = c.subfunctions.hash(digest_msg_cmt_salt, c.params.hash_domain_sep_const)
 
-    #// Domain separation unique for expanding chall_1
+    # Domain separation unique for expanding chall_1
     dsc_csprng_chall_1 = c.params.csprng_domain_sep_const + (3 * c.params.t -1)
             
     csprng_state = c.subfunctions.csprng_initialize(digest_chall_1, dsc_csprng_chall_1)
     chall_1 = c.subfunctions.csprng_fp_vec_chall_1(csprng_state)
 
-    #/* Computation of the first round of responses */
+    # Computation of the first round of responses
     y =[]
     for i in range(c.params.t):
         # fp_vec_by_restr_vec_scaled
@@ -295,13 +309,13 @@ def sign_test(c: Cross, data):
 
         y.append(c.subfunctions.fp_dz_norm(y_i))
                 
-    # /* y vectors are packed before being hashed */
+    # y vectors are packed before being hashed
     y_digest_chall_1 = bytearray()
             
     for i in range(c.params.t):
         y_digest_chall_1.extend(c.subfunctions.pack_fp_vec(y[i]))
 
-    # /* Second challenge extraction */
+    # Second challenge extraction
     y_digest_chall_1.extend(digest_chall_1)
 
     digest_chall_2 = c.subfunctions.hash(y_digest_chall_1, c.params.hash_domain_sep_const)
@@ -311,7 +325,7 @@ def sign_test(c: Cross, data):
     chall_2 = c.subfunctions.expand_digest_to_fixed_weight(digest_chall_2)
     assert chall_2 == result.expand_digest_to_fixed_weight.chall_2
 
-    #/* Computation of the second round of responses */
+    # Computation of the second round of responses
     _, proof = c.subfunctions.tree_proof(merkle_tree_0, chall_2)
     _, path  = c.subfunctions.seed_path(seed_tree, chall_2)
 
@@ -334,8 +348,7 @@ def sign_test(c: Cross, data):
     #  Cross sign end
     # ------------------------------------------------------------------------
 
-    # calculate offsets for signature 
-    # expected: salt || digest_cmt || digest_chall_2 || path || proof || resp_1 || resp_0
+    # Signature: salt || digest_cmt || digest_chall_2 || path || proof || resp_1 || resp_0
     salt_offset           = 0
     digest_cmt_offset     = salt_offset + len(salt)
     digest_chall_2_offset = digest_cmt_offset + len(digest_cmt)
@@ -344,7 +357,6 @@ def sign_test(c: Cross, data):
     resp_1_offset         = proof_offset + len(proof)
     resp_0_offset         = resp_1_offset + len(resp_1)
 
-    # build signature from calculated inputs
     sig_bytes = bytearray(c.params.sig_size)
 
     sig_bytes[salt_offset : salt_offset + len(salt)] = salt
@@ -362,9 +374,11 @@ def sign_test(c: Cross, data):
     assert c.verify(pk, m, sig)  # verify signature validity
     sign_success_count += 1
 
+
 c_verify_input = {}  # stores message, public_key, and signature generated through the high-level and calculation APIs for later verification in C
 
 def high_level_api_to_c_test(c: Cross):
+    """Generate key and signature data through the high-level API for validation by C CROSS_verify()."""
     seed_sk, pk = c.keygen()
 
     length = secrets.randbelow(10000) + 1
@@ -378,7 +392,9 @@ def high_level_api_to_c_test(c: Cross):
         "signature": sig.hex(),
     }
 
+
 def calculation_api_to_c_test(c: Cross):
+    """Generate key and signature data through the calculation API for validation by C CROSS_verify()."""
     keygen_result = c.calculation.keygen()
     pk = keygen_result.pk
     seed_sk = keygen_result.seed_sk
@@ -394,6 +410,7 @@ def calculation_api_to_c_test(c: Cross):
         "public_key": pk.hex(),
         "signature": sig.hex(),
     }
+
 
 print("Start testing ...")
 for algorithm in algorithms:
@@ -414,18 +431,22 @@ for algorithm in algorithms:
             sign_test(c, data)
             keygen_test(c, data)
 
+            # Generate Python test data for later verification by C CROSS_verify()
             variant = f"cross_{algorithm.lower()}_{category}_{optimization}"
             c_verify_input[variant] = {
                 "high_level_api": [],
                 "calculation_api": []
             }
+
             for _ in range(1):
                 c_verify_input[variant]["high_level_api"].append(high_level_api_to_c_test(c))
                 c_verify_input[variant]["calculation_api"].append(calculation_api_to_c_test(c))
 
+# Store Python-generated test data for the C verification test
 with open(test_dir / "c_verify_py.json", "w") as f:
     json.dump(c_verify_input, f, indent=4)
 
+# Report overall test results
 if sign_success_count == 18:
     print("\033[92mAll sign tests passed.\033[0m")
 else:

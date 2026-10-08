@@ -16,6 +16,7 @@ if str(libcross_dir) not in sys.path:
     sys.path.insert(0, str(libcross_dir))
 
 from cross import Cross
+from cross.cross_calculations import SignCalculationResult, KeygenCalculationResult
 
 # =============================================================================
 # Parameter setup and other important declarations
@@ -59,6 +60,7 @@ print(f"Random seed: {random_seed}")
 subroutine_convert_restr_vec_to_fp          = 0x03
 subroutine_restr_vec_by_fp_matrix           = 0x04 
 subroutine_pack_fz_vec                      = 0x05
+subroutine_pack_fz_rsdp_g_vec               = 0x05
 subroutine_pack_fp_syn                      = 0x06
 subroutine_fz_vec_sub_n                     = 0x07
 subroutine_fp_vec_by_fp_matrix              = 0x08
@@ -220,18 +222,36 @@ def random_bytes(rng, length):
     """
     return bytes(rng.randrange(256) for _ in range(length)) 
 
+def intermediate_results(c: Cross, rng):
+        """
+        Generate the reference intermediate values used by the board tests.
+
+        A key-generation result and a signing result are created so that the
+        corresponding intermediate values can be used by the individual tests.
+        """
+        keygen = c.calculation.keygen()
+        
+        message = random_bytes(rng, 32)
+
+        sign = c.calculation.sign(message)
+
+        return keygen, sign
+
+# Convert Python integer lists to the byte representation expected by the firmware interface.
+# The required element width depends on whether the values represent FZ_ELEM or FP_ELEM.
+def fz_to_bytes(values):
+    # FZ_ELEM is uint8_t for both RSDP and RSDPG.
+    return bytes(values)
+
 
 def fp_to_bytes(values, c):
-    """
-    Convert field elements to the byte representation used by the firmware.
-    RSDP uses one byte per field element, while RSDP-(G) uses two little-endian bytes per field element.
-    """
-    if c.params.algorithm == "RSDPG":
-        out = bytearray()
-        for value in values:
-            out.extend(int(value).to_bytes(2, "little"))
-        return bytes(out)
-    return bytes(int(value) & 0xFF for value in values)
+    # FP_ELEM is uint8_t for RSDP and uint16_t for RSDPG.
+    byte_length = 2 if c.params.algorithm == "RSDPG" else 1
+
+    return b"".join(
+        int(value).to_bytes(byte_length, "little")
+        for value in values
+    )
 
 
 def test_intermediate_values(
@@ -253,12 +273,18 @@ def test_intermediate_values(
         )
     # Test every reference input/output pair.
     for round_index, (inp, expected) in enumerate(zip(inputs, outputs)):
+        if not isinstance(inp, bytes):
+            raise TypeError(f"{name}: input must be serialized to bytes")
+        
+        if not isinstance(expected, bytes):
+            raise TypeError(f"{name}: output must be serialized to bytes")
+
         # Send the reference input to the STM32 and execute the selected firmware subroutine.
         # The output may be larger than one SimpleSerial packet, therefore it is received in multiple chunks.
         actual = board_run_chunked_subroutine(
             target,
             subroutine_id,
-            bytes(inp),
+            inp,
             len(expected),
             output_chunk_size
         )
@@ -310,24 +336,21 @@ def compare(name, expected, actual):
 # Subroutine test cases
 # =============================================================================
 
-def test_intermediate_convert_restr_vec_to_fp(target, c, rng):
+def test_intermediate_convert_restr_vec_to_fp(target, c: Cross, result: SignCalculationResult, i):
     """
-    Test `convert_restr_vec_to_fp` using an intermediate value from the CROSS key-generation procedure.
-    The input is the restricted vector e_bar produced during key generation.
-    The expected output is the corresponding vector s after conversion to FP.
+    Test `convert_restr_vec_to_fp` using an intermediate value from the CROSS signing procedure.
+    The input is the restricted vector v_bar.
+    The expected output is the corresponding vector v after conversion to FP.
     """
-    # Generate the secret-key seed used for the reference execution.
-    seed_sk = random_bytes(rng, c.params.keypair_seed_length_bytes)
+    c_v_bar = result.convert_restr_vec_to_fp.v_bar[i]
+    c_v = result.convert_restr_vec_to_fp.v[i]
 
-    # Execute CROSS key generation with the Python reference implementation.
-    keygen_result = c.calculation.keygen(seed_sk)
+    # Input: FZ_ELEM v_bar[N]
+    inputs = [fz_to_bytes(c_v_bar)]
 
-    # e_bar is the actual input used by the reference implementation.
-    # s is the resulting output after the relevant key-generation step.
-    inputs = [keygen_result.fz_dz_norm_n.e_bar_in]
-    outputs = [keygen_result.restr_vec_by_fp_matrix.s]
-
-    # Send the reference input to the board and compare its output against the reference result.
+    # Output: FP_ELEM v[N]
+    outputs = [fp_to_bytes(c_v, c)]
+    
     test_intermediate_values(
         target,
         subroutine_convert_restr_vec_to_fp,
@@ -337,150 +360,72 @@ def test_intermediate_convert_restr_vec_to_fp(target, c, rng):
     )
 
 
-def test_intermediate_restr_vec_by_fp_matrix(target, c, rng):
+def test_intermediate_restr_vec_by_fp_matrix(target, c: Cross, result: KeygenCalculationResult):
     """
-    Test `restr_vec_by_fp_matrix` with the actual intermediate values generated during CROSS key generation.
-    The subroutine receives: restricted vector e_bar, converted to FP representation, the public/secret matrix V_tr
+    Test `restr_vec_by_fp_matrix` with the actual intermediate values
+    generated during CROSS key generation.
+    
+    The subroutine receives the restricted vector e_bar and the matrix V_tr
     and produces the syndrome vector s.
     """
-    # Generate a fresh secret-key seed for the reference execution.
-    seed_sk = random_bytes(rng, c.params.keypair_seed_length_bytes)
+    c_e_bar = result.restr_vec_by_fp_matrix.e_bar
+    c_V_tr = result.restr_vec_by_fp_matrix.V_tr
+    c_s = result.restr_vec_by_fp_matrix.s
 
-    # Run key generation in the Python reference implementation.
-    keygen_result = c.calculation.keygen(seed_sk)
+    # Input: FZ_ELEM e_bar[N] || FP_ELEM V_tr[K][N-K]
+    inputs = [fz_to_bytes(c_e_bar) + fp_to_bytes(c_V_tr, c)]
 
-    # The reference subroutine receives e_bar and V_tr.
-    inputs = [(keygen_result.fz_dz_norm_n.e_bar_in, keygen_result.restr_vec_by_fp_matrix.V_tr)]
-
-    # s is the expected result of the matrix operation.
-    outputs = [keygen_result.restr_vec_by_fp_matrix.s]
-
-    converted_inputs = []
-
-    for e_bar, V_tr in inputs:
-        # The board interface works with raw bytes.
-        # e_bar itself is an FZ vector, but the firmware subroutine expects the converted FP representation.
-        # V_tr is already an FP matrix and therefore also needs the FP-specific byte representation.
-        converted_inputs.append(
-            fp_to_bytes(c.subfunctions.convert_restr_vec_to_fp(e_bar), c)
-            + fp_to_bytes(V_tr, c)
-        )
+    # Output: FP_ELEM s[N-K].
+    outputs = [fp_to_bytes(c_s, c)]
 
     test_intermediate_values(
         target,
         subroutine_restr_vec_by_fp_matrix,
         "restr_vec_by_fp_matrix",
-        converted_inputs,
-        [fp_to_bytes(x, c) for x in outputs]
-    )
-
-
-def test_intermediate_pack_fz_vec(target, c, rng):
-    """
-    Test `pack_fz_vec` using the vector that occurs during CROSS signing.
-    The subroutine converts an FZ vector into the compact byte representation used inside the signature.
-    """
-    # Generate the input data required for a real signing execution.
-    seed_sk = random_bytes(rng, c.params.keypair_seed_length_bytes)
-    message = random_bytes(rng, 32)
-
-    root_seed = random_bytes(rng, c.params.seed_length_bytes)
-    salt = random_bytes(rng, c.params.salt_length_bytes)
-
-    # Key generation is required because signing needs the public key.
-    keygen_result = c.calculation.keygen(seed_sk)
-
-    result = c.calculation.sign(
-        message,
-        seed_sk = seed_sk,
-        pk = keygen_result.pk,
-        root_seed = root_seed,
-        salt = salt
-    )
-
-    inputs = [result.pack_fz_vec.v_bar_in]
-    outputs = [result.pack_fz_vec.v_bar_out]
-
-    test_intermediate_values(
-        target,
-        subroutine_pack_fz_vec,
-        "pack_fz_vec",
-        [bytes(x) for x in inputs],
+        inputs,
         outputs
     )
 
 
-def test_intermediate_pack_fp_syn(target, c, rng):
+def test_intermediate_pack_fp_syn(target, c: Cross, result: SignCalculationResult, i):
     """
-    Test `pack_fp_syn` with the syndrome generated during signing.
-    The input is an FP syndrome vector and the output is its densely packed byte representation.
+    Test `pack_fp_syn` using an intermediate value from the CROSS signing procedure.
+    The input is the FP syndrome vector s_prime.
+    The expected output is its densely packed byte representation.
     """
-    seed_sk = random_bytes(rng, c.params.keypair_seed_length_bytes)
-    message = random_bytes(rng, 32)
+    c_s_prime_in = result.pack_fp_syn.s_prime_in[i]
+    c_s_prime_out = result.pack_fp_syn.s_prime_out[i]
 
-    root_seed = random_bytes(rng, c.params.seed_length_bytes)
-    salt = random_bytes(rng, c.params.salt_length_bytes)
+    # Input: FP_ELEM s_prime[N-K]
+    inputs = [fp_to_bytes(c_s_prime_in, c)]
 
-    # Generate the public key required for signing.
-    keygen_result = c.calculation.keygen(seed_sk)
-
-    # Run the reference signing procedure.
-    result = c.calculation.sign(
-        message,
-        seed_sk = seed_sk,
-        pk = keygen_result.pk,
-        root_seed = root_seed,
-        salt = salt
-    )
-
-    # s_prime is the FP syndrome that is passed to the packing routine.
-    inputs = [result.pack_fp_syn.s_prime_in]
-
-    # s_prime_out is the expected packed representation.
-    outputs = [result.pack_fp_syn.s_prime_out]
+    # Output: uint8_t out[DENSELY_PACKED_FP_SYN_SIZE]
+    outputs = [bytes(c_s_prime_out)]
 
     test_intermediate_values(
         target,
         subroutine_pack_fp_syn,
         "pack_fp_syn",
-        [fp_to_bytes(x, c) for x in inputs],
+        inputs,
         outputs
     )
 
 
-def test_intermediate_fz_vec_sub_n(target, c, rng):
+def test_intermediate_fz_vec_sub_n(target, c: Cross, result: SignCalculationResult, i):
     """
-    Test `fz_vec_sub_n`. This operation corresponds to the subtraction e_bar - y, inside CROSS_sign.
-    Both operands are N-dimensional restricted vectors.
+    Test `fz_vec_sub_n` using intermediate values from the CROSS signing procedure.
+    The inputs are the restricted vectors e_bar and e_bar_prime.
+    The expected output is the resulting restricted vector v_bar.
     """
-    seed_sk = random_bytes(rng, c.params.keypair_seed_length_bytes)
-    message = random_bytes(rng, 32)
+    c_e_bar = result.fz_vec_sub_n.e_bar
+    c_e_bar_prime = result.fz_vec_sub_n.e_bar_prime[i]
+    c_v_bar = result.fz_vec_sub_n.v_bar[i]
 
-    root_seed = random_bytes(rng, c.params.seed_length_bytes)
-    salt = random_bytes(rng, c.params.salt_length_bytes)
+    # Input: FZ_ELEM e_bar[N] || FZ_ELEM e_bar_prime[N]
+    inputs = [fz_to_bytes(c_e_bar) + fz_to_bytes(c_e_bar_prime)]
 
-    # Generate the public key and execute the reference signing procedure.
-    keygen_result = c.calculation.keygen(seed_sk)
-
-    result = c.calculation.sign(
-        message,
-        seed_sk = seed_sk,
-        pk = keygen_result.pk,
-        root_seed = root_seed,
-        salt = salt
-    )
-
-    # e_bar comes from the secret-key expansion.
-    # y is the vector generated by fp_vec_by_restr_vec_scaled.
-    # The reference implementation stores the result of e_bar - y
-    e_bar = result.expand_sk.e_bar
-    y = result.fp_vec_by_restr_vec_scaled.y
-
-    expected = result.fz_vec_sub_n.e_bar_prime
-
-    inputs = [bytes(e_bar) + bytes(y)]
-
-    outputs = [bytes(expected)]
+    # Output: FZ_ELEM v_bar[N]
+    outputs = [fz_to_bytes(c_v_bar)]
 
     test_intermediate_values(
         target,
@@ -491,33 +436,21 @@ def test_intermediate_fz_vec_sub_n(target, c, rng):
     )
 
 
-def test_intermediate_fp_vec_by_fp_matrix(target, c, rng):
+def test_intermediate_fp_vec_by_fp_matrix(target, c: Cross, result: SignCalculationResult, i):
     """
-    Test `fp_vec_by_fp_matrix` using the intermediate values generated during CROSS signing.
-    The operation takes: an FP vector, the matrix V_tr and produces the FP vector s_prime.
+    Test `fp_vec_by_fp_matrix` using intermediate values from the CROSS signing procedure.
+    The inputs are the FP vector u and the matrix V_tr.
+    The expected output is the resulting FP syndrome vector s_prime.
     """
-    seed_sk = random_bytes(rng, c.params.keypair_seed_length_bytes)
-    message = random_bytes(rng, 32)
+    c_u = result.fp_vec_by_fp_matrix.u[i]
+    c_V_tr = result.fp_vec_by_fp_matrix.V_tr
+    c_s_prime = result.fp_vec_by_fp_matrix.s_prime[i]
 
-    root_seed = random_bytes(rng, c.params.seed_length_bytes)
-    salt = random_bytes(rng, c.params.salt_length_bytes)
+    # Input: FP_ELEM u[N] || FP_ELEM V_tr[K][N-K]
+    inputs = [fp_to_bytes(c_u, c) + fp_to_bytes(c_V_tr, c)]
 
-    keygen_result = c.calculation.keygen(seed_sk)
-
-    result = c.calculation.sign(
-        message,
-        seed_sk = seed_sk,
-        pk = keygen_result.pk,
-        root_seed = root_seed,
-        salt = salt
-    )
-    # Both u and V_tr are intermediate values of the real signing execution.
-    inputs = [
-        fp_to_bytes(result.fp_vec_by_fp_matrix.u, c)
-        + fp_to_bytes(result.fp_vec_by_fp_matrix.V_tr, c)
-    ]
-    # s_prime is the expected matrix-operation result.
-    outputs = [fp_to_bytes(result.fp_vec_by_fp_matrix.s_prime, c)]
+    # Output: FP_ELEM s_prime[N-K]
+    outputs = [fp_to_bytes(c_s_prime, c)]
 
     test_intermediate_values(
         target,
@@ -528,33 +461,20 @@ def test_intermediate_fp_vec_by_fp_matrix(target, c, rng):
     )
 
 
-def test_intermediate_fp_vec_by_fp_vec_pointwise(target, c, rng):
+def test_intermediate_fp_vec_by_fp_vec_pointwise(target, c:Cross, result: SignCalculationResult, i):
     """
-    Test `fp_vec_by_fp_vec_pointwise`. The operation performs a coordinate-wise multiplication of
-    two FP vectors: u = u_prime * v. 
+    Test `fp_vec_by_fp_vec_pointwise` using intermediate values from the CROSS signing procedure.
+    The inputs are the FP vectors u_prime and v.
+    The expected output is the resulting FP vector u.
     """
-    seed_sk = random_bytes(rng, c.params.keypair_seed_length_bytes)
-    message = random_bytes(rng, 32)
+    c_u_prime = result.fp_vec_by_fp_vec_pointwise.u_prime[i]
+    c_v = result.fp_vec_by_fp_vec_pointwise.v[i]
+    c_u = result.fp_vec_by_fp_vec_pointwise.u[i]
+    # Input: FP_ELEM u_prime[N] || FP_ELEM v[N]
+    inputs = [fp_to_bytes(c_u_prime, c) + fp_to_bytes(c_v, c)]
 
-    root_seed = random_bytes(rng, c.params.seed_length_bytes)
-    salt = random_bytes(rng, c.params.salt_length_bytes)
-
-    keygen_result = c.calculation.keygen(seed_sk)
-
-    result = c.calculation.sign(
-        message,
-        seed_sk = seed_sk,
-        pk = keygen_result.pk,
-        root_seed = root_seed,
-        salt = salt
-    )
-
-    inputs = [
-        fp_to_bytes(result.fp_vec_by_fp_vec_pointwise.u_prime, c)
-        + fp_to_bytes(result.fp_vec_by_fp_vec_pointwise.v, c)
-    ]
-
-    outputs = [fp_to_bytes(result.fp_vec_by_fp_vec_pointwise.u, c)]
+    # Output: FP_ELEM u[N]
+    outputs = [fp_to_bytes(c_u, c)]
 
     test_intermediate_values(
         target,
@@ -565,34 +485,23 @@ def test_intermediate_fp_vec_by_fp_vec_pointwise(target, c, rng):
     )
 
 
-def test_intermediate_fp_vec_by_restr_vec_scaled(target, c, rng):
+def test_intermediate_fp_vec_by_restr_vec_scaled(target, c: Cross, result: SignCalculationResult, i):
     """
-    Test `fp_vec_by_restr_vec_scaled`. This is the operation that produces y during CROSS signing.
-    The board receives: e_bar_prime, challenge_1, u_prime and must reproduce the reference vector y.
+    Test `fp_vec_by_restr_vec_scaled` using intermediate values from the CROSS signing procedure.
+    The inputs are the restricted vector e_bar_prime, the challenge value chall_1
+    and the FP vector u_prime.
+    The expected output is the resulting FP vector y.
     """
-    seed_sk = random_bytes(rng, c.params.keypair_seed_length_bytes)
-    message = random_bytes(rng, 32)
+    c_e_bar_prime = result.fp_vec_by_restr_vec_scaled.e_bar_prime[i]
+    c_chall_1 = result.fp_vec_by_restr_vec_scaled.chall_1[i]
+    c_u_prime = result.fp_vec_by_restr_vec_scaled.u_prime[i]
+    c_y = result.fp_vec_by_restr_vec_scaled.y[i]
 
-    root_seed = random_bytes(rng, c.params.seed_length_bytes)
-    salt = random_bytes(rng, c.params.salt_length_bytes)
+    # Input: FZ_ELEM e_bar_prime[N] || FP_ELEM chall_1 || FP_ELEM u_prime[N]
+    inputs = [fz_to_bytes(c_e_bar_prime) + fp_to_bytes([c_chall_1] ,c) + fp_to_bytes(c_u_prime, c)]
 
-    keygen_result = c.calculation.keygen(seed_sk)
-
-    result = c.calculation.sign(
-        message,
-        seed_sk = seed_sk,
-        pk = keygen_result.pk,
-        root_seed = root_seed,
-        salt = salt
-    )
-     # Build the exact input expected by the firmware.
-    inputs = [
-        bytes(result.fp_vec_by_restr_vec_scaled.e_bar_prime)
-        + bytes([result.fp_vec_by_restr_vec_scaled.chall_1])
-        + fp_to_bytes(result.fp_vec_by_restr_vec_scaled.u_prime, c)
-    ]
-    # y is the expected result of the scaled vector operation.
-    outputs = [fp_to_bytes(result.fp_vec_by_restr_vec_scaled.y, c)]
+    # Output: FP_ELEM y[N]
+    outputs = [fp_to_bytes(c_y, c)]
 
     test_intermediate_values(
         target,
@@ -603,31 +512,20 @@ def test_intermediate_fp_vec_by_restr_vec_scaled(target, c, rng):
     )
 
 
-def test_intermediate_expand_digest_to_fixed_weight(target, c, rng):
+def test_intermediate_expand_digest_to_fixed_weight(target, c: Cross, result: SignCalculationResult):
     """
-    Test `expand_digest_to_fixed_weight`. The input is the digest used to derive challenge_2.
-    The output is the fixed-weight challenge vector.
+    Test `expand_digest_to_fixed_weight` using intermediate values from the CROSS signing procedure.
+    The input is the digest_chall_2.
+    The expected output is the resulting fixed-weight challenge vector chall_2.
     """
-    seed_sk = random_bytes(rng, c.params.keypair_seed_length_bytes)
-    message = random_bytes(rng, 32)
+    c_digest_chall_2 = result.expand_digest_to_fixed_weight.digest_chall_2
+    c_chall_2 = result.expand_digest_to_fixed_weight.chall_2
 
-    root_seed = random_bytes(rng, c.params.seed_length_bytes)
-    salt = random_bytes(rng, c.params.salt_length_bytes)
+    # Input: uint8_t digest_chall_2[HASH_DIGEST_LENGTH]
+    inputs = [c_digest_chall_2]
 
-    keygen_result = c.calculation.keygen(seed_sk)
-
-    result = c.calculation.sign(
-        message,
-        seed_sk = seed_sk,
-        pk = keygen_result.pk,
-        root_seed = root_seed,
-        salt = salt
-    )
-    # The digest is the actual input used by the reference implementation
-    inputs = [result.expand_digest_to_fixed_weight.digest_chall_2]
-
-    # chall_2 is the resulting fixed-weight challenge vector.
-    outputs = [bytes(result.expand_digest_to_fixed_weight.chall_2)]
+    # Output: uint8_t chall_2[T]
+    outputs = [bytes(c_chall_2)]
 
     test_intermediate_values(
         target,
@@ -638,35 +536,20 @@ def test_intermediate_expand_digest_to_fixed_weight(target, c, rng):
     )
 
 
-def test_intermediate_fz_dz_norm_n(target, c, rng):
+def test_intermediate_fz_dz_norm_n(target, c: Cross, result: SignCalculationResult, i):
     """
-    Test `fz_dz_norm_n`. The input and expected output are taken directly from the signing reference execution.
+    Test `fz_dz_norm_n` using intermediate values from the CROSS signing procedure.
+    The input is the restricted vector v_bar before normalization.
+    The expected output is the resulting normalized restricted vector v_bar.
     """
-    seed_sk = random_bytes(rng, c.params.keypair_seed_length_bytes)
+    c_v_bar_in = result.fz_dz_norm_n.v_bar_in[i]
+    c_v_bar_out = result.fz_dz_norm_n.v_bar_out[i]
 
-    message = random_bytes(rng, 32)
+    # Input: FZ_ELEM v_bar_in[N]
+    inputs = [fz_to_bytes(c_v_bar_in)]
 
-    root_seed = random_bytes(rng, c.params.seed_length_bytes)
-
-    salt = random_bytes(rng, c.params.salt_length_bytes)
-
-    keygen_result = c.calculation.keygen(seed_sk)
-
-    pk = keygen_result.pk
-
-    result = c.calculation.sign(
-        message,
-        seed_sk = seed_sk,
-        pk = pk,
-        root_seed = root_seed,
-        salt = salt
-    )
-
-    # v_bar_in is the vector before normalization.
-    # v_bar_out is the canonical/normalized representation produced by the reference implementation.
-    inputs = result.fz_dz_norm_n.v_bar_in
-    outputs = result.fz_dz_norm_n.v_bar_out
-
+    # Output: FZ_ELEM v_bar_out[N]
+    outputs = [fz_to_bytes(c_v_bar_out)]
     test_intermediate_values(
         target,
         subroutine_fz_dz_norm_n,
@@ -676,33 +559,25 @@ def test_intermediate_fz_dz_norm_n(target, c, rng):
     )
 
 
-def test_intermediate_expand_pk(target, c, rng):
+def test_intermediate_expand_pk(target, c: Cross, result: KeygenCalculationResult):
     """
-    Test `expand_pk`. expand_pk reconstructs the public matrix/matrices from seed_pk.
-    RSDP: seed_pk -> V_tr
-    RSDPG: seed_pk -> V_tr + W_mat
+    Test `expand_pk` using intermediate values from the CROSS key generation procedure.
+    The input is the public-key seed seed_pk.
+    The expected output is the matrix V_tr and, for RSDPG, additionally the matrix W_mat.
     """
-    seed_sk = random_bytes(rng, c.params.keypair_seed_length_bytes)
+    c_V_tr = result.expand_pk.V_tr
+    c_seed_pk = result.expand_pk.seed_pk
+    c_W_mat = result.expand_pk.W_mat
 
-    # Run key generation to obtain the actual seed_pk and the expanded reference values.
-    keygen_result = c.calculation.keygen(seed_sk)
-
-    seed_pk = keygen_result.expand_pk.seed_pk
-    V_tr = keygen_result.expand_pk.V_tr
+    # Input: uint8_t seed_pk[KEYPAIR_SEED_LENGTH_BYTES]
+    inputs = [c_seed_pk]
 
     if c.params.algorithm == "RSDP":
-        # Standard RSDP only has V_tr.
-        inputs = [seed_pk]
-        outputs = [fp_to_bytes(V_tr, c)]
-    else:
-        # RSDPG additionally contains the subgroup matrix W_mat.
-        W_mat = keygen_result.expand_pk.W_mat
-
-        inputs = [seed_pk]
-        outputs = [
-            fp_to_bytes(V_tr, c)
-            + bytes(W_mat)
-        ]
+        # Output: FP_ELEM V_tr[K][N-K]
+        outputs = [fp_to_bytes(c_V_tr, c)]
+    elif c.params.algorithm == "RSDPG":
+        # Output: FP_ELEM V_tr[K][N-K] || FZ_ELEM W_mat[M][N-M]
+        outputs = [fp_to_bytes(c_V_tr, c) + fz_to_bytes(c_W_mat)]
 
     test_intermediate_values(
         target,
@@ -713,41 +588,31 @@ def test_intermediate_expand_pk(target, c, rng):
     )
 
 
-def test_intermediate_expand_sk(target, c, rng):
+def test_intermediate_expand_sk(target, c: Cross, result: SignCalculationResult):
     """
-    Test `expand_sk`. expand_sk derives the secret-key-dependent intermediate values from seed_sk.
-    RSDP: seed_sk -> e_bar + V_tr
-    RSDPG: seed_sk -> e_bar + e_G_bar + V_tr + W_mat
+    Test `expand_sk` using intermediate values from the CROSS signing procedure.
+    The input is the secret-key seed seed_sk.
+    The expected output is e_bar and V_tr and, for RSDPG, additionally e_G_bar and W_mat.
     """
-    seed_sk = random_bytes(
-        rng,
-        c.params.keypair_seed_length_bytes
-    )
+    c_e_bar = result.expand_sk.e_bar
+    c_V_tr = result.expand_sk.V_tr
+    c_e_G_bar = result.expand_sk.e_G_bar
+    c_W_mat = result.expand_sk.W_mat
+    c_seed_sk = result.seed_sk
 
-    keygen_result = c.calculation.keygen(seed_sk)
-
-    e_bar = keygen_result.fz_inf_w_by_fz_matrix.e_bar
-    V_tr = keygen_result.restr_vec_by_fp_matrix.V_tr
+    # Input: uint8_t seed_sk[KEYPAIR_SEED_LENGTH_BYTES]
+    inputs = [c_seed_sk]
 
     if c.params.algorithm == "RSDP":
-        # RSDP only requires the normal secret vector and V_tr.
-        inputs = [seed_sk]
-
-        outputs = [bytes(e_bar) + fp_to_bytes(V_tr, c)]
-    else:
-        # RSDPG has two additional intermediate values: e_G_bar and W_mat.
-        e_G_bar = keygen_result.fz_inf_w_by_fz_matrix.e_G_bar
-        W_mat = keygen_result.fz_inf_w_by_fz_matrix.W_mat
-
-        inputs = [seed_sk]
-
-        outputs = [
-            bytes(e_bar)
-            + bytes(e_G_bar)
-            + fp_to_bytes(V_tr, c)
-            + bytes(W_mat)
-        ]
-
+        # Output: FZ_ELEM e_bar[N] || FP_ELEM V_tr[K][N-K]
+        outputs = [fz_to_bytes(c_e_bar) + fp_to_bytes(c_V_tr, c)]
+    elif c.params.algorithm == "RSDPG":
+        # Output: FZ_ELEM e_bar[N] || FZ_ELEM e_G_bar[M] || FP_ELEM V_tr[K][N-K] || FZ_ELEM W_mat[M][N-M]
+        outputs = [fz_to_bytes(c_e_bar) 
+                   + fz_to_bytes(c_e_G_bar)
+                   + fp_to_bytes(c_V_tr, c) 
+                   + fz_to_bytes(c_W_mat,)]
+    
     test_intermediate_values(
         target,
         subroutine_expand_sk,
@@ -758,41 +623,53 @@ def test_intermediate_expand_sk(target, c, rng):
 
 
 # =============================================================================
+# RSDP only subroutine tests
+# =============================================================================
+
+def test_intermediate_pack_fz_vec(target, c: Cross, result: SignCalculationResult, i):
+    """
+    Test `pack_fz_vec` using intermediate values from signing round i.
+
+    The subroutine packs the FZ vector v_bar into its compact byte
+    representation used by the CROSS signing procedure.
+    """
+    c_v_bar_in = result.pack_fz_vec.v_bar_in[i]
+    c_v_bar_out = result.pack_fz_vec.v_bar_out[i]
+
+    # Input: FZ_ELEM v_bar[N]
+    inputs = [fz_to_bytes(c_v_bar_in)]
+
+    # Output: packed byte representation of v_bar
+    outputs = [c_v_bar_out]
+
+    test_intermediate_values(
+        target,
+        subroutine_pack_fz_vec,
+        "pack_fz_vec",
+        inputs,
+        outputs
+    )
+
+
+# =============================================================================
 # RSDP-(G) only subroutine tests
 # =============================================================================
 
-def test_intermediate_fz_vec_sub_m(target, c, rng):
+def test_intermediate_fz_vec_sub_m(target, c: Cross, result: SignCalculationResult, i):
     """
-    Test `fz_vec_sub_m`. This is the RSDPG-only equivalent of `fz_vec_sub_n`, but operates on M-dimensional subgroup vectors.
-    The operation is: e_G_bar - v_G_bar
+    Test `fz_vec_sub_m` using intermediate values from the CROSS signing procedure.
+    The inputs are the restricted vectors e_G_bar and e_G_bar_prime.
+    The expected output is the resulting restricted vector v_G_bar.
     """
-    if c.params.algorithm != "RSDPG":
-        return
+    c_e_G_bar = result.fz_vec_sub_m.e_G_bar
+    c_e_G_bar_prime = result.fz_vec_sub_m.e_G_bar_prime[i]
+    c_v_G_bar = result.fz_vec_sub_m.v_G_bar[i]
 
-    seed_sk = random_bytes(rng, c.params.keypair_seed_length_bytes)
-    message = random_bytes(rng, 32)
+    # Input: FZ_ELEM e_G_bar[M] || FZ_ELEM e_G_bar_prime[M]
+    inputs = [fz_to_bytes(c_e_G_bar) + fz_to_bytes(c_e_G_bar_prime)]
 
-    root_seed = random_bytes(rng, c.params.seed_length_bytes)
-    salt = random_bytes(rng, c.params.salt_length_bytes)
-
-    keygen_result = c.calculation.keygen(seed_sk)
-
-    result = c.calculation.sign(
-        message,
-        seed_sk=seed_sk,
-        pk=keygen_result.pk,
-        root_seed=root_seed,
-        salt=salt
-    )
-
-    # Both operands are M-dimensional restricted vectors.
-    e_G_bar = result.expand_sk.e_G_bar
-    v_G_bar = result.fz_vec_sub_m.v_G_bar
-
-    inputs = [bytes(e_G_bar) + bytes(v_G_bar)]
-
-    # The reference result is e_G_bar_prime.
-    outputs = [bytes(result.fz_vec_sub_m.e_G_bar_prime)]
+    # Output: FZ_ELEM v_G_bar[M]
+    outputs = [fz_to_bytes(c_v_G_bar)]
 
     test_intermediate_values(
         target,
@@ -803,36 +680,21 @@ def test_intermediate_fz_vec_sub_m(target, c, rng):
     )
 
 
-def test_intermediate_fz_inf_w_by_fz_matrix(target, c, rng):
+def test_intermediate_fz_inf_w_by_fz_matrix(target, c: Cross, result: SignCalculationResult, i):
     """
-    Test `fz_inf_w_by_fz_matrix`. This subroutine is only present in RSDPG.
-    It takes: e_G_bar_prime, W_mat and produces the N-dimensional vector used later in the signing flow.
+    Test `fz_inf_w_by_fz_matrix` using intermediate values from the CROSS signing procedure.
+    The inputs are the restricted vector e_G_bar_prime and the matrix W_mat.
+    The expected output is the resulting restricted vector e_bar_prime.
     """
-    if c.params.algorithm != "RSDPG":
-        return
+    c_e_bar_prime = result.fz_inf_w_by_fz_matrix.e_bar_prime[i]
+    c_e_G_bar_prime = result.fz_inf_w_by_fz_matrix.e_G_bar_prime[i]
+    c_W_mat = result.fz_inf_w_by_fz_matrix.W_mat
 
-    seed_sk = random_bytes(rng, c.params.keypair_seed_length_bytes)
-    message = random_bytes(rng, 32)
+    # Input: FZ_ELEM e_G_bar_prime[M] || FZ_ELEM W_mat[M][N-M]
+    inputs = [fz_to_bytes(c_e_G_bar_prime) + fz_to_bytes(c_W_mat)]
 
-    root_seed = random_bytes(rng, c.params.seed_length_bytes)
-    salt = random_bytes(rng, c.params.salt_length_bytes)
-
-    keygen_result = c.calculation.keygen(seed_sk)
-
-    result = c.calculation.sign(
-        message,
-        seed_sk=seed_sk,
-        pk=keygen_result.pk,
-        root_seed=root_seed,
-        salt=salt
-    )
-    # e_G_bar_prime is the M-dimensional input vector.
-    # W_mat is the FZ matrix generated during secret-key expansion.
-    inputs = [bytes(result.fz_vec_sub_m.e_G_bar_prime) + bytes(result.expand_sk.W_mat)]
-
-    # The resulting N-dimensional vector is stored in the reference
-    # implementation as e_G_bar_prime of the following calculation step.
-    outputs = [bytes(result.fz_inf_w_by_fz_matrix.e_G_bar_prime)]
+    # Output: FZ_ELEM e_bar_prime[N]
+    outputs = [fz_to_bytes(c_e_bar_prime)]
 
     test_intermediate_values(
         target,
@@ -843,74 +705,101 @@ def test_intermediate_fz_inf_w_by_fz_matrix(target, c, rng):
     )
 
 
-def test_intermediate_fz_dz_norm_m(target, c, rng):
+def test_intermediate_fz_dz_norm_m(target, c: Cross, result: SignCalculationResult, i):
     """
-    Test `fz_dz_norm_m`. This is the RSDPG-only normalization routine for M-dimensional subgroup vectors.
+    Test `fz_dz_norm_m` using intermediate values from the CROSS signing procedure.
+    The input is the restricted vector v_G_bar before normalization.
+    The expected output is the resulting normalized restricted vector v_G_bar.
     """
-    if c.params.algorithm != "RSDPG":
-        return
+    c_v_G_bar_in = result.fz_dz_norm_m.v_G_bar_in[i]
+    c_v_G_bar_out = result.fz_dz_norm_m.v_G_bar_out[i]
 
-    seed_sk = random_bytes(rng, c.params.keypair_seed_length_bytes)
-    message = random_bytes(rng, 32)
+    # Input: FZ_ELEM v_G_bar_in[M]
+    inputs = [fz_to_bytes(c_v_G_bar_in)]
 
-    root_seed = random_bytes(rng, c.params.seed_length_bytes)
-    salt = random_bytes(rng, c.params.salt_length_bytes)
-
-    keygen_result = c.calculation.keygen(seed_sk)
-
-    result = c.calculation.sign(
-        message,
-        seed_sk=seed_sk,
-        pk=keygen_result.pk,
-        root_seed=root_seed,
-        salt=salt
-    )
-    # v_G_bar_in is the vector before normalization.
-    # v_G_bar_out is the normalized reference result.
-    inputs = [result.fz_dz_norm_m.v_G_bar_in]
-
-    outputs = [result.fz_dz_norm_m.v_G_bar_out]
+    # Output: FZ_ELEM v_G_bar_out[M]
+    outputs = [fz_to_bytes(c_v_G_bar_out)]
 
     test_intermediate_values(
         target,
         subroutine_fz_dz_norm_m,
         "fz_dz_norm_m",
-        [bytes(x) for x in inputs],
-        [bytes(x) for x in outputs]
+        inputs,
+        outputs
     )
+
+def test_intermediate_pack_fz_rsdp_g_vec(target, c: Cross, result: SignCalculationResult, i):
+    """
+    Test `pack_fz_rsdp_g_vec` using intermediate values from the CROSS signing procedure.
+    The input is the restricted vector v_G_bar.
+    The expected output is the resulting packed representation v_G_bar_out.
+    """
+    c_v_G_bar_in = result.pack_fz_rsdp_g_vec.v_G_bar_in[i]
+    c_v_G_bar_out = result.pack_fz_rsdp_g_vec.v_G_bar_out[i]
+
+    # Input: FZ_ELEM v_G_bar_in[M]
+    inputs = [fz_to_bytes(c_v_G_bar_in)]
+
+    # Output: uint8_t v_G_bar_out[DENSELY_PACKED_FZ_RSDP_G_VEC_SIZE]
+    outputs = [c_v_G_bar_out]
+
+    test_intermediate_values(
+            target,
+            subroutine_pack_fz_rsdp_g_vec,
+            "pack_fz_rsdp_g_vec",
+            inputs,
+            outputs
+        )
+
 
 # =============================================================================
 # Intermediate subroutine test suite
 # =============================================================================
 
 COMMON_INTERMEDIATE_TESTS = [
-    ("convert_restr_vec_to_fp", test_intermediate_convert_restr_vec_to_fp),
-    ("restr_vec_by_fp_matrix", test_intermediate_restr_vec_by_fp_matrix),
-    ("pack_fz_vec", test_intermediate_pack_fz_vec),
-    ("pack_fp_syn", test_intermediate_pack_fp_syn),
-    ("fz_vec_sub_n", test_intermediate_fz_vec_sub_n),
-    ("fp_vec_by_fp_matrix", test_intermediate_fp_vec_by_fp_matrix),
-    ("fp_vec_by_fp_vec_pointwise", test_intermediate_fp_vec_by_fp_vec_pointwise),
-    ("fp_vec_by_restr_vec_scaled", test_intermediate_fp_vec_by_restr_vec_scaled),
-    ("expand_digest_to_fixed_weight", test_intermediate_expand_digest_to_fixed_weight),
-    ("fz_dz_norm_n", test_intermediate_fz_dz_norm_n),
-    ("expand_pk", test_intermediate_expand_pk),
-    ("expand_sk", test_intermediate_expand_sk),
+    ("convert_restr_vec_to_fp", test_intermediate_convert_restr_vec_to_fp, "sign", True),
+    ("restr_vec_by_fp_matrix", test_intermediate_restr_vec_by_fp_matrix, "keygen", False),
+    ("pack_fp_syn", test_intermediate_pack_fp_syn, "sign", True),
+    ("fz_vec_sub_n", test_intermediate_fz_vec_sub_n, "sign", True),
+    ("fp_vec_by_fp_matrix", test_intermediate_fp_vec_by_fp_matrix, "sign", True),
+    ("fp_vec_by_fp_vec_pointwise", test_intermediate_fp_vec_by_fp_vec_pointwise, "sign", True),
+    ("fp_vec_by_restr_vec_scaled", test_intermediate_fp_vec_by_restr_vec_scaled, "sign", True),
+    ("expand_digest_to_fixed_weight", test_intermediate_expand_digest_to_fixed_weight, "sign", False),
+    ("fz_dz_norm_n", test_intermediate_fz_dz_norm_n, "sign", True),
+    ("expand_pk", test_intermediate_expand_pk, "keygen", False),
+    ("expand_sk", test_intermediate_expand_sk, "sign", False),
+]
+
+RSDP_INTERMEDIATE_TESTS = [
+    ("pack_fz_vec", test_intermediate_pack_fz_vec, "sign", True),
 ]
 
 RSDPG_INTERMEDIATE_TESTS = [
-    ("fz_vec_sub_m", test_intermediate_fz_vec_sub_m),
-    ("fz_inf_w_by_fz_matrix", test_intermediate_fz_inf_w_by_fz_matrix),
-    ("fz_dz_norm_m", test_intermediate_fz_dz_norm_m),
+    ("fz_vec_sub_m", test_intermediate_fz_vec_sub_m, "sign", True),
+    ("fz_inf_w_by_fz_matrix", test_intermediate_fz_inf_w_by_fz_matrix, "sign", True),
+    ("fz_dz_norm_m", test_intermediate_fz_dz_norm_m, "sign", True),
+    ("pack_fz_rsdp_g_vec", test_intermediate_pack_fz_rsdp_g_vec, "sign", True),
 ]
 
-def run_intermediate_tests(target, c):
+def run_intermediate_tests(target, c: Cross):
     """
     Run tests using intermediate values generated by the reference implementation.
     """
     tests = list(COMMON_INTERMEDIATE_TESTS)
-    if c.params.algorithm == "RSDPG":
+
+    if c.params.algorithm == "RSDP":
+        tests.extend(RSDP_INTERMEDIATE_TESTS)
+    elif c.params.algorithm == "RSDPG":
         tests.extend(RSDPG_INTERMEDIATE_TESTS)
+
+    rng = random.Random(
+        random_seed
+        + 500000
+        + c.params.category * 100000
+        + (1000000 if c.params.algorithm == "RSDPG" else 0)
+    )
+
+    keygen, sign = intermediate_results(c, rng)
 
     print()
     print("============================================================")
@@ -918,22 +807,20 @@ def run_intermediate_tests(target, c):
     print("============================================================")
     print()
 
-    for name, test_function in tests:
+    for name, test_function, source, per_round in tests:
         print(f"{name:<38}", end="", flush = True)
 
-        # Use the same deterministic seed for all tests of this parameter set.
-        # This makes a failing test reproducible while still separating: categories and RSDP vs. RSDP-(G)
-        # The actual seed is derived from the globally generated random_seed.
-        rng = random.Random(
-            random_seed
-            + 500000
-            + c.params.category * 100000
-            + (1000000 if c.params.algorithm == "RSDPG" else 0)
-        )
+        result = sign if source == "sign" else keygen
 
         try:
             # Execute the selected test.
-            test_function(target, c, rng)
+            if per_round:
+                # Select a random signing round for this subroutine test.
+                i = rng.randrange(c.params.t)
+                test_function(target, c, result, i)
+            else:
+                test_function(target, c, result)
+
         except Exception as exc:
             print(" Fail")
             print()

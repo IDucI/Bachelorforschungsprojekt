@@ -1,8 +1,8 @@
 LIB_DIR    := ../variants/$(ALG_VERSION)/lib/
 LIB_OBJECTS := $(wildcard $(LIB_DIR)*.s.o)
 
-TEST_SRC  := generate_reference_data.c
-TEST_NAME := generate_reference_data
+TEST_SRC  := generate_c_test_data.c
+TEST_NAME := generate_c_test_data
 
 ALG_DIR := ../variants/Reference_Implementation/
 
@@ -11,6 +11,10 @@ CC?=/usr/bin/gcc
 CXX?=/usr/bin/g++
 CFLAGS += -std=c11
 CPPFLAGS += -I $(ALG_DIR) -I $(ALG_DIR)include
+
+ifeq ($(DEBUG), 1)
+	CPPFLAGS += -g -O1 -mno-sse4.1 -fsanitize=undefined
+endif
 
 # determine compiler flags from ALG_VERSION in the format cross_<algorithm>_<category>_<optimization> e.g. cross_rsdp_1_fast
 VARIANT_PARTS := $(subst _, ,$(ALG_VERSION))

@@ -41,6 +41,7 @@
 #include "seedtree.h"
 
 #if defined(RSDP)
+// static
 void expand_pk(FP_ELEM V_tr[K][N-K],
                const uint8_t seed_pk[KEYPAIR_SEED_LENGTH_BYTES]){
 
@@ -52,6 +53,7 @@ void expand_pk(FP_ELEM V_tr[K][N-K],
   csprng_fp_mat(V_tr,&csprng_state_mat);
 }
 #elif defined(RSDPG)
+// static
 void expand_pk(FP_ELEM V_tr[K][N-K],
                FZ_ELEM W_mat[M][N-M],
                const uint8_t seed_pk[KEYPAIR_SEED_LENGTH_BYTES]){
@@ -69,6 +71,7 @@ void expand_pk(FP_ELEM V_tr[K][N-K],
 
 
 #if defined(RSDP)
+// static
 void expand_sk(FZ_ELEM e_bar[N],
                FP_ELEM V_tr[K][N-K],
                const uint8_t seed_sk[KEYPAIR_SEED_LENGTH_BYTES]){
@@ -94,6 +97,7 @@ void expand_sk(FZ_ELEM e_bar[N],
   csprng_fz_vec(e_bar,&csprng_state_e_bar);
 }
 #elif defined(RSDPG)
+// static
 void expand_sk(FZ_ELEM e_bar[N],
                FZ_ELEM e_G_bar[M],
                FP_ELEM V_tr[K][N-K],
