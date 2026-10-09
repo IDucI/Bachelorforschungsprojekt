@@ -1,6 +1,6 @@
 ## README
 
-This folder contains everything needed for the performance and feasibility evaluation. It also contains the testing for the board communication, which is described at the end of the README.
+This folder contains the testing for the board communication.
 
 ## Context
 
@@ -10,27 +10,9 @@ identify potential memory and performance bottlenecks, evaluate whether the impl
 assess the suitability of selected operations for side-channel analysis based on execution time and expected trace length, and
 measure the runtime of selected subroutines on the STM32F4 microcontroller.
 
-## Project Location
-
-To start the analysis, navigate to the following folder:
-
-`.../Bachelorforschungsprojekt/src/cross_round2/cw_firmware/cross_subroutines/evaluation`
-
-.../Bachelorforschungsprojekt/
-└── src/
-    └── cross_round2/
-        └── cw_firmware/
-            └── cross_subroutines/
-                ├── evaluation/
-                └── ...
-
-## Starting the Evaluation
-
-
-
 ## Testing the board communication
 
-In the following folder:
+To start the communication, navigate to the following folder:
 
 `.../Bachelorforschungsprojekt/src/cross_round2/cw_firmware/cross_subroutines/evaluation`
 

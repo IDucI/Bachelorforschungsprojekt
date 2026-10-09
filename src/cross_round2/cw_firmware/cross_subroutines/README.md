@@ -127,9 +127,7 @@ For example, the host can send input data with s, trigger a CROSS subroutine wit
 ## After modifying the firmware, rebuild it from the project folder
 
 Execute the `make clean` command first, then build the firmware again with `make` after that we can flash .hex file again.  
-
-Don't do `make clean && make`, because The make clean doesn't catch all subfolders at once. When rm -rf objdir-* is executed, the system sends the delete command to the file system. With quick calls (or under WSL/Windows), the file system sometimes only frees the directories a few milliseconds later, even though Bash has already started the next command (make).
-The following `make` then sees for example for 7 variants, the .hex files or subfolders still exist and are up-to-date. It thinks then I don’t need to rebuild them. So it only builds the 11 variants that had already been deleted.
+Or do it in one command line with `make clean && make`.
 
 
 ## What can we do with the results?
