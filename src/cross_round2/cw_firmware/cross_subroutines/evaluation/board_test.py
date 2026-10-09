@@ -85,26 +85,8 @@ def release_cdc_acm() -> None:
     subprocess.run(["sudo", "modprobe", "-r", "cdc_acm"], check=False)
 
 # =============================================================================
-# BUFFER & BOARD COMMUNICATIONS
+# Buffer Logic
 # =============================================================================
-
-def reset_serial_communication(target) -> None:
-    """
-    Reset/flush SimpleSerial2 communication. This removes stale bytes before the real test.
-    """
-    try:
-        # SimpleSerial2 provides this helper.
-        target.reset_comms()
-        print("        Communication reset done.")
-
-    except Exception as err:
-        print("        WARNING: reset_comms() failed:", err)
-        try:
-            target.flush()
-            print("        Fallback flush done.")
-        except Exception as flush_err:
-            print("        WARNING: flush() failed:", flush_err)
-
 
 def board_write_buffer(target, data: bytes) -> None:
     """
@@ -330,7 +312,6 @@ def compare(name, expected, actual):
         f"expected[{start}:{end}]={expected[start:end]}\n"
         f"actual[{start}:{end}]={actual[start:end]}"
     )
-
 
 # =============================================================================
 # Subroutine test cases
@@ -874,8 +855,6 @@ def run_single_variant(target, family: str, category: int, variant: str):
         f"n={c.params.n}, k={c.params.k}, m={c.params.m}, "
         f"t={c.params.t}"
     )
-    # Remove any stale SimpleSerial data before starting the tests.
-    reset_serial_communication(target)
 
     # Run all intermediate-value tests for this parameter set.
     return run_intermediate_tests(target, c)
@@ -945,8 +924,9 @@ def main():
 
         print(f"Target baudrate: {target.baud}")
 
-        # Communication reset
-        reset_serial_communication(target)
+        # Initial communication reset after connecting to the target.
+        target.reset_comms()
+        print("        Communication reset done.")
 
         print()
         print("ChipWhisperer connection successful.")
@@ -960,6 +940,10 @@ def main():
             print("=" * 60)
             print(f" Testing: {family} Cat-{category} {variant} ")
             print("=" * 60)
+
+            # Reset SimpleSerial2 communication before each variant.
+            target.reset_comms()
+            print("        Communication reset done.")
 
             try:
                 passed, error = run_single_variant(target, family, category, variant)
@@ -1001,22 +985,6 @@ def main():
         print(f"{type(err).__name__}: {err}")
 
         return 1
-
-    finally:
-         # Always disconnect from the target and scope.
-        if target is not None:
-            try:
-                target.dis()
-            except Exception:
-                pass
-        if scope is not None:
-            try:
-                scope.dis()
-            except Exception:
-                pass
-
-        print()
-        print("ChipWhisperer disconnected.")
 
 if __name__ == "__main__":
     sys.exit(main())

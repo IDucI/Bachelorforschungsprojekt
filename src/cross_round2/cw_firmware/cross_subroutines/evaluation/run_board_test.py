@@ -169,7 +169,7 @@ def main() -> int:
 
     print("Workflow:")
 
-    print("    Check HEX -> Flash -> Board Reference Test")
+    print("    Check HEX -> Board Reference Test")
 
     initialize_results_csv()
 
