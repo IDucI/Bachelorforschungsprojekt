@@ -97,6 +97,11 @@ def board_write_buffer(target, data: bytes) -> None:
     if not data:
         raise ValueError("Can't write empty buffer.")
 
+    number_of_chunks = (len(data) + input_chunk_size - 1) // input_chunk_size
+
+    if number_of_chunks > 128:
+        raise ValueError("More than 128 input chunks are not supported.")
+
     for chunk_index, offset in enumerate(range(0, len(data), input_chunk_size)):
         # Split input into firmware-compatible chunks.
         chunk = data[offset:offset + input_chunk_size]
@@ -129,18 +134,18 @@ def board_run_chunked_subroutine(
     """
     Execute a subroutine whose output must be requested in multiple chunks.
     """
-    # The complete input is written before requesting output chunks.
-    board_write_buffer(target, bytes(input_data))
-
-    output = bytearray()
-
     # Calculate the number of required output requests.
     number_of_chunks = (output_len + chunk_size - 1) // chunk_size
 
-    for chunk_index in range(number_of_chunks):
-        if chunk_index > 0x7F:
-            raise ValueError("More than 128 output chunks are not supported.")
+    if number_of_chunks > 256:
+        raise ValueError("More than 256 output chunks are not supported.")
 
+    # The complete input is written before requesting output chunks.
+    board_write_buffer(target, bytes(input_data))
+    
+    output = bytearray()
+
+    for chunk_index in range(number_of_chunks):
         # Request the current output chunk from the firmware.
         request = bytes([chunk_index, 0, 0])
 
@@ -167,7 +172,6 @@ def board_run_chunked_subroutine(
                     f"Subroutine 0x{subroutine_id:02X}, output chunk "
                     f"{chunk_index}: expected 'r', got 0x{cmd:02X}"
                 )
-
             break
 
         # The final chunk may contain fewer bytes than the normal chunk size.
@@ -592,7 +596,7 @@ def test_intermediate_expand_sk(target, c: Cross, result: SignCalculationResult)
         outputs = [fz_to_bytes(c_e_bar) 
                    + fz_to_bytes(c_e_G_bar)
                    + fp_to_bytes(c_V_tr, c) 
-                   + fz_to_bytes(c_W_mat,)]
+                   + fz_to_bytes(c_W_mat)]
     
     test_intermediate_values(
         target,
@@ -844,8 +848,7 @@ def run_single_variant(target, family: str, category: int, variant: str):
         path=str(build_dir),
         algorithm=family,
         category=category,
-        optimization=variant,
-        release="_6.6.87.so"
+        optimization=variant
     )
 
     print("CROSS instance created.")
