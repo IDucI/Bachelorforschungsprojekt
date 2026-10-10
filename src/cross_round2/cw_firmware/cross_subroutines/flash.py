@@ -97,11 +97,6 @@ def flash_firmware(hex_path: Path) -> bool:
         # Put the STM32 into programming mode.
         scope.io.pdic = "high"
 
-        # Power-cycle the target before programming.
-        scope.io.target_pwr = False
-        time.sleep(1)
-        scope.io.target_pwr = True
-
         print(f"Flashing image: {hex_path.name}...")
 
         # Program the STM32F target with the selected firmware.
@@ -112,8 +107,6 @@ def flash_firmware(hex_path: Path) -> bool:
         return True
 
     except Exception as err:
-        # Catch any error during USB communication, scope
-        # initialization or firmware flashing.
         print(f"Flashing process failed: {err}")
         return False
 
@@ -136,7 +129,7 @@ def main() -> None:
         return
     
     # Batch mode
-    # If no firmware file was specified, automatically process, all CROSS parameter configurations.
+    # If no firmware file was specified, process all CROSS parameter configurations automatically.
     print("Starting automated batch flashing sequence...\n")
 
     for family, category, variant in PARAMETER_SETS:

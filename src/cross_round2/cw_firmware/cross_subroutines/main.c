@@ -87,6 +87,44 @@ static FZ_ELEM matrix_W_buf[M][N - M];
 #endif
 
 // -----------------------------------------------------------------------------
+// Help function
+// -----------------------------------------------------------------------------
+// Copies a chunk from concatenated memory segments into the output buffer. 
+// Handles chunk data spanning multiple segments.
+// -----------------------------------------------------------------------------
+static void copy_output_chunk(
+    uint8_t *dst,
+    uint32_t offset,
+    uint16_t output_len,
+    const uint8_t *const segments[],
+    const uint32_t segment_lengths[],
+    uint8_t segment_count
+) {
+    uint32_t copied = 0;
+
+    // Skip segments until the global offset falls within the current one.
+    for (uint8_t i = 0; i < segment_count && copied < output_len; i++) {
+        if (offset >= segment_lengths[i]) {
+            offset -= segment_lengths[i];
+            continue;
+        }
+
+        // Determine how many bytes are available in this segment.
+        uint32_t available = segment_lengths[i] - offset;
+
+        // Copy only what is still needed for the requested output chunk.
+        uint32_t remaining = output_len - copied;
+        uint32_t to_copy = (available < remaining) ? available : remaining;
+
+        memcpy(dst + copied, segments[i] + offset, to_copy);
+
+        // Advance the destination position and continue at the next segment.
+        copied += to_copy;
+        offset = 0;
+    }
+}
+
+// -----------------------------------------------------------------------------
 // Subroutines-IDs
 // -----------------------------------------------------------------------------
 
@@ -603,27 +641,58 @@ uint8_t subroutines(uint8_t cmd, uint8_t scmd, uint8_t len, uint8_t* x) {
         }
 
         // --- CHUNKING LOGIC BEGIN ---
-        // Public key matrices can be several kilobytes and exceed SimpleSerial frame limits
-        const uint16_t pk_len =(uint16_t)(K * (N - K) * sizeof(FP_ELEM));
+        const uint32_t v_len =
+            (uint32_t)K * (N - K) * sizeof(FP_ELEM);
 
-        uint8_t* data_ptr = (uint8_t*)matrix_V_tr_buf;
+        const uint8_t *segments[2];
+        uint32_t segment_lengths[2];
+        uint8_t segment_count = 1;
 
-        const uint16_t chunk_size = 160;
+        segments[0] = (const uint8_t *)matrix_V_tr_buf;
+        segment_lengths[0] = v_len;
 
-        uint16_t chunk_index = (len >= 1) ? x[0] : 0;
+#if defined(RSDPG)
+        const uint32_t w_len =
+            (uint32_t)M * (N - M) * sizeof(FZ_ELEM);
 
-        uint32_t offset = (uint32_t)chunk_index * chunk_size;
+        segments[1] = (const uint8_t *)matrix_W_buf;
+        segment_lengths[1] = w_len;
+        segment_count = 2;
+#endif
 
-        if (offset >= pk_len) {
+        const uint32_t output_len =
+            segment_lengths[0]
+#if defined(RSDPG)
+            + segment_lengths[1]
+#endif
+            ;
+
+        const uint32_t offset =
+            (uint32_t)((len >= 1) ? x[0] : 0)
+            * SS_OUTPUT_CHUNK_SIZE;
+
+        if (offset >= output_len) {
             led2_off();
             return SS_ERR_LEN;
         }
 
-        uint16_t current_len = (pk_len - offset < chunk_size)
-                ? (uint16_t)(pk_len - offset)
-                : chunk_size;
-        // Transmit requested segment of the cached public key matrix
-        simpleserial_put('r', current_len, data_ptr + offset);
+        const uint16_t current_len =
+            (output_len - offset < SS_OUTPUT_CHUNK_SIZE)
+            ? (uint16_t)(output_len - offset)
+            : SS_OUTPUT_CHUNK_SIZE;
+
+        uint8_t output_chunk[SS_OUTPUT_CHUNK_SIZE];
+
+        copy_output_chunk(
+            output_chunk,
+            offset,
+            current_len,
+            segments,
+            segment_lengths,
+            segment_count
+        );
+
+        simpleserial_put('r', current_len, output_chunk);
         // --- CHUNKING LOGIC END ---
 
         led2_off();
@@ -655,22 +724,75 @@ uint8_t subroutines(uint8_t cmd, uint8_t scmd, uint8_t len, uint8_t* x) {
 #endif
 
         // --- CHUNKING LOGIC BEGIN ---
-        const uint16_t output_len = (uint16_t)(N * sizeof(FZ_ELEM));
+        const uint32_t e_len =
+            (uint32_t)N * sizeof(FZ_ELEM);
 
-        const uint8_t chunk_index = (len >= 1) ? x[0] : 0;
+        const uint32_t v_len =
+            (uint32_t)K * (N - K) * sizeof(FP_ELEM);
 
-        const uint32_t offset = (uint32_t)chunk_index * SS_OUTPUT_CHUNK_SIZE;
+        const uint8_t *segments[4];
+        uint32_t segment_lengths[4];
+        uint8_t segment_count = 2;
+
+        // RSDP output: e_bar || V_tr
+        segments[0] = (const uint8_t *)secret_vec_e;
+        segment_lengths[0] = e_len;
+
+        segments[1] = (const uint8_t *)matrix_V_tr_buf;
+        segment_lengths[1] = v_len;
+
+#if defined(RSDPG)
+        // RSDPG output: e_bar || e_G_bar || V_tr || W_mat
+        const uint32_t e_G_len =
+            (uint32_t)M * sizeof(FZ_ELEM);
+
+        const uint32_t w_len =
+            (uint32_t)M * (N - M) * sizeof(FZ_ELEM);
+
+        segments[1] = (const uint8_t *)secret_vec_e_G;
+        segment_lengths[1] = e_G_len;
+
+        segments[2] = (const uint8_t *)matrix_V_tr_buf;
+        segment_lengths[2] = v_len;
+
+        segments[3] = (const uint8_t *)matrix_W_buf;
+        segment_lengths[3] = w_len;
+
+        segment_count = 4;
+#endif
+
+        uint32_t output_len = 0;
+
+        for (uint8_t i = 0; i < segment_count; i++) {
+            output_len += segment_lengths[i];
+        }
+
+        const uint32_t offset =
+            (uint32_t)((len >= 1) ? x[0] : 0)
+            * SS_OUTPUT_CHUNK_SIZE;
 
         if (offset >= output_len) {
             led2_off();
             return SS_ERR_LEN;
         }
 
-        const uint16_t current_len = (output_len - offset < SS_OUTPUT_CHUNK_SIZE)
-                ? (uint16_t)(output_len - offset)
-                : SS_OUTPUT_CHUNK_SIZE;
+        const uint16_t current_len =
+            (output_len - offset < SS_OUTPUT_CHUNK_SIZE)
+            ? (uint16_t)(output_len - offset)
+            : SS_OUTPUT_CHUNK_SIZE;
 
-        simpleserial_put('r', current_len, ((uint8_t*)secret_vec_e) + offset);
+        uint8_t output_chunk[SS_OUTPUT_CHUNK_SIZE];
+
+        copy_output_chunk(
+            output_chunk,
+            offset,
+            current_len,
+            segments,
+            segment_lengths,
+            segment_count
+        );
+
+        simpleserial_put('r', current_len, output_chunk);
         // --- CHUNKING LOGIC END ---
 
         // Invalidate public key cache as state has changed
