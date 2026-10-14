@@ -44,11 +44,11 @@ def run_runtime(target):
 
         result = subprocess.run(
             command,
-            cwd=HERE,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            text=True,
-            check=True
+            cwd = HERE,
+            stdout = subprocess.PIPE,
+            stderr = subprocess.PIPE,
+            text = True,
+            check = True
         )
 
         # /usr/bin/time writes the measured time to stderr.
@@ -342,13 +342,8 @@ def main():
 
                 metrics = run_cachegrind(target)
 
-                # Runtime is only measured for the complete CROSS operations.
-                if benchmark in OVERALL_BENCHMARKS:
-                    runtime = run_runtime(target)
-                    seconds_per_instruction = runtime / metrics["I refs"]
-                else:
-                    runtime = ""
-                    seconds_per_instruction = ""
+                runtime = run_runtime(target)
+                seconds_per_instruction = runtime / metrics["I refs"]
 
                 rows.append({
                     "Benchmark": benchmark,

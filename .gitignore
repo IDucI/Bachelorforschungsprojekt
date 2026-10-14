@@ -30,6 +30,9 @@
 *.exe
 *.out
 *.app
+cachegrind.out.*
+src/cross_round2/cw_firmware/cross_subroutines/evaluation/cachegrind/cachegrind_CROSS_*
+src/cross_round2/cw_firmware/cross_subroutines/evaluation/cachegrind/cachegrind_*
 
 # Compiled python modules.
 *.pyc
