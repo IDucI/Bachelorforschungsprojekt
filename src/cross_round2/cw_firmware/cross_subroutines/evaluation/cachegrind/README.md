@@ -71,7 +71,7 @@ For all supported benchmarks: `python3 collect_memcheck.py all`
 
 The results are stored in: `memcheck_results.csv`
 
-After modifying something just execute the command `make clean && make` to rebuild the .out files and everything that is needed for the evaluation for Cachegrind. If you did the benchmarks again you can simpy collect all the cachegrind files again via 
+After modifying something just execute the command `make clean && make` to rebuild the .out files and everything that is needed for the evaluation for Cachegrind. If you did the benchmarks again you can simply collect all the cachegrind files again via 
 `python3 collect_cachegrind.py`
 
 The dynamic memory allocation results describe the benchmark process as a whole. They should therefore not be interpreted as the exact RAM consumption of an individual CROSS subroutine.
