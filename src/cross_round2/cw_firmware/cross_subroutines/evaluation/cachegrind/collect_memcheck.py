@@ -42,6 +42,12 @@ RSDPG_VARIANTS = [
     "rsdpg_5_small",
 ]
 
+OVERALL_BENCHMARKS = [
+    "CROSS_keygen",
+    "CROSS_sign",
+    "CROSS_verify",
+]
+
 COMMON_BENCHMARKS = [
     "convert_restr_vec_to_fp",
     "restr_vec_by_fp_matrix",
@@ -158,6 +164,13 @@ def run_memcheck(benchmark, variant):
 
     print(output)
 
+    if process.returncode != 0:
+        print(
+            f"ERROR: Memcheck failed for {binary} "
+            f"(exit code {process.returncode})"
+        )
+        return None
+
     result = parse_memcheck_output(output)
 
     result["Benchmark"] = benchmark
@@ -195,16 +208,14 @@ def write_csv(results):
 
 def get_benchmarks(argument):
     if argument == "all":
-        return COMMON_BENCHMARKS + RSDPG_BENCHMARKS
+        return (OVERALL_BENCHMARKS + COMMON_BENCHMARKS + RSDPG_BENCHMARKS)
 
-    if argument in COMMON_BENCHMARKS:
+    all_benchmarks = (OVERALL_BENCHMARKS + COMMON_BENCHMARKS + RSDPG_BENCHMARKS)
+
+    if argument in all_benchmarks:
         return [argument]
 
-    if argument in RSDPG_BENCHMARKS:
-        return [argument]
-
-    print(f"Unknown benchmark: {argument}")
-    sys.exit(1)
+    raise ValueError(f"Unknown benchmark: {argument}")
 
 
 def get_variants(benchmark):
