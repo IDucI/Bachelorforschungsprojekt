@@ -18,22 +18,68 @@ test_dir = Path(__file__).parent
 
 for category, target in variants:
     name = f"less_cat{category}_{target}"
-    with open(test_dir / f"{name}.json", "r") as file:
+
+    with open(
+        test_dir / f"{name}.json",
+        "r",
+    ) as file:
         data = json.load(file)
 
     less = Less(
-        path="build",
+        path=test_dir.parent / "build",
         category=category,
         target=target,
     )
-    calc = Calculations(less.subfunctions)
 
-    compressed_sk = bytes.fromhex(data["compressed_sk"])
-    result = calc.keygen_generator_monomial_mul(compressed_sk)
-    result_c = [
-        value
-        for row in data["generator_product"]
-        for value in row
-    ]
+    calc = Calculations(
+        less.subfunctions
+    )
 
-    print(category, target, "MATCH" if result == result_c else "MISMATCH")
+    compressed_sk = bytes.fromhex(
+        data["compressed_sk"]
+    )
+
+    expected_products = (
+        data["generator_products"]
+    )
+
+    if len(expected_products) != less.params.num_keypairs - 1:
+        raise RuntimeError(
+            f"Category {category} target {target}: "
+            "unexpected number of generator products"
+        )
+
+    for (
+        keypair_index,
+        expected_rows,
+    ) in enumerate(
+        expected_products
+    ):
+        result = (
+            calc.keygen_generator_monomial_mul(
+                compressed_sk,
+                keypair_index=keypair_index,
+            )
+        )
+
+        expected = [
+            value
+            for row in expected_rows
+            for value in row
+        ]
+
+        if result != expected:
+            raise RuntimeError(
+                f"Category {category} "
+                f"target {target}, "
+                f"keypair_index "
+                f"{keypair_index}: mismatch"
+            )
+
+    print(
+        f"Category {category} "
+        f"target {target}: "
+        f"PASS "
+        f"({len(expected_products)} "
+        f"keypair indices)"
+    )

@@ -41,10 +41,6 @@ class LessParams:
         return self.k * self.n_pad
 
     @property
-    def security_parameter_bits(self) -> int:
-        return self.seed_length_bytes * 8
-
-    @property
     def private_key_seed_length_bytes(self) -> int:
         return 2 * self.seed_length_bytes
 

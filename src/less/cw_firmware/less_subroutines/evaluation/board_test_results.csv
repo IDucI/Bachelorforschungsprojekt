@@ -1,0 +1,9 @@
+timestamp,category,base_seed,hex_exists,flash_passed,board_test_passed,error
+2026-10-22T11:56:35+02:00,toy,2482752329,True,True,True,
+2026-10-22T11:58:01+02:00,cat1_192,134396942,True,True,True,
+2026-10-22T11:59:27+02:00,cat1_68,509261032,True,True,True,
+2026-10-22T12:00:53+02:00,cat1_45,1943302182,True,True,True,
+2026-10-22T12:01:49+02:00,cat3_220,825073462,True,True,True,
+2026-10-22T12:02:46+02:00,cat3_102,3995078629,True,True,True,
+2026-10-22T12:04:12+02:00,cat5_345,854026658,True,True,True,
+2026-10-22T12:05:39+02:00,cat5_137,918475815,True,True,True,
