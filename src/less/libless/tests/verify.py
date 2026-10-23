@@ -2,14 +2,11 @@ import json
 
 from less import Less
 
-
 with open(
     "transfer.json",
     "r",
 ) as file:
-    data = json.load(
-        file
-    )
+    data = json.load(file)
 
 less = Less(
     path="build",
@@ -17,16 +14,13 @@ less = Less(
     target=data["target"],
 )
 
-message = data[
-    "message"
-]
+message = data["message"]
 
-modified_message = list(
-    message
-)
+modified_message = list(message)
 
 modified_message[0] ^= 1
 
+# Check the valid signature and three invalid input combinations.
 positive = less.verify(
     data["public_key"],
     message,
@@ -51,6 +45,7 @@ wrong_public_key = less.verify(
     data["signature"],
 )
 
+# LESS_verify returns 1 for a valid signature and 0 otherwise.
 passed = (
     positive == 1
     and wrong_message == 0
@@ -59,19 +54,17 @@ passed = (
 )
 
 print(
-    f'Category '
+    f"Category "
     f'{data["category"]} '
-    f'target '
+    f"target "
     f'{data["target"]}: '
-    f'positive={positive}, '
-    f'wrong_message='
-    f'{wrong_message}, '
-    f'wrong_signature='
-    f'{wrong_signature}, '
-    f'wrong_public_key='
-    f'{wrong_public_key}'
+    f"positive={positive}, "
+    f"wrong_message="
+    f"{wrong_message}, "
+    f"wrong_signature="
+    f"{wrong_signature}, "
+    f"wrong_public_key="
+    f"{wrong_public_key}"
 )
 
-raise SystemExit(
-    0 if passed else 1
-)
+raise SystemExit(0 if passed else 1)

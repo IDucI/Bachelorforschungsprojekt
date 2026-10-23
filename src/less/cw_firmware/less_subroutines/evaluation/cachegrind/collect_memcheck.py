@@ -3,7 +3,7 @@ import csv
 import re
 import subprocess
 
-from collect_cachegrind import HERE, VARIANTS, benchmarks_for
+from collect_cachegrind import HERE, VARIANTS, OVERALL_BENCHMARKS, benchmarks_for
 
 FIELDS = (
     "Allocs",
@@ -20,6 +20,7 @@ def parse_number(value):
 
 
 def parse_memcheck(output):
+    """Extract heap allocation and error statistics from Memcheck output."""
     result = {
         "Allocs": None,
         "Frees": None,
@@ -56,6 +57,7 @@ def parse_memcheck(output):
 
 
 def main():
+    """Run Memcheck for the selected benchmarks and save the results to CSV."""
     parser = argparse.ArgumentParser()
     parser.add_argument("benchmark", help="one benchmark or all")
     args = parser.parse_args()
@@ -64,6 +66,8 @@ def main():
     rows = []
     for bench in benchmarks:
         for variant in VARIANTS:
+            if bench in OVERALL_BENCHMARKS and variant == "toy":
+                continue
             binary = HERE / f"cachegrind_{bench}_{variant}"
             if not binary.is_file():
                 print(f"ERROR: Binary not found: {binary}")

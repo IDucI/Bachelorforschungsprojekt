@@ -92,8 +92,10 @@ _Static_assert(
     "unexpected monomial_t size"
 );
 
+// Buffer for input data received in SimpleSerial chunks.
 static uint8_t databuffer[LESS_MAX_INPUT_BYTES] ccm_allocation;
 
+// Share the result memory between the selected subroutines.
 typedef union {
     FQ_ELEM fq_inverse;
     FQ_ELEM row_mul3[N - K];
@@ -111,12 +113,15 @@ static less_result_workspace_t result_workspace;
 static uint32_t result_length = 0u;
 static uint32_t last_cycles = 0u;
 
+// Enable the DWT cycle counter for runtime measurements.
 static void cycles_init(void) {
     CoreDebug->DEMCR |= CoreDebug_DEMCR_TRCENA_Msk;
     DWT->CYCCNT = 0u;
     DWT->CTRL |= DWT_CTRL_CYCCNTENA_Msk;
 }
 
+// Return the last DWT cycle count and CPU clock frequency.
+// Both values are transmitted as little-endian 32-bit integers.
 static uint8_t get_cycles(
     uint8_t cmd,
     uint8_t scmd,
@@ -143,6 +148,7 @@ static uint8_t get_cycles(
 static generator_mat_t generator_input;
 #endif
 
+// Encode 16-bit positions as little-endian bytes.
 static void serialize_positions(
     uint8_t *output,
     const POSITION_T *positions,
@@ -160,6 +166,7 @@ static void serialize_positions(
     }
 }
 
+// Decode 16-bit positions from little-endian bytes.
 static void deserialize_positions(
     POSITION_T *positions,
     const uint8_t *input,
@@ -172,6 +179,7 @@ static void deserialize_positions(
     }
 }
 
+// Execute the subroutine selected by the SimpleSerial subcommand.
 uint8_t subroutines(
     uint8_t cmd,
     uint8_t scmd,
@@ -189,6 +197,8 @@ uint8_t subroutines(
 
     switch (scmd) {
 
+    // Compute the multiplicative inverse of a field element.
+    // Input and output each contain one FQ_ELEM.
     case LESS_FQ_INV: {
         FQ_ELEM value;
 
@@ -217,6 +227,9 @@ uint8_t subroutines(
         break;
     }
 
+    // Multiply two rows element-wise in the finite field.
+    // Input: two consecutive rows of N-K elements.
+    // Output: one row of N-K elements.
     case LESS_ROW_MUL3: {
         const FQ_ELEM *in1 =
             (const FQ_ELEM *)databuffer;
@@ -248,6 +261,9 @@ uint8_t subroutines(
         break;
     }
 
+    // Expand a seed into generator matrix values and column positions.
+    // Input: SEED_LENGTH_BYTES bytes.
+    // Output: K*(N-K) field elements and N-K column positions.
     case LESS_GENERATOR_SAMPLE: {
         unsigned char seed[
             SEED_LENGTH_BYTES
@@ -272,7 +288,7 @@ uint8_t subroutines(
 
         last_cycles = DWT->CYCCNT - cycle_start;
         
-
+        // Encode column positions as little-endian 16-bit values.
         serialize_positions(
             (uint8_t *)result->column_pos,
             result->column_pos,
@@ -285,6 +301,9 @@ uint8_t subroutines(
         break;
     }
 
+    // Sample a monomial transformation from a private-key seed.
+    // Input: PRIVATE_KEY_SEED_LENGTH_BYTES bytes.
+    // Output: N coefficients and a permutation of N positions.
     case LESS_MONOMIAL_SAMPLE_PRIKEY: {
         unsigned char seed[
             PRIVATE_KEY_SEED_LENGTH_BYTES
@@ -309,7 +328,7 @@ uint8_t subroutines(
 
         last_cycles = DWT->CYCCNT - cycle_start;
         
-
+        // Encode the permutation as little-endian 16-bit values.
         serialize_positions(
             (uint8_t *)result->permutation,
             result->permutation,
@@ -322,6 +341,10 @@ uint8_t subroutines(
         break;
     }
 
+    // Apply a monomial transformation to a generator matrix.
+    // Input: generator matrix, coefficients and permutation.
+    // Output: transformed generator matrix.
+    // Disabled for Category 3 and 5 due to STM32 memory constraints.
     case LESS_GENERATOR_MONOMIAL_MUL: {
 
 #if LESS_GENERATOR_MONOMIAL_MUL_SUPPORTED
@@ -331,6 +354,7 @@ uint8_t subroutines(
         generator_mat_t *result =
             &result_workspace.generator_monomial_mul;
 
+        // Parse the generator matrix and monomial data from the input buffer.
         const uint8_t *cursor =
             databuffer;
 
@@ -395,6 +419,9 @@ uint8_t subroutines(
     return SS_ERR_OK;
 }
 
+// Receive input data in chunks of up to 160 bytes.
+// The subcommand specifies the chunk index in databuffer.
+// Reject transfers exceeding the allocated input buffer.
 uint8_t set_value(
     uint8_t cmd,
     uint8_t scmd,
@@ -431,6 +458,9 @@ uint8_t set_value(
     return SS_ERR_OK;
 }
 
+// Return the last subroutine result in chunks of up to 160 bytes.
+// The host specifies the chunk index as a little-endian 16-bit value.
+// The final chunk may be shorter than 160 bytes.
 uint8_t get_result(
     uint8_t cmd,
     uint8_t scmd,
@@ -477,6 +507,7 @@ uint8_t get_result(
     return SS_ERR_OK;
 }
 
+// Initialize the board and register the SimpleSerial commands.
 int main(void) {
     platform_init();
     init_uart();

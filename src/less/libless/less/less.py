@@ -17,7 +17,7 @@ def platform_release_string() -> str:
 
 
 class Less:
-    """Provides a Python interface to selected LESS subroutines."""
+    """Python interface for LESS keygen, sign, verify and selected subroutines."""
 
     def __init__(
         self,
@@ -48,6 +48,7 @@ class Less:
         self.load_dll()
 
     def select_lib(self, path, name=None, version=None, release_suffix=None):
+        """Select the shared library path and filename for the LESS variant."""
         self.logger.debug("__entry__ select_lib")
         self.logger.debug("path: %s", path)
         self.logger.debug("name: %s", name)
@@ -56,14 +57,13 @@ class Less:
         if name is not None:
             self.lib_name = name
         else:
-            self.lib_name = (
-                self.default_lib_prefix + str(version) + str(release_suffix)
-            )
+            self.lib_name = self.default_lib_prefix + str(version) + str(release_suffix)
 
         self.lib_path = Path(path) if path is not None else self.default_lib_path
         return self.lib_path, self.lib_name
 
     def load_dll(self):
+        """Load the LESS library and configure the ctypes function signatures."""
         library_file = self.lib_path / self.lib_name
         try:
             self.logger.debug("loading CDLL file: %s", library_file)
@@ -130,6 +130,7 @@ class Less:
             )
 
     def _initialize_randombytes(self):
+        """Initialize the LESS platform CSPRNG with a fresh random seed."""
         seed = secrets.token_bytes(48)
         c_seed = (c_uint8 * len(seed)).from_buffer_copy(seed)
         self.c_less.less_initialize_randombytes(
@@ -138,6 +139,7 @@ class Less:
         )
 
     def keygen(self):
+        """Generate a LESS key pair and return the secret and public keys."""
         self._require_high_level()
         self._initialize_randombytes()
 
@@ -147,6 +149,7 @@ class Less:
         return list(sk), list(pk)
 
     def sign(self, secret_key, message):
+        """Sign a message with the LESS secret key and return the signature."""
         self._require_high_level()
         self._initialize_randombytes()
 
@@ -163,6 +166,7 @@ class Less:
         return list(signature)
 
     def verify(self, public_key, message, signature):
+        """Verify a LESS signature and return 1 if valid, otherwise 0."""
         self._require_high_level()
 
         pk = self._pk_type(*public_key)

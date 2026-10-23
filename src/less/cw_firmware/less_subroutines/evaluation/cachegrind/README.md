@@ -1,13 +1,13 @@
 # LESS Host Evaluation
 
-This directory contains native benchmarks for the five selected LESS subroutines across eight parameter sets.
+This directory contains native benchmarks for five selected LESS subroutines and the overall key generation, signing, and verification operations.
 
 The evaluation uses Cachegrind and Memcheck to analyze execution characteristics and memory behavior.
 
 
 ## Build
 
-Build all 40 benchmark combinations:
+Build all 61 benchmark combinations:
 
 ```bash
 make build-all
@@ -51,9 +51,11 @@ The evaluation covers five subroutines:
 - monomial_sample_prikey
 - generator_monomial_mul
 
-Each subroutine is evaluated across eight LESS parameter sets, resulting in 40 benchmark combinations.
+The five subroutines are benchmarked across all eight parameter sets, resulting in 40 combinations.
 
-Each benchmark executes 1,000 iterations of the selected operation.
+Key generation, signing, and verification are benchmarked across the seven official parameter sets, excluding the toy parameter set, resulting in 21 combinations.
+
+Subroutine benchmarks use 1,000 iterations each, while key generation, signing, and verification benchmarks use 3 iterations each.
 
 ## Results
 

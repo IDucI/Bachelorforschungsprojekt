@@ -44,6 +44,7 @@ LESS_GENERATOR_MONOMIAL_MUL = 0x07
 
 
 def ss_send_cmd(target, cmd: int, scmd: int, data: bytes = b"") -> None:
+    """Send a SimpleSerial command with a subcommand and payload."""
     data = bytes(data)
 
     if len(data) > 0xFF:
@@ -62,6 +63,7 @@ def ss_read_packet(
     expected_len: int | None = None,
     timeout_ms: int = 5000,
 ):
+    """Read and validate a SimpleSerial response packet."""
     packet = target.read_cmd(
         cmd=expected_cmd,
         pay_len=expected_len,
@@ -106,6 +108,7 @@ def ss_read_packet(
 
 
 def wait_for_ack(target, timeout_ms: int = 5000) -> None:
+    """Wait for a successful SimpleSerial acknowledgement."""
     _, data = ss_read_packet(
         target,
         expected_cmd=ord("e"),
@@ -118,6 +121,7 @@ def wait_for_ack(target, timeout_ms: int = 5000) -> None:
 
 
 def release_cdc_acm() -> None:
+    """Release the Linux CDC-ACM driver before connecting to the board."""
     subprocess.run(
         ["sudo", "modprobe", "-r", "cdc_acm"],
         check=False,
@@ -125,6 +129,7 @@ def release_cdc_acm() -> None:
 
 
 def board_write_buffer(target, data: bytes) -> None:
+    """Write input data to the STM32 buffer in 160-byte chunks."""
     data = bytes(data)
 
     if not data:
@@ -151,6 +156,7 @@ def board_execute_subroutine(
     subroutine_id: int,
     timeout_ms: int = 30000,
 ) -> None:
+    """Execute the selected subroutine and wait for its acknowledgement."""
     ss_send_cmd(
         target,
         ord("b"),
@@ -169,6 +175,7 @@ def board_read_result(
     output_len: int,
     timeout_ms: int = 5000,
 ) -> bytes:
+    """Read the subroutine result from the board in 160-byte chunks."""
     output = bytearray()
 
     number_of_chunks = (output_len + OUTPUT_CHUNK_SIZE - 1) // OUTPUT_CHUNK_SIZE
@@ -234,6 +241,7 @@ def board_run_subroutine(
     input_data: bytes,
     output_len: int,
 ) -> bytes:
+    """Upload input data, execute the subroutine and return its result."""
     board_write_buffer(
         target,
         input_data,
@@ -251,10 +259,12 @@ def board_run_subroutine(
 
 
 def random_bytes(rng, length: int) -> bytes:
+    """Generate random bytes using the provided random generator."""
     return bytes(rng.randrange(256) for _ in range(length))
 
 
 def serialize_positions(values) -> bytes:
+    """Encode 16-bit positions as little-endian bytes."""
     output = bytearray()
 
     for value in values:
@@ -273,6 +283,8 @@ def compare(
     expected: bytes,
     actual: bytes,
 ) -> None:
+    """Compare the board output with the reference result.
+    Report the first differing byte or a length mismatch."""
     if expected == actual:
         return
 
@@ -307,6 +319,8 @@ def test_fq_inv(
     less,
     rng,
 ) -> None:
+    """Compare field inversion on the board with the host reference.
+    The input is a nonzero field element."""
     value = rng.randrange(
         1,
         less.subfunctions.q,
@@ -333,6 +347,9 @@ def test_row_mul3(
     less,
     rng,
 ) -> None:
+    """Compare row_mul3 with the host reference.
+    The inputs are two rows of N-K field elements.
+    The result is their element-wise product."""
     count = less.subfunctions.row_values_count
 
     q = less.subfunctions.q
@@ -367,6 +384,9 @@ def test_generator_sample(
     less,
     rng,
 ) -> None:
+    """Compare generator_sample with the host reference.
+    The input is a random seed.
+    The result contains generator matrix values and column positions."""
     seed = random_bytes(
         rng,
         less.subfunctions.seed_length_bytes,
@@ -395,6 +415,9 @@ def test_monomial_sample_prikey(
     less,
     rng,
 ) -> None:
+    """Compare monomial_sample_prikey with the host reference.
+    The input is a private-key seed.
+    The result contains field coefficients and a permutation."""
     seed = random_bytes(
         rng,
         less.subfunctions.private_key_seed_length_bytes,
@@ -423,6 +446,9 @@ def test_generator_monomial_mul(
     less,
     rng,
 ) -> None:
+    """Compare generator_monomial_mul with the host reference.
+    The inputs are a generator matrix, coefficients and a permutation.
+    The result is the transformed generator matrix."""
     sub = less.subfunctions
 
     generator = [rng.randrange(sub.q) for _ in range(sub.generator_values_count)]
@@ -488,6 +514,7 @@ COMMON_TESTS = [
 def make_less(
     category_name: str,
 ) -> Less:
+    """Load the host-side LESS library for the selected parameter set."""
     category, target = PARAMETER_SETS[category_name]
 
     return Less(
@@ -506,6 +533,7 @@ def log_test_result(
     status: str,
     error: str = "",
 ) -> None:
+    """Append a board test result to the CSV file."""
     needs_header = not RESULTS_CSV.exists() or RESULTS_CSV.stat().st_size == 0
 
     with RESULTS_CSV.open("a", newline="", encoding="utf-8") as file:
@@ -545,6 +573,8 @@ def run_tests(
     category_name: str,
     base_seed: int,
 ) -> bool:
+    """Run the supported subroutine tests for one firmware variant.
+    Compare each board result with the host reference implementation."""
     tests = list(COMMON_TESTS)
 
     if less.params.category in {
@@ -683,6 +713,7 @@ def run_tests(
 
 
 def main() -> int:
+    """Connect to the board, run the selected tests and report the result."""
     parser = argparse.ArgumentParser(
         description=(
             "Compare LESS subroutine results "
@@ -750,7 +781,7 @@ def main() -> int:
 
         scope.default_setup()
 
-        scope.io.clkout = 15e6
+        scope.io.clkout = 16e6
 
         time.sleep(0.2)
 

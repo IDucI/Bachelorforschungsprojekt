@@ -47,6 +47,8 @@ static void write_generator(
     fprintf(json, "]");
 }
 
+// Reconstruct the generator matrix product from LESS key generation.
+// The result is computed before RREF reduction and compression.
 static void calculate_keygen_generator_product(
     generator_mat_t *result,
     const uint8_t compressed_sk[PRIVATE_KEY_SEED_LENGTH_BYTES],
@@ -114,6 +116,7 @@ static void calculate_keygen_generator_product(
     );
 }
 
+// Generate deterministic keygen reference data for the Python tests.
 int main(void) {
     uint8_t rng_seed[48];
 

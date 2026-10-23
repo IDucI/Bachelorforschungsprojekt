@@ -1,10 +1,12 @@
+MCU_CLK ?= INT
+
 SS_VER = SS_VER_2_1
 
 LESS_CATEGORY ?= toy
 
 TARGET = less_subroutines_$(LESS_CATEGORY)
 
-
+# Map each LESS variant to its reference implementation parameters.
 ifeq ($(LESS_CATEGORY),toy)
 
 else ifeq ($(LESS_CATEGORY),cat1_192)
@@ -45,7 +47,7 @@ endif
 SRC += main.c
 SRC += ledz.c
 
-
+# Use the selected LESS reference implementation sources for the firmware.
 LESS_REFERENCE = ../../libless/variants/Reference_Implementation
 
 CFLAGS += -I$(LESS_REFERENCE)/include
@@ -59,9 +61,6 @@ SRC += rng.c
 SRC += fips202.c
 SRC += keccakf1600.c
 
-
-CFLAGS += -UHSE_VALUE
-CFLAGS += -DHSE_VALUE=15000000U
 
 
 ifeq ($(CRYPTO_TARGET),)
@@ -77,6 +76,7 @@ FIRMWAREPATH = ..
 include $(FIRMWAREPATH)/Makefile.inc
 
 
+# Configure stack and heap sizes for the Pinata firmware.
 ifeq ($(PLATFORM), PINATA)
 
 STACK_SIZE = 16K

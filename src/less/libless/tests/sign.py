@@ -14,6 +14,8 @@ variants = [
     (5, 137),
 ]
 
+# Generate keys and signatures for one LESS parameter set.
+# Save the verification inputs in transfer.json.
 if len(sys.argv) == 3:
     category = int(sys.argv[1])
 
@@ -72,6 +74,7 @@ if len(sys.argv) == 3:
 
     raise SystemExit(result.returncode)
 
+# Run the signing and verification tests for all official LESS parameter sets.
 for category, target in variants:
     result = subprocess.run(
         [

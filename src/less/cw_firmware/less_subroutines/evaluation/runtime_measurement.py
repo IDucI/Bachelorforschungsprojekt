@@ -68,6 +68,7 @@ def make_input(
     less,
     rng,
 ):
+    """Generate input data for the selected LESS subroutine."""
     sub = less.subfunctions
 
     if name == "fq_inv":
@@ -118,10 +119,11 @@ def make_input(
 
 
 def connect_board():
+    """Connect to the Pinata using ChipWhisperer and SimpleSerial2."""
     release_cdc_acm()
     scope = cw.scope()
     scope.default_setup()
-    scope.io.clkout = 15e6
+    scope.io.clkout = 16e6
     time.sleep(0.2)
     target = cw.target(scope, cw.targets.SimpleSerial2)
     target.baud = BAUDRATE
@@ -130,6 +132,7 @@ def connect_board():
 
 
 def measure_once(target, subroutine_id, input_data):
+    """Execute a subroutine and read its DWT cycle count and CPU clock."""
     board_write_buffer(target, input_data)
     board_execute_subroutine(target, subroutine_id, timeout_ms=60000)
 
@@ -145,6 +148,8 @@ def measure_once(target, subroutine_id, input_data):
 
 
 def measure_category(category, base_seed):
+    """Measure each supported subroutine ten times for one parameter set.
+    Calculate cycle and runtime statistics from the DWT measurements."""
     less = make_less(category)
     scope = target = None
     rows = []
@@ -170,7 +175,7 @@ def measure_category(category, base_seed):
                 raise RuntimeError(
                     f"CPU clock changed during {category}/{name}: {cpu_rates}"
                 )
-
+            # Convert CPU cycles to microseconds using the reported clock frequency.
             microseconds = [count * 1e6 / cpu_rates[0] for count in cycles]
             rows.append(
                 {
@@ -199,6 +204,7 @@ def measure_category(category, base_seed):
 
 
 def write_results(rows):
+    """Write the collected runtime measurements to a CSV file."""
     RESULTS_DIR.mkdir(parents=True, exist_ok=True)
     with OUTPUT_FILE.open("w", newline="", encoding="utf-8") as output:
         writer = csv.DictWriter(output, fieldnames=list(rows[0]))
@@ -207,6 +213,7 @@ def write_results(rows):
 
 
 def main():
+    """Select firmware variants, run DWT measurements and save the results."""
     parser = argparse.ArgumentParser(
         description="Measure LESS subroutine CPU cycles using STM32F4 DWT CYCCNT."
     )

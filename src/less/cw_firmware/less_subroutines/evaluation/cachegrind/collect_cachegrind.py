@@ -23,6 +23,11 @@ SUBROUTINES = (
     "monomial_sample_prikey",
     "generator_monomial_mul",
 )
+OVERALL_BENCHMARKS = (
+    "LESS_keygen",
+    "LESS_sign",
+    "LESS_verify",
+)
 METRICS = {
     "I_refs": r"I\s+refs:\s*([\d,]+)",
     "I1_misses": r"I1\s+misses:\s*([\d,]+)",
@@ -36,14 +41,18 @@ METRICS = {
 
 
 def benchmarks_for(selection):
-    if selection in ("all", "subroutines"):
+    """Select the requested subroutine or overall LESS benchmarks."""
+    if selection == "all":
+        return SUBROUTINES + OVERALL_BENCHMARKS
+    if selection == "subroutines":
         return SUBROUTINES
-    if selection not in SUBROUTINES:
+    if selection not in SUBROUTINES + OVERALL_BENCHMARKS:
         raise ValueError(f"Unknown benchmark: {selection}")
     return (selection,)
 
 
 def run_valgrind(binary):
+    """Run a benchmark with Cachegrind and extract its cache and branch statistics."""
     result = subprocess.run(
         [
             "valgrind",
@@ -67,6 +76,7 @@ def run_valgrind(binary):
 
 
 def run_runtime(binary):
+    """Execute the benchmark five times and return the average runtime in seconds."""
     durations = []
     for _ in range(5):
         start = time.perf_counter_ns()
@@ -86,12 +96,15 @@ def run_runtime(binary):
 
 
 def main():
+    """Collect Cachegrind and runtime results for the selected benchmarks."""
     parser = argparse.ArgumentParser()
-    parser.add_argument("benchmark", help="one subroutine or all")
+    parser.add_argument("benchmark", help="one benchmark, subroutines, or all")
     args = parser.parse_args()
     rows = []
     for bench in benchmarks_for(args.benchmark):
         for variant in VARIANTS:
+            if bench in OVERALL_BENCHMARKS and variant == "toy":
+                continue
             binary = HERE / f"cachegrind_{bench}_{variant}"
             if not binary.is_file():
                 raise FileNotFoundError(f"{binary} missing: build benchmarks first")

@@ -1,7 +1,6 @@
 from dataclasses import dataclass
 from typing import Optional
 
-
 VALID_CATEGORIES = {1, 3, 5}
 VALID_TARGETS = {
     1: {192, 68, 45},

@@ -29,6 +29,7 @@ PROGRAM_BAUDRATE = 230400
 
 
 def release_cdc_acm() -> None:
+    """Release the Linux CDC-ACM driver before connecting to the board."""
     subprocess.run(
         ["sudo", "modprobe", "-r", "cdc_acm"],
         check=False,
@@ -36,6 +37,7 @@ def release_cdc_acm() -> None:
 
 
 def initialize_results_csv() -> None:
+    """Create a new CSV summary with the board test result columns."""
     with RESULTS_CSV.open("w", newline="", encoding="utf-8") as file:
         writer = csv.writer(file)
         writer.writerow(
@@ -59,6 +61,7 @@ def log_result(
     board_test_passed: bool,
     error: str = "",
 ) -> None:
+    """Append the firmware and board test status to the CSV summary."""
     with RESULTS_CSV.open("a", newline="", encoding="utf-8") as file:
         writer = csv.writer(file)
         writer.writerow(
@@ -77,12 +80,14 @@ def log_result(
 def get_hex_path(
     category: str,
 ) -> Path:
+    """Return the expected firmware HEX path for a parameter set."""
     return FIRMWARE_DIR / (f"less_subroutines_" f"{category}-PINATA.hex")
 
 
 def flash_firmware(
     hex_path: Path,
 ) -> bool:
+    """Program the STM32 with the selected firmware HEX file."""
     scope = None
 
     try:
@@ -92,7 +97,7 @@ def flash_firmware(
 
         scope.default_setup()
 
-        scope.io.clkout = 15e6
+        scope.io.clkout = 16e6
 
         time.sleep(0.2)
 
@@ -122,6 +127,7 @@ def run_board_test(
     category: str,
     seed: int | None,
 ) -> bool:
+    """Run board_test.py for the selected parameter set and random seed."""
     command = [
         sys.executable,
         str(BOARD_TEST),
@@ -145,6 +151,8 @@ def run_board_test(
 
 
 def main() -> int:
+    """Flash and test the selected firmware variants.
+    Record individual results and report the overall test status."""
     parser = argparse.ArgumentParser(
         description=("Flash and validate the unified " "LESS Piñata firmware.")
     )
