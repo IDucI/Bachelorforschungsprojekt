@@ -12,10 +12,12 @@ evaluation_dir = Path(__file__).resolve().parent
 project_dir = evaluation_dir.parent
 
 board_test_script = evaluation_dir / "board_test.py"
+flash_script = project_dir / "flash.py"
+
 results_csv = evaluation_dir / "board_test_results.csv"
 
 # =============================================================================
-# CROSS PARAMETER SETS
+# Parameter Set
 # =============================================================================
 
 PARAMETER_SETS = [
@@ -95,7 +97,33 @@ def get_hex_path(family: str, category: int, variant: str) -> Path:
     return project_dir / filename
 
 # =============================================================================
-# BOARD TEST
+# Flash firmware
+# =============================================================================
+
+def flash_firmware(hex_path: Path) -> bool:
+    print()
+    print("=" * 70)
+    print(" Flash firmware")
+    print("=" * 70)
+    print(f"HEX: {hex_path.name}")
+
+    result = subprocess.run(
+        [
+            sys.executable,
+            str(flash_script),
+            str(hex_path),
+        ],
+        cwd = project_dir,
+    )
+
+    if result.returncode != 0:
+        print("Firmware flashing failed.")
+        return False
+
+    return True
+
+# =============================================================================
+# Board test
 # =============================================================================
 
 def run_board_test(family: str, category: int, variant: str) -> bool:
@@ -169,7 +197,7 @@ def main() -> int:
 
     print("Workflow:")
 
-    print("    Check HEX -> Board Reference Test")
+    print("    Check HEX -> Flash Firmware -> Board Reference Test")
 
     initialize_results_csv()
 
@@ -209,7 +237,9 @@ def main() -> int:
                     family,
                     category,
                     variant,
-                    False,
+                    False,  
+                    False,  
+                    False,  
                     "HEX file missing"
                 )
             )
@@ -217,47 +247,61 @@ def main() -> int:
             # Continue with the next configuration.
             continue
 
-        # Board test
-        board_ok = run_board_test(family, category, variant)
+        # Flash firmware
+        flash_ok = flash_firmware(hex_path)
 
-        if board_ok:
-            log_result(
-                family,
-                category,
-                variant,
-                hex_exists = True,
-                board_test_passed = True,
-                error = ""
-            )
-            results.append(
-                (
-                    family,
-                    category,
-                    variant,
-                    True,
-                    ""
-                )
-            )
-        else:
+        if not flash_ok:
             log_result(
                 family,
                 category,
                 variant,
                 hex_exists = True,
                 board_test_passed = False,
-                error = "Board reference test failed"
+                error = "Firmware flashing failed"
             )
+
             results.append(
                 (
                     family,
                     category,
                     variant,
+                    True,
                     False,
-                    "Board reference test failed"
+                    False,
+                    "Firmware flashing failed"
                 )
             )
-            # Continue with the remaining configurations.
+
             continue
+
+        # Board test
+        board_ok = run_board_test(family, category, variant)
+
+        if board_ok:
+            error = ""
+        else:
+            error = "Board reference test failed"
+
+        log_result(
+            family,
+            category,
+            variant,
+            hex_exists = True,
+            board_test_passed = board_ok,
+            error = error
+        )
+
+        results.append(
+            (
+                family,
+                category,
+                variant,
+                True,
+                True,
+                board_ok,
+                error
+            )
+        )
 
     print()
     print()
@@ -265,8 +309,24 @@ def main() -> int:
     print(" TEST SUMMARY")
     print("=" * 70)
 
-    for (family, category, variant, passed, error) in results:
+    for (
+        family,
+        category,
+        variant,
+        hex_exists,
+        flash_passed,
+        board_test_passed,
+        error
+    ) in results:
+
+        passed = (
+            hex_exists
+            and flash_passed
+            and board_test_passed
+        )
+
         status = "Pass" if passed else "Fail"
+
         print(
             f"{status:>5}  "
             f"{family:<5} "
@@ -283,7 +343,7 @@ def main() -> int:
     all_passed = (
         len(results) == len(configurations)
         and all(
-            result[3]
+            result[3] and result[4] and result[5]
             for result in results
         )
     )

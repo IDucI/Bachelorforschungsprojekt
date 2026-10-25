@@ -74,7 +74,7 @@ all: hex
 
 hex: $(HEXNAMES)
 	@echo "--------------------------------------------------------"
-	@echo " All 18 variants are successfully generated"
+	@echo " All 14 variants are successfully generated"
 	@echo "--------------------------------------------------------"
 
 # Main build loop: Splits the target name into macro flags 

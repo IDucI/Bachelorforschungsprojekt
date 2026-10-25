@@ -68,11 +68,9 @@ subroutine_fp_vec_by_fp_vec_pointwise       = 0x09
 subroutine_fz_vec_sub_m                     = 0x10
 subroutine_fz_inf_w_by_fz_matrix            = 0x11
 subroutine_fp_vec_by_restr_vec_scaled       = 0x12
-subroutine_expand_digest_to_fixed_weight    = 0x13
-subroutine_fz_dz_norm_n                     = 0x14
-subroutine_fz_dz_norm_m                     = 0x15
-subroutine_expand_pk                        = 0x16
-subroutine_expand_sk                        = 0x17
+subroutine_fz_dz_norm_n                     = 0x13
+subroutine_fz_dz_norm_m                     = 0x14
+
 
 # =============================================================================
 # USB / Chipwhisperer
@@ -113,8 +111,13 @@ def board_write_buffer(target, data: bytes) -> None:
         # Send the input chunk using the ChipWhisperer SimpleSerial2 library.
         target.send_cmd(ord("s"), chunk_index, chunk)
 
-        # Read and validate the firmware acknowledgement.
-        cmd, ack_data = target.read_cmd(timeout=2000)
+        response = target.read_cmd(timeout=2000)
+
+        if response is None:
+            raise TimeoutError("Timeout while waiting for ACK from STM32")
+
+        cmd = response[1]
+        ack_data = response[3:-2]
 
         if cmd != ord("e"):
             raise RuntimeError(f"Expected ACK 'e', got 0x{cmd:02X}")
@@ -152,7 +155,13 @@ def board_run_chunked_subroutine(
         target.send_cmd(ord("b"), subroutine_id, request)
 
         while True:
-            cmd, data = target.read_cmd(timeout=timeout_ms)
+            response = target.read_cmd(timeout=timeout_ms)
+
+            if response is None:
+                raise TimeoutError("Timeout while waiting for subroutine response")
+
+            cmd = response[1]
+            data = response[3:-2]
 
             # 'd' indicates an intermediate data/status message.
             if cmd == ord("d"):
@@ -187,8 +196,13 @@ def board_run_chunked_subroutine(
         # Append the received chunk to the complete output.
         output.extend(data)
 
-        # Read and validate the acknowledgement for this chunk.
-        ack_cmd, ack_data = target.read_cmd(timeout=timeout_ms)
+        response = target.read_cmd(timeout=timeout_ms)
+
+        if response is None:
+            raise TimeoutError("Timeout while waiting for subroutine response")
+
+        ack_cmd = response[1]
+        ack_data = response[3:-2]
 
         if ack_cmd != ord("e"):
             raise RuntimeError(f"Expected ACK 'e', got 0x{ack_cmd:02X}")
@@ -497,30 +511,6 @@ def test_intermediate_fp_vec_by_restr_vec_scaled(target, c: Cross, result: SignC
     )
 
 
-def test_intermediate_expand_digest_to_fixed_weight(target, c: Cross, result: SignCalculationResult):
-    """
-    Test `expand_digest_to_fixed_weight` using intermediate values from the CROSS signing procedure.
-    The input is the digest_chall_2.
-    The expected output is the resulting fixed-weight challenge vector chall_2.
-    """
-    c_digest_chall_2 = result.expand_digest_to_fixed_weight.digest_chall_2
-    c_chall_2 = result.expand_digest_to_fixed_weight.chall_2
-
-    # Input: uint8_t digest_chall_2[HASH_DIGEST_LENGTH]
-    inputs = [c_digest_chall_2]
-
-    # Output: uint8_t chall_2[T]
-    outputs = [bytes(c_chall_2)]
-
-    test_intermediate_values(
-        target,
-        subroutine_expand_digest_to_fixed_weight,
-        "expand_digest_to_fixed_weight",
-        inputs,
-        outputs
-    )
-
-
 def test_intermediate_fz_dz_norm_n(target, c: Cross, result: SignCalculationResult, i):
     """
     Test `fz_dz_norm_n` using intermediate values from the CROSS signing procedure.
@@ -542,70 +532,6 @@ def test_intermediate_fz_dz_norm_n(target, c: Cross, result: SignCalculationResu
         inputs,
         outputs
     )
-
-
-def test_intermediate_expand_pk(target, c: Cross, result: KeygenCalculationResult):
-    """
-    Test `expand_pk` using intermediate values from the CROSS key generation procedure.
-    The input is the public-key seed seed_pk.
-    The expected output is the matrix V_tr and, for RSDPG, additionally the matrix W_mat.
-    """
-    c_V_tr = result.expand_pk.V_tr
-    c_seed_pk = result.expand_pk.seed_pk
-    c_W_mat = result.expand_pk.W_mat
-
-    # Input: uint8_t seed_pk[KEYPAIR_SEED_LENGTH_BYTES]
-    inputs = [c_seed_pk]
-
-    if c.params.algorithm == "RSDP":
-        # Output: FP_ELEM V_tr[K][N-K]
-        outputs = [fp_to_bytes(c_V_tr, c)]
-    elif c.params.algorithm == "RSDPG":
-        # Output: FP_ELEM V_tr[K][N-K] || FZ_ELEM W_mat[M][N-M]
-        outputs = [fp_to_bytes(c_V_tr, c) + fz_to_bytes(c_W_mat)]
-
-    test_intermediate_values(
-        target,
-        subroutine_expand_pk,
-        "expand_pk",
-        inputs,
-        outputs
-    )
-
-
-def test_intermediate_expand_sk(target, c: Cross, result: SignCalculationResult):
-    """
-    Test `expand_sk` using intermediate values from the CROSS signing procedure.
-    The input is the secret-key seed seed_sk.
-    The expected output is e_bar and V_tr and, for RSDPG, additionally e_G_bar and W_mat.
-    """
-    c_e_bar = result.expand_sk.e_bar
-    c_V_tr = result.expand_sk.V_tr
-    c_e_G_bar = result.expand_sk.e_G_bar
-    c_W_mat = result.expand_sk.W_mat
-    c_seed_sk = result.seed_sk
-
-    # Input: uint8_t seed_sk[KEYPAIR_SEED_LENGTH_BYTES]
-    inputs = [c_seed_sk]
-
-    if c.params.algorithm == "RSDP":
-        # Output: FZ_ELEM e_bar[N] || FP_ELEM V_tr[K][N-K]
-        outputs = [fz_to_bytes(c_e_bar) + fp_to_bytes(c_V_tr, c)]
-    elif c.params.algorithm == "RSDPG":
-        # Output: FZ_ELEM e_bar[N] || FZ_ELEM e_G_bar[M] || FP_ELEM V_tr[K][N-K] || FZ_ELEM W_mat[M][N-M]
-        outputs = [fz_to_bytes(c_e_bar) 
-                   + fz_to_bytes(c_e_G_bar)
-                   + fp_to_bytes(c_V_tr, c) 
-                   + fz_to_bytes(c_W_mat)]
-    
-    test_intermediate_values(
-        target,
-        subroutine_expand_sk,
-        "expand_sk",
-        inputs,
-        outputs
-    )
-
 
 # =============================================================================
 # RSDP only subroutine tests
@@ -635,10 +561,6 @@ def test_intermediate_pack_fz_vec(target, c: Cross, result: SignCalculationResul
         outputs
     )
 
-
-# =============================================================================
-# RSDP-(G) only subroutine tests
-# =============================================================================
 
 def test_intermediate_fz_vec_sub_m(target, c: Cross, result: SignCalculationResult, i):
     """
@@ -736,7 +658,6 @@ def test_intermediate_pack_fz_rsdp_g_vec(target, c: Cross, result: SignCalculati
             outputs
         )
 
-
 # =============================================================================
 # Intermediate subroutine test suite
 # =============================================================================
@@ -749,10 +670,7 @@ COMMON_INTERMEDIATE_TESTS = [
     ("fp_vec_by_fp_matrix", test_intermediate_fp_vec_by_fp_matrix, "sign", True),
     ("fp_vec_by_fp_vec_pointwise", test_intermediate_fp_vec_by_fp_vec_pointwise, "sign", True),
     ("fp_vec_by_restr_vec_scaled", test_intermediate_fp_vec_by_restr_vec_scaled, "sign", True),
-    ("expand_digest_to_fixed_weight", test_intermediate_expand_digest_to_fixed_weight, "sign", False),
     ("fz_dz_norm_n", test_intermediate_fz_dz_norm_n, "sign", True),
-    ("expand_pk", test_intermediate_expand_pk, "keygen", False),
-    ("expand_sk", test_intermediate_expand_sk, "sign", False),
 ]
 
 RSDP_INTERMEDIATE_TESTS = [
@@ -807,7 +725,10 @@ def run_intermediate_tests(target, c: Cross):
                 test_function(target, c, result)
 
         except Exception as exc:
+            import traceback
+
             print(" Fail")
+            traceback.print_exc()
             print()
             print("============================================================")
             print("INTERMEDIATE TEST FAILURE")
