@@ -5,19 +5,10 @@ import chipwhisperer as cw
 import subprocess
 
 
-# =============================================================================
-# Path setup
-# =============================================================================
-
 # Get the directory in which this Python script is located.
-# This ensures that the firmware files can be found independently
-# of the directory from which the script is executed.
 here = Path(__file__).resolve().parent
 
-# =============================================================================
 # CROSS PARAMETER SETS
-# =============================================================================
-
 PARAMETER_SETS = [
     ("RSDP", 1, "fast"),
     ("RSDP", 1, "balanced"),
@@ -39,13 +30,8 @@ PARAMETER_SETS = [
     ("RSDPG", 5, "small"),
 ]
 
-
 # Communication baud rate used by the STM32 programmer.
 baudrate = 230400
-
-# =============================================================================
-# USB / CDC-ACM driver handling
-# =============================================================================
 
 def release_cdc_acm() -> None:
     """
@@ -57,51 +43,40 @@ def release_cdc_acm() -> None:
     """
     subprocess.run(["sudo", "modprobe", "-r", "cdc_acm"], check=False)
 
-# =============================================================================
-# Firmware flashing
-# =============================================================================
 
 def flash_firmware(hex_path: Path) -> bool:
-    """
-    Flash one firmware image onto the STM32F target.
-    """
-    # Check whether the specified firmware file exists.
     if not hex_path.exists():
         print(f"Error: Target file '{hex_path.name}' does not exist!")
         return False
 
-    print(" Connecting to Scope & Target hardware...")
-
-    # Scope object is initialized as None so that it can safely
-    # be checked in the finally block.
+    print("Connecting to Scope & Target hardware...")
     scope = None
 
     try:
-        # Release the CDC-ACM driver before accessing the
-        # ChipWhisperer USB device.
         release_cdc_acm()
+        time.sleep(2)
 
-        # Establish a connection to the ChipWhisperer scope.
         scope = cw.scope()
-
-        # Apply ChipWhisperer's default scope configuration.
         scope.default_setup()
-
-        # Configure the output clock used by the target.
         scope.io.clkout = 15e6
 
-        # Give the target a short amount of time to stabilize
-        # after the clock configuration.
-        time.sleep(0.2)
-
-        # Put the STM32 into programming mode.
+        # Enter STM32 bootloader mode.
         scope.io.pdic = "high"
+
+        # Reset the target before programming.
+        scope.io.nrst = "low"
+        time.sleep(0.1)
+        scope.io.nrst = "high"
+        time.sleep(0.5)
 
         print(f"Flashing image: {hex_path.name}...")
 
-        # Program the STM32F target with the selected firmware.
-        # STM32F Programmer is used for the STM32F4 target on the Riscure Piñata board.
-        cw.program_target(scope, cw.programmers.STM32FProgrammer, str(hex_path), baud = baudrate)
+        cw.program_target(
+            scope,
+            cw.programmers.STM32FProgrammer,
+            str(hex_path),
+            baud = baudrate
+        )
 
         print("Firmware flashing completed successfully.")
         return True
@@ -109,6 +84,22 @@ def flash_firmware(hex_path: Path) -> bool:
     except Exception as err:
         print(f"Flashing process failed: {err}")
         return False
+
+    finally:
+        if scope is not None:
+            try:
+                scope.io.pdic = "low"
+                scope.io.nrst = "low"
+                time.sleep(0.1)
+                scope.io.nrst = "high"
+                time.sleep(0.5)
+            except Exception as err:
+                print(f"Warning: Target reset failed: {err}")
+
+            try:
+                scope.dis()
+            except Exception as err:
+                print(f"Warning: Scope cleanup failed: {err}")
 
 # =============================================================================
 # Main
@@ -120,17 +111,16 @@ def main() -> None:
     Without an argument, all configurations defined in PARAMETER_SETS are flashed sequentially.
     """
 
-    # Single-file mode
-    # Example: python3 flash.py firmware.hex
-    # In this mode, only the specified firmware image is flashed.
     if len(sys.argv) > 1:
         single_file = Path(sys.argv[1])
-        flash_firmware(single_file)
-        return
+        success = flash_firmware(single_file)
+        sys.exit(0 if success else 1)
     
     # Batch mode
     # If no firmware file was specified, process all CROSS parameter configurations automatically.
     print("Starting automated batch flashing sequence...\n")
+
+    successful_flashes = 0
 
     for family, category, variant in PARAMETER_SETS:
         # Store the current configuration for readable
@@ -138,7 +128,6 @@ def main() -> None:
         param_key = (family, category, variant)
 
         # Construct the expected firmware filename.
-        #
         # Example:
         #   cross_subroutines_rsdp_1_fast-PINATA.hex
         hex_filename = (f"cross_subroutines_{family.lower()}_{category}_{variant}-PINATA.hex")
@@ -146,14 +135,12 @@ def main() -> None:
         # Build the complete path to the firmware file.
         hex_path = here / hex_filename
 
-        # Print a separator and the configuration currently
-        # being processed.
+        # Print a separator and the configuration currently being processed.
         print("=" * 60)
         print(f" Flashing Configuration: {param_key} ".center(60, "="))
         print("=" * 60)
 
-        # Skip the configuration if the corresponding HEX file
-        # does not exist.
+        # Skip the configuration if the corresponding HEX file does not exist.
         if not hex_path.exists():
             print(f"Binary missing: {hex_filename} -> Skipping configuration.")
             continue
@@ -168,7 +155,21 @@ def main() -> None:
             print(f"Aborting batch execution at {param_key} due to an error.\n")
             break
 
+        successful_flashes += 1
+
         print("\n" + "-" * 60 + "\n")
+
+    print("\n" + "=" * 60)
+
+    if successful_flashes == len(PARAMETER_SETS):
+        print("ALL 18 FIRMWARE CONFIGURATIONS FLASHED SUCCESSFULLY!")
+    else:
+        print(
+            f"FLASHING INCOMPLETE: {successful_flashes}/"
+            f"{len(PARAMETER_SETS)} configurations flashed successfully."
+        )
+
+    print("=" * 60)
 
 if __name__ == "__main__":
     main()
