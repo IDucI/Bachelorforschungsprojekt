@@ -1,7 +1,5 @@
 import subprocess
 import sys
-import csv
-from datetime import datetime
 from pathlib import Path
 
 # =============================================================================
@@ -13,8 +11,6 @@ project_dir = evaluation_dir.parent
 
 board_test_script = evaluation_dir / "board_test.py"
 flash_script = project_dir / "flash.py"
-
-results_csv = evaluation_dir / "board_test_results.csv"
 
 # =============================================================================
 # Parameter Set
@@ -40,51 +36,6 @@ PARAMETER_SETS = [
     ("RSDPG", 5, "balanced"),
     ("RSDPG", 5, "small"),
 ]
-
-# =============================================================================
-# CSV Logic
-# =============================================================================
-
-def initialize_results_csv() -> None:
-    with results_csv.open("w", newline="", encoding="utf-8") as file:
-        writer = csv.writer(file)
-
-        writer.writerow(
-            [
-                "timestamp",
-                "family",
-                "category",
-                "variant",
-                "hex_exists",
-                "board_test_passed",
-                "error"
-            ]
-        )
-
-def log_result(
-    family: str,
-    category: int,
-    variant: str,
-    hex_exists: bool,
-    board_test_passed: bool,
-    error: str
-) -> None:
-
-    with results_csv.open("a", newline="", encoding="utf-8") as file:
-
-        writer = csv.writer(file)
-
-        writer.writerow(
-            [
-                datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                family,
-                category,
-                variant,
-                hex_exists,
-                board_test_passed,
-                error
-            ]
-        )
 
 # =============================================================================
 # Firmware name
@@ -199,8 +150,6 @@ def main() -> int:
 
     print("    Check HEX -> Flash Firmware -> Board Reference Test")
 
-    initialize_results_csv()
-
     results = []
 
     for index, (family, category, variant) in enumerate(configurations, start=1):
@@ -223,15 +172,6 @@ def main() -> int:
 
             print(f"    {hex_path}")
 
-            log_result(
-                family,
-                category,
-                variant,
-                hex_exists = False,
-                board_test_passed = False,
-                error = "HEX file missing"
-            )
-
             results.append(
                 (
                     family,
@@ -251,14 +191,6 @@ def main() -> int:
         flash_ok = flash_firmware(hex_path)
 
         if not flash_ok:
-            log_result(
-                family,
-                category,
-                variant,
-                hex_exists = True,
-                board_test_passed = False,
-                error = "Firmware flashing failed"
-            )
 
             results.append(
                 (
@@ -281,15 +213,6 @@ def main() -> int:
             error = ""
         else:
             error = "Board reference test failed"
-
-        log_result(
-            family,
-            category,
-            variant,
-            hex_exists = True,
-            board_test_passed = board_ok,
-            error = error
-        )
 
         results.append(
             (

@@ -58,7 +58,7 @@ def flash_firmware(hex_path: Path) -> bool:
 
         scope = cw.scope()
         scope.default_setup()
-        scope.io.clkout = 15e6
+        scope.io.clkout = 16e6
 
         # Enter STM32 bootloader mode.
         scope.io.pdic = "high"

@@ -1,6 +1,6 @@
 # README
 
-This folder contains the testing and evaluation tools for the board communication, subroutine correctness, and runtime measurement.
+This folder contains the testing and evaluation tools for the board communication, memory consumption and runtime measurement.
 
 ## Context
 
@@ -56,29 +56,25 @@ To test only a specific variant, provide the family, category, and optimization 
 
 When all 18 variants are tested, the summary contains all 18 variants. When a specific variant is selected, only that variant is listed.
 
-The test results are displayed in the terminal and can also be saved as a CSV file for later analysis.
+The test results are displayed in the terminal.
 
 ## Runtime Measurement
 
 The file `runtime_measurement.py` measures the execution time of selected CROSS operations and subroutines on the STM32F4 microcontroller.
 
-Unlike `run_board_test.py`, which focuses on communication and correctness, the runtime measurement script records the number of CPU cycles required by each operation and derives the corresponding execution time. Before accepting a measurement, the script compares the firmware output with the expected output from the Python reference implementation.
+Unlike `run_board_test.py`, which focuses on communication and validation, the runtime measurement script records the number of CPU cycles required by each operation and derives the corresponding execution time. Before accepting a measurement, the script compares the firmware output with the expected output from the Python reference implementation.
 
-### Prerequisites
+## Prerequisites
 
 - The STM32F4 board is connected to the PC.
 - The required ChipWhisperer and CROSS Python dependencies are installed.
-- The appropriate firmware is flashed onto the board.
 - The board is accessible through the configured serial communication interface.
 
-If the firmware needs to be restored, follow the flashing and verification procedure described in the `cross_subroutines` README.
-
-### Running the Runtime Measurement
+## Running the Runtime Measurement
 
 Navigate to the `evaluation` folder and run:
 
 `python runtime_measurement.py`
-
 
 By default, the script evaluates the configured parameter variants and measures each selected operation repeatedly.
 
@@ -111,15 +107,13 @@ The script records successful measurements and calculates summary statistics, in
 
 The measurements are intended to characterize the runtime of the selected operations on the target microcontroller. They should be interpreted in the context of the firmware implementation, target configuration, and measurement setup.
 
-### Results
+## Results
 
 The results are saved as a CSV file in the `results` subfolder:
 
-```text
 evaluation/
 └── results/
     └── runtime_measurement.csv
-```
 
 The CSV file contains the configuration metadata, operation names, repetition counts, and runtime statistics. It can be used for further analysis and comparison between parameter variants.
 
@@ -127,6 +121,4 @@ The measurement script also prints progress information and measurement results 
 
 ## Notes
 
-- Ensure that the firmware matches the selected parameter configuration.
-- Do not compare measurements taken under substantially different hardware or software configurations without accounting for those differences.
 - Runtime measurements and memory-consumption measurements are separate evaluations and should be interpreted accordingly.

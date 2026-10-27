@@ -132,7 +132,7 @@ def board_run_chunked_subroutine(
     input_data,
     output_len,
     chunk_size,
-    timeout_ms=5000
+    timeout_ms = 5000
 ):
     """
     Execute a subroutine whose output must be requested in multiple chunks.
@@ -766,10 +766,10 @@ def run_single_variant(target, family: str, category: int, variant: str):
     # Create the Python reference implementation for exactly the same
     # algorithm/category/optimization combination as the firmware.
     c = Cross(
-        path=str(build_dir),
-        algorithm=family,
-        category=category,
-        optimization=variant
+        path = str(build_dir),
+        algorithm = family,
+        category = category,
+        optimization = variant
     )
 
     print("CROSS instance created.")
@@ -838,7 +838,7 @@ def main():
 
         scope.default_setup()
 
-        scope.io.clkout = 15e6
+        scope.io.clkout = 16e6
 
         target = cw.target(scope, cw.targets.SimpleSerial2)
 
