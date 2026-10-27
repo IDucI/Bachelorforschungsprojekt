@@ -74,7 +74,8 @@ all: hex
 
 hex: $(HEXNAMES)
 	@echo "--------------------------------------------------------"
-	@echo " All 14 variants are successfully generated"
+	@echo " Firmware generation completed for the 14 supported"
+	@echo " CROSS subroutine implementations"
 	@echo "--------------------------------------------------------"
 
 # Main build loop: Splits the target name into macro flags 
