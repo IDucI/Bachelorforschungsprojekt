@@ -1,18 +1,12 @@
 import argparse
 import subprocess
 import sys
-import time
 from pathlib import Path
-import csv
 import random
-from datetime import datetime
-
-import chipwhisperer as cw
 
 EVALUATION_DIR = Path(__file__).resolve().parent
 FIRMWARE_DIR = EVALUATION_DIR.parent
 BOARD_TEST = EVALUATION_DIR / "board_test.py"
-RESULTS_CSV = EVALUATION_DIR / "board_test_results.csv"
 
 CATEGORIES = (
     "toy",
@@ -25,57 +19,6 @@ CATEGORIES = (
     "cat5_137",
 )
 
-PROGRAM_BAUDRATE = 230400
-
-
-def release_cdc_acm() -> None:
-    """Release the Linux CDC-ACM driver before connecting to the board."""
-    subprocess.run(
-        ["sudo", "modprobe", "-r", "cdc_acm"],
-        check=False,
-    )
-
-
-def initialize_results_csv() -> None:
-    """Create a new CSV summary with the board test result columns."""
-    with RESULTS_CSV.open("w", newline="", encoding="utf-8") as file:
-        writer = csv.writer(file)
-        writer.writerow(
-            [
-                "timestamp",
-                "category",
-                "base_seed",
-                "hex_exists",
-                "flash_passed",
-                "board_test_passed",
-                "error",
-            ]
-        )
-
-
-def log_result(
-    category: str,
-    seed: int,
-    hex_exists: bool,
-    flash_passed: bool,
-    board_test_passed: bool,
-    error: str = "",
-) -> None:
-    """Append the firmware and board test status to the CSV summary."""
-    with RESULTS_CSV.open("a", newline="", encoding="utf-8") as file:
-        writer = csv.writer(file)
-        writer.writerow(
-            [
-                datetime.now().astimezone().isoformat(timespec="seconds"),
-                category,
-                seed,
-                hex_exists,
-                flash_passed,
-                board_test_passed,
-                error,
-            ]
-        )
-
 
 def get_hex_path(
     category: str,
@@ -87,40 +30,14 @@ def get_hex_path(
 def flash_firmware(
     hex_path: Path,
 ) -> bool:
-    """Program the STM32 with the selected firmware HEX file."""
-    scope = None
+    """Flash the selected firmware using flash.py."""
+    result = subprocess.run(
+        [sys.executable, str(FIRMWARE_DIR / "flash.py"), str(hex_path)],
+        cwd=FIRMWARE_DIR,
+        check=False,
+    )
 
-    try:
-        release_cdc_acm()
-
-        scope = cw.scope()
-
-        scope.default_setup()
-
-        scope.io.clkout = 16e6
-
-        time.sleep(0.2)
-
-        cw.program_target(
-            scope,
-            cw.programmers.STM32FProgrammer,
-            str(hex_path),
-            baud=PROGRAM_BAUDRATE,
-        )
-
-        return True
-
-    except Exception as exc:
-        print(f"Flash failed: " f"{type(exc).__name__}: " f"{exc}")
-
-        return False
-
-    finally:
-        if scope is not None:
-            try:
-                scope.dis()
-            except Exception:
-                pass
+    return result.returncode == 0
 
 
 def run_board_test(
@@ -176,7 +93,6 @@ def main() -> int:
     categories = (args.category,) if args.category is not None else CATEGORIES
 
     results = []
-    initialize_results_csv()
 
     print()
     print("=" * 64)
@@ -207,15 +123,6 @@ def main() -> int:
         if not hex_path.is_file():
             print(f"HEX file missing: " f"{hex_path}")
 
-            log_result(
-                category,
-                category_seed,
-                False,
-                False,
-                False,
-                "HEX file missing",
-            )
-
             results.append(
                 (
                     category,
@@ -229,15 +136,6 @@ def main() -> int:
         print(f"Flashing: " f"{hex_path.name}")
 
         if not flash_firmware(hex_path):
-
-            log_result(
-                category,
-                category_seed,
-                True,
-                False,
-                False,
-                "flash failed",
-            )
 
             results.append(
                 (
@@ -258,15 +156,6 @@ def main() -> int:
             category_seed,
         ):
 
-            log_result(
-                category,
-                category_seed,
-                True,
-                True,
-                False,
-                "board test failed",
-            )
-
             results.append(
                 (
                     category,
@@ -276,14 +165,6 @@ def main() -> int:
             )
 
             continue
-
-        log_result(
-            category,
-            category_seed,
-            True,
-            True,
-            True,
-        )
 
         results.append(
             (
@@ -314,8 +195,6 @@ def main() -> int:
     print("Final result: " + ("Pass" if overall_passed else "Fail"))
 
     print("=" * 64)
-
-    print(f"CSV summary: {RESULTS_CSV}")
 
     return 0 if overall_passed else 1
 

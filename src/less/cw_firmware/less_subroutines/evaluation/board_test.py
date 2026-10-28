@@ -43,83 +43,6 @@ LESS_MONOMIAL_SAMPLE_PRIKEY = 0x06
 LESS_GENERATOR_MONOMIAL_MUL = 0x07
 
 
-def ss_send_cmd(target, cmd: int, scmd: int, data: bytes = b"") -> None:
-    """Send a SimpleSerial command with a subcommand and payload."""
-    data = bytes(data)
-
-    if len(data) > 0xFF:
-        raise ValueError("SimpleSerial payload exceeds 255 bytes")
-
-    target.send_cmd(
-        cmd,
-        scmd,
-        bytearray(data),
-    )
-
-
-def ss_read_packet(
-    target,
-    expected_cmd: int | None = None,
-    expected_len: int | None = None,
-    timeout_ms: int = 5000,
-):
-    """Read and validate a SimpleSerial response packet."""
-    packet = target.read_cmd(
-        cmd=expected_cmd,
-        pay_len=expected_len,
-        timeout=timeout_ms,
-    )
-
-    if packet is None:
-        raise TimeoutError("Timeout waiting for SimpleSerial response")
-
-    raw = bytes(packet)
-
-    if len(raw) < 5:
-        raise RuntimeError("SimpleSerial response too short")
-
-    cmd = raw[1]
-    data_len = raw[2]
-    data = raw[3:-2]
-
-    if len(data) != data_len:
-        raise RuntimeError(
-            f"Invalid SimpleSerial payload length: "
-            f"header says {data_len}, got {len(data)}"
-        )
-
-    if expected_cmd is not None and cmd != expected_cmd:
-        if cmd == ord("e") and len(data) == 1:
-            if data[0] != 0:
-                raise RuntimeError(f"STM32 returned SimpleSerial error 0x{data[0]:02X}")
-
-            raise RuntimeError("Received SimpleSerial ACK before the expected response")
-
-        raise RuntimeError(
-            f"Expected SimpleSerial command 0x{expected_cmd:02X}, " f"got 0x{cmd:02X}"
-        )
-
-    if expected_len is not None and len(data) != expected_len:
-        raise RuntimeError(
-            f"Expected SimpleSerial payload length " f"{expected_len}, got {len(data)}"
-        )
-
-    return cmd, data
-
-
-def wait_for_ack(target, timeout_ms: int = 5000) -> None:
-    """Wait for a successful SimpleSerial acknowledgement."""
-    _, data = ss_read_packet(
-        target,
-        expected_cmd=ord("e"),
-        expected_len=1,
-        timeout_ms=timeout_ms,
-    )
-
-    if data[0] != 0:
-        raise RuntimeError(f"STM32 returned SimpleSerial error 0x{data[0]:02X}")
-
-
 def release_cdc_acm() -> None:
     """Release the Linux CDC-ACM driver before connecting to the board."""
     subprocess.run(
@@ -140,15 +63,11 @@ def board_write_buffer(target, data: bytes) -> None:
             raise ValueError("Input requires more than 256 chunks")
 
         chunk = data[offset : offset + INPUT_CHUNK_SIZE]
+        target.send_cmd(ord("s"), chunk_index, bytearray(chunk))
 
-        ss_send_cmd(
-            target,
-            ord("s"),
-            chunk_index,
-            chunk,
-        )
-
-        wait_for_ack(target)
+        status = target.simpleserial_wait_ack(timeout=5000)
+        if status is None or len(status) != 1 or status[0] != 0:
+            raise RuntimeError(f"Input chunk {chunk_index}: invalid ACK {status!r}")
 
 
 def board_execute_subroutine(
@@ -157,17 +76,11 @@ def board_execute_subroutine(
     timeout_ms: int = 30000,
 ) -> None:
     """Execute the selected subroutine and wait for its acknowledgement."""
-    ss_send_cmd(
-        target,
-        ord("b"),
-        subroutine_id,
-        b"",
-    )
+    target.send_cmd(ord("b"), subroutine_id, bytearray())
 
-    wait_for_ack(
-        target,
-        timeout_ms=timeout_ms,
-    )
+    status = target.simpleserial_wait_ack(timeout=timeout_ms)
+    if status is None or len(status) != 1 or status[0] != 0:
+        raise RuntimeError(f"Subroutine 0x{subroutine_id:02X}: invalid ACK {status!r}")
 
 
 def board_read_result(
@@ -191,46 +104,34 @@ def board_read_result(
             ]
         )
 
-        ss_send_cmd(
-            target,
-            ord("g"),
-            0,
-            request,
-        )
-
-        cmd, data = ss_read_packet(
-            target,
-            timeout_ms=timeout_ms,
-        )
-
-        if cmd == ord("e"):
-            error = data[0] if len(data) == 1 else None
-
-            raise RuntimeError(
-                f"Board rejected output chunk " f"{chunk_index}: error={error!r}"
-            )
-
-        if cmd != ord("r"):
-            raise RuntimeError(f"Expected result command 'r', " f"got 0x{cmd:02X}")
+        target.send_cmd(ord("g"), 0, bytearray(request))
 
         expected_len = min(
             OUTPUT_CHUNK_SIZE,
             output_len - chunk_index * OUTPUT_CHUNK_SIZE,
         )
 
+        data = target.simpleserial_read(
+            "r",
+            expected_len,
+            timeout=timeout_ms,
+            ack=False,
+        )
+
+        if data is None:
+            raise TimeoutError(f"Timeout waiting for output chunk {chunk_index}")
+
         if len(data) != expected_len:
             raise RuntimeError(
-                f"Output chunk {chunk_index}: "
-                f"expected {expected_len} bytes, "
+                f"Output chunk {chunk_index}: expected {expected_len} bytes, "
                 f"got {len(data)}"
             )
 
-        output.extend(data)
+        status = target.simpleserial_wait_ack(timeout=timeout_ms)
+        if status is None or len(status) != 1 or status[0] != 0:
+            raise RuntimeError(f"Output chunk {chunk_index}: invalid ACK {status!r}")
 
-        wait_for_ack(
-            target,
-            timeout_ms=timeout_ms,
-        )
+        output.extend(data)
 
     return bytes(output)
 

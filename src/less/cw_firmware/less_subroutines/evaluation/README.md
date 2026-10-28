@@ -31,7 +31,7 @@ From `src/less/cw_firmware/less_subroutines/evaluation`:
 python3 run_board_test.py
 ```
 
-The script flashes the corresponding firmware for each variant, executes the supported LESS subroutines on the Piñata and compares their outputs against the host reference implementation.
+The runner calls `../flash.py` for each selected firmware image. The board test compares the supported LESS subroutines against the host reference implementation.
 
 To test a single variant:
 
@@ -63,7 +63,7 @@ Measure one variant:
 python3 runtime_measurement.py cat1_192
 ```
 
-The script flashes the corresponding firmware and measures each supported subroutine using 10 generated inputs.
+The script flashes the corresponding firmware and measures each supported subroutine 10 times using the same generated input.
 
 The results are saved to:
 
