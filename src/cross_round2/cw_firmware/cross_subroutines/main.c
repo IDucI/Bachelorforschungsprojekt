@@ -58,8 +58,10 @@ static uint32_t last_cycles = 0u;
 // the corresponding byte offset and transmits only that slice of the result.
 //
 // This chunking mechanism is used consistently for large outputs throughout
-// the subroutines below. Subroutine 0x13 is slightly different because its
-// result is normalized in-place directly inside databuffer.
+// the subroutines below. Subroutines 0x13-0x15 are handled slightly different, 
+// because they operate in-place on vectors stored in databuffer.
+// Their output is therefore transmitted directly from databuffer rather
+// than from a separate result buffer.
 //
 // If the subroutine is using chunking it is marked with 
 // --- CHUNKING LOGIC BEGIN --- and end with // --- CHUNKING LOGIC END ---
@@ -124,6 +126,7 @@ static uint8_t get_cycles( uint8_t cmd, uint8_t scmd, uint8_t len, uint8_t *x) {
 #define subroutine_fp_vec_by_restr_vec_scaled     0x12
 #define subroutine_fz_dz_norm_n                   0x13
 #define subroutine_fz_dz_norm_m                   0x14
+#define subroutine_fp_dz_norm_synd                0x15
 
 // -----------------------------------------------------------------------------
 // Central subroutine control
@@ -225,7 +228,10 @@ uint8_t subroutines(uint8_t cmd, uint8_t scmd, uint8_t len, uint8_t* x) {
     uint32_t cycle_start = DWT->CYCCNT;
 
     // Pack the FZ vector using the RSDPG-specific packing function.
-    pack_fz_rsdp_g_vec(result_rsdp_g, (const FZ_ELEM*)databuffer);
+    cross_pack_fz_rsdp_g_vec(result_rsdp_g, (const FZ_ELEM*)databuffer);
+
+    __asm volatile ("" ::: "memory");
+    last_cycles = DWT->CYCCNT - cycle_start;
 
     __asm volatile ("" ::: "memory");
     last_cycles = DWT->CYCCNT - cycle_start;
@@ -238,8 +244,8 @@ uint8_t subroutines(uint8_t cmd, uint8_t scmd, uint8_t len, uint8_t* x) {
     __asm volatile ("" ::: "memory");
     uint32_t cycle_start = DWT->CYCCNT;
 
-    pack_fz_vec(result, (const FZ_ELEM*)databuffer);
-
+    cross_pack_fz_vec(result, (const FZ_ELEM*)databuffer);
+ 
     __asm volatile ("" ::: "memory");
     last_cycles = DWT->CYCCNT - cycle_start;
 
@@ -537,15 +543,6 @@ uint8_t subroutines(uint8_t cmd, uint8_t scmd, uint8_t len, uint8_t* x) {
 
     // -------------------------------------------------------------------------
     // Subroutine 0x13: Normalize Restricted Vector (In-Place, Dimension N)
-    //
-    // IMPORTANT:
-    // SimpleSerial V2.1 cannot transport all N elements in one packet
-    // when N > 249 bytes.
-    //
-    // Therefore the result is returned in chunks.
-    //
-    // chunk 0 -> bytes 0 .. 159
-    // chunk 1 -> bytes 160 .. N-1
     // -------------------------------------------------------------------------
 
     case subroutine_fz_dz_norm_n: {
@@ -589,7 +586,7 @@ uint8_t subroutines(uint8_t cmd, uint8_t scmd, uint8_t len, uint8_t* x) {
     }
 
     // -------------------------------------------------------------------------
-    // Subroutine 0x14: Normalize M 
+    // Subroutine 0x14: Normalize M (In-Place)
     // -------------------------------------------------------------------------
 
     case subroutine_fz_dz_norm_m: {
@@ -631,6 +628,55 @@ uint8_t subroutines(uint8_t cmd, uint8_t scmd, uint8_t len, uint8_t* x) {
         return SS_ERR_CMD;
 #endif
     } 
+    // -------------------------------------------------------------------------
+    // Subroutine 0x15: Normalize Fp Syndrome Vector (In-Place)
+    // -------------------------------------------------------------------------
+
+    case subroutine_fp_dz_norm_synd: {
+        led2_on();
+
+        // The syndrome vector is stored directly in databuffer.
+        FP_ELEM* syndrome = (FP_ELEM*)databuffer;
+
+        __asm volatile ("" ::: "memory");
+        uint32_t cycle_start = DWT->CYCCNT;
+
+        // Normalize the syndrome vector in place.
+        cross_fp_dz_norm_synd(syndrome);
+
+        __asm volatile ("" ::: "memory");
+        last_cycles = DWT->CYCCNT - cycle_start;
+
+        // --- CHUNKING LOGIC BEGIN ---
+        const uint16_t output_len =
+            (uint16_t)((N - K) * sizeof(FP_ELEM));
+
+        const uint8_t chunk_index = (len >= 1) ? x[0] : 0;
+
+        const uint32_t offset =
+            (uint32_t)chunk_index * SS_OUTPUT_CHUNK_SIZE;
+
+        if (offset >= output_len) {
+            led2_off();
+            return SS_ERR_LEN;
+        }
+
+        const uint16_t current_len =
+            (output_len - offset < SS_OUTPUT_CHUNK_SIZE)
+                ? (uint16_t)(output_len - offset)
+                : SS_OUTPUT_CHUNK_SIZE;
+
+        // Transmit the requested part of the normalized syndrome.
+        simpleserial_put(
+            'r',
+            current_len,
+            ((uint8_t*)syndrome) + offset
+        );
+        // --- CHUNKING LOGIC END ---
+
+        led2_off();
+        return SS_ERR_OK;
+    }
     default:
         return SS_ERR_CMD;
     }
