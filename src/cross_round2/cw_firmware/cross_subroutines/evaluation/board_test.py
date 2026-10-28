@@ -711,7 +711,7 @@ def run_intermediate_tests(target, c: Cross):
     print()
 
     for name, test_function, source, per_round in tests:
-        print(f"{name:<38}", end="", flush = True)
+        print(f"{name:<38}", end = "", flush = True)
 
         result = sign if source == "sign" else keygen
 

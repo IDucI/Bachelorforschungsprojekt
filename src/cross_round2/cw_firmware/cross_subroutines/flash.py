@@ -41,7 +41,7 @@ def release_cdc_acm() -> None:
     ChipWhisperer may not be able to access the USB interfaces directly.
     The driver is therefore unloaded before each connection attempt.
     """
-    subprocess.run(["sudo", "modprobe", "-r", "cdc_acm"], check=False)
+    subprocess.run(["sudo", "modprobe", "-r", "cdc_acm"], check = False)
 
 
 def flash_firmware(hex_path: Path) -> bool:
