@@ -70,6 +70,8 @@ subroutine_fz_inf_w_by_fz_matrix            = 0x11
 subroutine_fp_vec_by_restr_vec_scaled       = 0x12
 subroutine_fz_dz_norm_n                     = 0x13
 subroutine_fz_dz_norm_m                     = 0x14
+subroutine_fp_dz_norm_synd                  = 0x15
+
 
 
 # =============================================================================
@@ -658,10 +660,37 @@ def test_intermediate_pack_fz_rsdp_g_vec(target, c: Cross, result: SignCalculati
             outputs
         )
 
+def test_intermediate_fp_dz_norm_synd(target, c: Cross, result: SignCalculationResult, i):
+    """
+    Test `fp_dz_norm_synd` using intermediate values from the CROSS signing procedure.
+    The input is the syndrome vector s_prime before normalization.
+    The expected output is the normalized syndrome vector.
+    """
+    c_s_prime_in = result.fp_dz_norm_synd.s_prime_in[i]
+    c_s_prime_out = result.fp_dz_norm_synd.s_prime_out[i]
+
+    # Input: FP_ELEM s_prime[N-K]
+    inputs = [fp_to_bytes(c_s_prime_in, c)]
+
+    # Output: FP_ELEM s_prime[N-K]
+    outputs = [fp_to_bytes(c_s_prime_out, c)]
+
+    test_intermediate_values(
+        target,
+        subroutine_fp_dz_norm_synd,
+        "fp_dz_norm_synd",
+        inputs,
+        outputs
+    )
+
 # =============================================================================
 # Intermediate subroutine test suite
 # =============================================================================
 
+# Each entry: (name, test function, source, round_specific)
+# source: "sign" or "keygen"
+# round_specific: True  = multiple calls per signature (test one random round)
+#                 False = single call (no round selection)
 COMMON_INTERMEDIATE_TESTS = [
     ("convert_restr_vec_to_fp", test_intermediate_convert_restr_vec_to_fp, "sign", True),
     ("restr_vec_by_fp_matrix", test_intermediate_restr_vec_by_fp_matrix, "keygen", False),
@@ -671,6 +700,7 @@ COMMON_INTERMEDIATE_TESTS = [
     ("fp_vec_by_fp_vec_pointwise", test_intermediate_fp_vec_by_fp_vec_pointwise, "sign", True),
     ("fp_vec_by_restr_vec_scaled", test_intermediate_fp_vec_by_restr_vec_scaled, "sign", True),
     ("fz_dz_norm_n", test_intermediate_fz_dz_norm_n, "sign", True),
+    ("fp_dz_norm_synd", test_intermediate_fp_dz_norm_synd, "sign", True),
 ]
 
 RSDP_INTERMEDIATE_TESTS = [
@@ -710,14 +740,14 @@ def run_intermediate_tests(target, c: Cross):
     print("============================================================")
     print()
 
-    for name, test_function, source, per_round in tests:
+    for name, test_function, source, round_specific in tests:
         print(f"{name:<38}", end = "", flush = True)
 
         result = sign if source == "sign" else keygen
 
         try:
             # Execute the selected test.
-            if per_round:
+            if round_specific:
                 # Select a random signing round for this subroutine test.
                 i = rng.randrange(c.params.t)
                 test_function(target, c, result, i)
