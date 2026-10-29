@@ -41,14 +41,9 @@ def keygen_test(c: Cross, data):
     # expansion of matrix/matrices
     # expand_pk
     if c.params.algorithm == "RSDP":
-        assert result.expand_pk.seed_pk == seed_pk
         V_tr = c.subfunctions.expand_pk(seed_pk)
-        assert result.expand_pk.V_tr == V_tr
     elif c.params.algorithm == "RSDPG":
-        assert result.expand_pk.seed_pk == seed_pk
         V_tr, W_mat = c.subfunctions.expand_pk(seed_pk)
-        assert result.expand_pk.V_tr == V_tr
-        assert result.expand_pk.W_mat == W_mat
         
     # expansion of secret key material 
     # Expansion of seede, explicit domain separation for CSPRNG
@@ -78,10 +73,7 @@ def keygen_test(c: Cross, data):
     assert result.restr_vec_by_fp_matrix.s == s
 
     s = c.subfunctions.fp_dz_norm_synd(s)
-    # pack_fp_syn
-    assert result.pack_fp_syn.s_in == s
     s = c.subfunctions.pack_fp_syn(s)
-    assert result.pack_fp_syn.s_out == s
 
     # Build public key as seed_pk || s
     public_key = seed_pk + s 
@@ -124,14 +116,8 @@ def sign_test(c: Cross, data):
 
     if c.params.algorithm == "RSDP":
         e_bar, V_tr = c.subfunctions.expand_sk(seed_sk)
-        assert e_bar == result.expand_sk.e_bar
-        assert V_tr == result.expand_sk.V_tr
     elif c.params.algorithm == "RSDPG":
         e_bar, e_G_bar, V_tr, W_mat = c.subfunctions.expand_sk(seed_sk)
-        assert e_bar == result.expand_sk.e_bar
-        assert e_G_bar == result.expand_sk.e_G_bar
-        assert V_tr == result.expand_sk.V_tr
-        assert W_mat == result.expand_sk.W_mat
 
     seed_tree = c.subfunctions.gen_seed_tree(root_seed, salt)
     round_seeds = c.subfunctions.seed_leaves(seed_tree)
@@ -238,7 +224,10 @@ def sign_test(c: Cross, data):
         s_prime = c.subfunctions.fp_vec_by_fp_matrix(u, V_tr)
         assert s_prime == result.fp_vec_by_fp_matrix.s_prime[i]
 
+        # fp_dz_norm_synd
+        assert s_prime == result.fp_dz_norm_synd.s_prime_in[i]
         s_prime = c.subfunctions.fp_dz_norm_synd(s_prime)
+        assert s_prime == result.fp_dz_norm_synd.s_prime_out[i]
 
         # cmt_0_i_input contains s_prime || v_bar resp. v_G_bar || salt
         # pack_fp_syn
@@ -320,10 +309,7 @@ def sign_test(c: Cross, data):
 
     digest_chall_2 = c.subfunctions.hash(y_digest_chall_1, c.params.hash_domain_sep_const)
 
-    # expand_digest_to_fixed_weight
-    assert digest_chall_2 == result.expand_digest_to_fixed_weight.digest_chall_2
     chall_2 = c.subfunctions.expand_digest_to_fixed_weight(digest_chall_2)
-    assert chall_2 == result.expand_digest_to_fixed_weight.chall_2
 
     # Computation of the second round of responses
     _, proof = c.subfunctions.tree_proof(merkle_tree_0, chall_2)

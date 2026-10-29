@@ -39,16 +39,10 @@ class Calculations:
         seed_pk = seed_e_seed_pk[c.params.keypair_seed_length_bytes : 2 * c.params.keypair_seed_length_bytes]
 
         # expansion of matrix/matrices
-        # expand_pk
         if c.params.algorithm == "RSDP":
             V_tr = c.subfunctions.expand_pk(seed_pk)
-            result.expand_pk.V_tr[:] = V_tr
-            result.expand_pk.seed_pk = seed_pk
         elif c.params.algorithm == "RSDPG":
             V_tr, W_mat = c.subfunctions.expand_pk(seed_pk)
-            result.expand_pk.V_tr[:] = V_tr
-            result.expand_pk.W_mat[:] = W_mat
-            result.expand_pk.seed_pk = seed_pk
         
         # expansion of secret key material
         # Expansion of seed_e, explicit domain separation for CSPRNG
@@ -64,6 +58,7 @@ class Calculations:
             e_bar = c.subfunctions.fz_inf_w_by_fz_matrix(e_G_bar, W_mat)
             result.fz_inf_w_by_fz_matrix.e_bar[:] = e_bar
             result.fz_inf_w_by_fz_matrix.e_G_bar = e_G_bar
+            result.fz_inf_w_by_fz_matrix.W_mat = W_mat
 
             # fz_dz_norm_n
             e_bar = c.subfunctions.fz_dz_norm_n(e_bar)
@@ -71,14 +66,12 @@ class Calculations:
 
         # restr_vec_by_fp_matrix
         result.restr_vec_by_fp_matrix.e_bar = e_bar
+        result.restr_vec_by_fp_matrix.V_tr = V_tr
         s = c.subfunctions.restr_vec_by_fp_matrix(e_bar, V_tr)
         result.restr_vec_by_fp_matrix.s = s.copy()
 
         s = c.subfunctions.fp_dz_norm_synd(s)
-        # pack_fp_syn
-        result.pack_fp_syn.s_in[:] = s
         s = c.subfunctions.pack_fp_syn(s)
-        result.pack_fp_syn.s_out = s
 
         # Build public key as seed_pk || s
         result.pk = seed_pk + s
@@ -144,14 +137,14 @@ class Calculations:
         # expand_sk
         if c.params.algorithm == "RSDP":
             e_bar, V_tr = c.subfunctions.expand_sk(seed_sk)
-            result.expand_sk.e_bar[:] = e_bar
-            result.expand_sk.V_tr[:] = V_tr
+            result.fz_vec_sub_n.e_bar[:] = e_bar
+            result.fp_vec_by_fp_matrix.V_tr[:] = V_tr
         elif c.params.algorithm == "RSDPG":
             e_bar, e_G_bar, V_tr, W_mat = c.subfunctions.expand_sk(seed_sk)
-            result.expand_sk.e_bar[:] = e_bar
-            result.expand_sk.e_G_bar[:] = e_G_bar
-            result.expand_sk.V_tr[:] = V_tr
-            result.expand_sk.W_mat[:] = W_mat
+            result.fz_vec_sub_n.e_bar[:] = e_bar
+            result.fz_vec_sub_m.e_G_bar[:] = e_G_bar
+            result.fp_vec_by_fp_matrix.V_tr[:] = V_tr
+            result.fz_inf_w_by_fz_matrix.W_mat[:] = W_mat
 
         seed_tree = c.subfunctions.gen_seed_tree(root_seed, salt)
         round_seeds = c.subfunctions.seed_leaves(seed_tree)
@@ -239,13 +232,14 @@ class Calculations:
             s_prime = c.subfunctions.fp_vec_by_fp_matrix(u, V_tr)
             result.fp_vec_by_fp_matrix.s_prime.append(s_prime)
 
+            #fp_dz_norm_synd
             s_prime = c.subfunctions.fp_dz_norm_synd(s_prime)
+            result.fp_dz_norm_synd.s_prime_out.append(s_prime)
 
             # pack_fp_syn
             packed_s_prime = c.subfunctions.pack_fp_syn(s_prime)
             # cmt_0_i_input contains s_prime || v_bar resp. v_G_bar || salt
             cmt_0_i_input[0 : c.params.densely_packed_fp_syn_size] = packed_s_prime
-            result.pack_fp_syn.s_prime_in.append(s_prime)
             result.pack_fp_syn.s_prime_out.append(packed_s_prime)
 
             if c.params.algorithm == "RSDP":
@@ -316,10 +310,7 @@ class Calculations:
 
         digest_chall_2 = c.subfunctions.hash(y_digest_chall_1, c.params.hash_domain_sep_const)
 
-        # expand_digest_to_fixed_weight
-        result.expand_digest_to_fixed_weight.digest_chall_2 = digest_chall_2
         chall_2 = c.subfunctions.expand_digest_to_fixed_weight(digest_chall_2)
-        result.expand_digest_to_fixed_weight.chall_2 = chall_2
 
         # Computation of the second round of responses
         _, proof = c.subfunctions.tree_proof(merkle_tree_0, chall_2)
