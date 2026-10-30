@@ -22,7 +22,7 @@ extern "C" {
     * SK: output secret key
     * PK: output public key
     */
-    void cross_keygen(uint8_t* SK, uint8_t* PK);
+    void cross_keygen(sk_t *SK, pk_t *PK);
 
     /**
     * SK:      input secret key
@@ -30,7 +30,7 @@ extern "C" {
     * mlen:    length of the message
     * sig:     output signature
     */
-    void cross_sign(const uint8_t* SK, const uint8_t* m, uint64_t mlen, uint8_t* sig);
+    void cross_sign(const sk_t *SK, const char *const m, const uint64_t mlen, CROSS_sig_t *sig);
 
     /**
     * PK:      input public key
@@ -39,7 +39,7 @@ extern "C" {
     * sig:     input signature
     * returns: 1 if valid, 0 otherwise
     */
-    int cross_verify(const uint8_t* PK, const uint8_t* m, uint64_t mlen, const uint8_t* sig);
+    int CROSS_verify(const pk_t *const PK, const char *const m, const uint64_t mlen, const CROSS_sig_t *const sig);
 
     // -----------------------------------------------------------------------
     // Functions for internal state calculation
