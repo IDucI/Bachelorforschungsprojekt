@@ -42,7 +42,8 @@ from board_test import (
     subroutine_fz_inf_w_by_fz_matrix,
     subroutine_fp_vec_by_restr_vec_scaled,
     subroutine_fz_dz_norm_n,
-    subroutine_fz_dz_norm_m
+    subroutine_fz_dz_norm_m,
+    subroutine_fp_dz_norm_synd
 )
 
 from run_board_test import get_hex_path, flash_firmware
@@ -164,6 +165,13 @@ def create_reference_cases(c, rng):
         subroutine_fz_dz_norm_n,
         fz_to_bytes(sign.fz_dz_norm_n.v_bar_in[i]),
         fz_to_bytes(sign.fz_dz_norm_n.v_bar_out[i])
+    )
+
+    add(
+        "fp_dz_norm_synd",
+        subroutine_fp_dz_norm_synd,
+        fp_to_bytes(sign.fp_dz_norm_synd.s_prime_in[i], c),
+        fp_to_bytes(sign.fp_dz_norm_synd.s_prime_out[i], c)
     )
 
     # Family-specific subroutines.
