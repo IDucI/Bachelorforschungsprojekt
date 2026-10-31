@@ -1,69 +1,83 @@
-# README
+## README
 
-This folder contains the firmware implementation of selected CROSS subroutines for the Riscure Pinata platform with an STM32F4 microcontroller.
+This folder contains the firmware implementation of selected CROSS subroutines for the Riscure Piñata platform, which is based on an STM32F4 microcontroller. It also contains the firmware flashing script used by the evaluation tools.
 
-The firmware is built for all 18 supported CROSS parameter and optimization variants. The generated firmware images can then be flashed onto the Pinata and verified using the ChipWhisperer. After successful flashing and verification, the firmware variants are used for the subsequent performance, memory, and feasibility evaluation.
+The firmware supports 18 CROSS parameter and optimization configurations: RSDP and R-SDP(G), each with categories 1, 3, and 5 and the optimization variants fast, balanced, and small.
 
-The overall workflow is:
-
-Build all 18 firmware variants.
-Flash and verify the firmware on the Pinata.
-Test the board communication and the correctness of the implemented subroutines.
-Evaluate memory consumption, stack usage, code size, and runtime.
-
-The detailed board communication tests and evaluation are documented in the README of the evaluation folder:
-`.../Bachelorforschungsprojekt/src/cross_round2/cw_firmware/cross_subroutines/evaluation`
 
 ## Project Location
 
 The firmware project is located at:
+
 `...\Bachelorforschungsprojekt\src\cross_round2\cw_firmware\cross_subroutines`
 
-.../Bachelorforschungsprojekt/
-├── src/
-│   └── cross_round2/
-│       └── cw_firmware/
-│           └── cross_subroutines/
-│               └── ...
+
+## Project structure:
+
+Bachelorforschungsprojekt/
+└── src/
+    └── cross_round2/
+        └── cw_firmware/
+            └── cross_subroutines/
+                ├── evaluation/
+                ├── flash.py
+                └── ...
+
 
 ## Building the Firmware
 
-Build the firmware from WSL or another Linux-like environment:
+Build the firmware from WSL or another Linux-like environment.
+Navigate to the project directory:
+
 `cd .../Bachelorforschungsprojekt/src/cross_round2/cw_firmware/cross_subroutines`
-`make` 
-(We use make, so ./compile shouldn't be necessary)
 
-## The generated firmware image are 18 variants of these following points
+Build the firmware:
 
-cross_rsdp_1_fast 
-cross_rsdp_1_balanced 
-cross_rsdp_1_small 
-cross_rsdp_3_fast 
-cross_rsdp_3_balanced 
-cross_rsdp_3_small 
-cross_rsdp_5_fast 
-cross_rsdp_5_balanced 
-cross_rsdp_5_small 
-cross_rsdpg_1_fast 
-cross_rsdpg_1_balanced 
-cross_rsdpg_1_small 
-cross_rsdpg_3_fast 
-cross_rsdpg_3_balanced 
-cross_rsdpg_3_small 
-cross_rsdpg_5_fast 
-cross_rsdpg_5_balanced 
+`make`
+
+The project uses make to compile the firmware.
+
+
+## After modifying the firmware, rebuild it using:
+
+`make clean && make`
+
+
+## The build covers the following 18 configurations:
+
+cross_rsdp_1_fast
+cross_rsdp_1_balanced
+cross_rsdp_1_small
+cross_rsdp_3_fast
+cross_rsdp_3_balanced
+cross_rsdp_3_small
+cross_rsdp_5_fast
+cross_rsdp_5_balanced
+cross_rsdp_5_small
+
+cross_rsdpg_1_fast
+cross_rsdpg_1_balanced
+cross_rsdpg_1_small
+cross_rsdpg_3_fast
+cross_rsdpg_3_balanced
+cross_rsdpg_3_small
+cross_rsdpg_5_fast
+cross_rsdpg_5_balanced
 cross_rsdpg_5_small
 
--> We're getting the .hex- .elf- .map- .lss- .sym- .bin- .eep-files, where only the .hex is pretty interesting for us. This process will take around 6 to 7 minutes. 
-If everything worked out without an issue you can see an message with:
+The generated HEX filenames follow the naming convention:
 
-============================================================
-All 18 variants are successfully generated!"
-============================================================
+cross_subroutines_<family>_<category>_<variant>-PINATA.hex
 
-## Clock Setup:
+For example: `cross_subroutines_rsdp_1_fast-PINATA.hex`
 
-We're using the internal clk corresponding to the given README from the reference_package
+A successful build should finish without compilation or linking errors. The build output may report that all 14 supported firmware subroutines have been generated. This refers to the available subroutine implementations, not the number of firmware configurations.
+
+
+## Clock Configuration
+
+The firmware uses the clock configuration specified in the reference package. The cycle-measurement command returns the measured cycle count and the CPU clock frequency. For the current measurements, the reported clock frequency is 16 MHz.
+ 
 
 ## Required Wiring
 
@@ -74,73 +88,60 @@ GND    -> GND
 3V3    -> 3V3
 PC10   -> IO1
 PC11   -> IO2
-PH0    -> HS2 -> This isn't necessary anymore, because we don't use an external clock anymore
+
+Keep the ChipWhisperer and Piñata connected to the host computer and maintain the required wiring while working with this project.
+
 
 ## Flashing and Verification
 
-The firmware must be flashed and verified before performing the board communication tests.
+The flashing script programs a selected firmware image onto the STM32F4 and verifies the programmed contents.
 
-Important: Do not unplug the board or the ChipWhisperer from the PC after flashing. Otherwise, the firmware may need to be flashed again before communication with the board can be established.
+To flash a firmware image manually, navigate to the project directory: 
 
-Run the verification script from the firmware project folder:
-`cd ".../Bachelorforschungsprojekt/src/cross_round2/cw_firmware/cross_subroutines"`
-`python/py flash.py`
--> The process will take around 10 minutes 
+`cd .../Bachelorforschungsprojekt/src/cross_round2/cw_firmware/cross_subroutines`
 
-The script configures the ChipWhisperer Nano clock output, flashes the firmware, starts the target, and performs a SimpleSerial readback test.
+Then run the command: `python3/py flash.py
+
+Note: Manual flashing is not required before running the automated evaluation scripts. Those scripts select and flash the appropriate firmware image before performing the corresponding test or measurement.
+
 
 ## Expected successful output
 
-Flashing target with: cross_subroutines_'...'-PINATA.hex...
+Connecting to Scope & Target hardware...
+Flashing image: cross_subroutines_...-PINATA.hex...
 Detected known STMF32: STM32F40xxx/41xxx
 Extended erase (0x44), this can take ten seconds or more
-Attempting to program 17595 bytes at 0x8000000
+Attempting to program 17643 bytes at 0x8000000
 STM32F Programming flash...
 STM32F Reading flash...
-Verified flash OK, 17595 bytes
-Flashing successful!
-Readback: CWbytearray(b'01 02 03')
-OK: SimpleSerial responsiveness verified.
+Verified flash OK, 17643 bytes
+Firmware flashing completed successfully.
 
--> In the end we should get this following message in the terminal, when all the 18 variants are flashed successfully:
+The exact image name and number of bytes depend on the selected configuration.
+A successful flash and readback verification confirms that the firmware image was programmed and its contents were verified. 
 
-=====================================================================
- All available firmware sets successfully flashed & verified 
-=====================================================================
 
-## This confirms that:
+## SimpleSerial Interface
 
--External clock output works
--Firmware starts correctly
--UART timing is correct
--SimpleSerial communication works
+The firmware uses SimpleSerial 2.1 (SS_VER_2_1) for communication between the host computer and the STM32F4 on the Piñata. The host communicates with the target using ChipWhisperer's SimpleSerial2 interface.
 
-## In the current firmware structure, the commands are used as follows
+The following commands are registered in main.c:
 
-s  - store input data in the firmware-side data buffer
-b  - execute/select a subroutine
-m  - return metadata or macro/configuration information
-r  - response packet sent back by the firmware
+s  - Transfer input data chunks to the firmware-side shared buffer.
+b  - Execute a selected CROSS subroutine.
+c  - Retrieve the cycle count of the most recently executed subroutine and the reported CPU clock frequency.
 
-For example, the host can send input data with s, trigger a CROSS subroutine with b, and then read the result from an r response.
+The firmware returns result data using the r response identifier. Acknowledgements and error statuses are handled through the SimpleSerial response mechanism. The metadata command m is currently not registered.
 
-## After modifying the firmware, rebuild it from the project folder
-
-Execute the `make clean` command first, then build the firmware again with `make` after that we can flash .hex file again.  
-Or do it in one command line with `make clean && make`.
-
+Large inputs and outputs are transferred in multiple chunks to accommodate the communication constraints. The host reconstructs the complete output and compares it with the expected result from the host-side CROSS reference implementation.
 
 ## What can we do with the results?
 
-The firmware build generates several build artifacts for each CROSS variant, including .elf, .hex, and .su files.
-
-.elf files: Contain the compiled firmware together with symbol and section information. They are used by the evaluation scripts to analyze firmware memory consumption and the code size of selected subroutines.
+The firmware build generates several build artifacts for each CROSS variant, but only the .hex files are interesting for us.
 
 .hex files: Contain the firmware in a format suitable for programming the STM32F4 and can be used to flash the corresponding firmware variant onto the target device.
 
-.su files: Are generated by the compiler when stack-usage analysis is enabled. They contain compiler-estimated static stack usage information for individual functions and are used by the stack_usage_analysis.py script.
-
-Other intermediate build files, such as .o object files, are also generated during compilation but are mainly required as part of the build process.
+Other intermediate build files, such as .o, su and so on, are also generated during compilation but are mainly required as part of the build process and not relevant for us.
 
 The generated results can be further analyzed in the evaluation folder:
 
@@ -154,6 +155,6 @@ The generated results can be further analyzed in the evaluation folder:
                 ├── evaluation/
                 │   └── ...
 
-The evaluation folder contains the tools and scripts required to analyze the generated firmware in terms of memory consumption, potential bottlenecks, runtime, and other relevant performance characteristics.
+The evaluation folder contains the tools and scripts required to analyze the generated firmware in terms of memory consumption, potential bottlenecks, runtime, communication and other relevant performance characteristics.
 
 The README in the evaluation folder provides further details on how to run the evaluation and how to interpret the generated results.

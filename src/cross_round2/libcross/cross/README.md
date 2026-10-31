@@ -138,7 +138,6 @@ result.<subroutine>.<value>[i]
 For example:
 
 ```
-e_bar = sign_result.expand_sk.e_bar
 s_prime_in = sign_result.pack_fp_syn.s_prime_in[i]
 ```
 

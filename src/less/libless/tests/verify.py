@@ -2,8 +2,10 @@ import json
 
 from less import Less
 
-
-with open("transfer.json", "r") as file:
+with open(
+    "transfer.json",
+    "r",
+) as file:
     data = json.load(file)
 
 less = Less(
@@ -12,15 +14,57 @@ less = Less(
     target=data["target"],
 )
 
-result = less.verify(
+message = data["message"]
+
+modified_message = list(message)
+
+modified_message[0] ^= 1
+
+# Check the valid signature and three invalid input combinations.
+positive = less.verify(
     data["public_key"],
-    data["message"],
+    message,
     data["signature"],
 )
 
-print(
-    f'Category {data["category"]} target {data["target"]}: '
-    f'Verify = {result}'
+wrong_message = less.verify(
+    data["public_key"],
+    modified_message,
+    data["signature"],
 )
 
-raise SystemExit(0 if result else 1)
+wrong_signature = less.verify(
+    data["public_key"],
+    message,
+    data["different_signature"],
+)
+
+wrong_public_key = less.verify(
+    data["wrong_public_key"],
+    message,
+    data["signature"],
+)
+
+# LESS_verify returns 1 for a valid signature and 0 otherwise.
+passed = (
+    positive == 1
+    and wrong_message == 0
+    and wrong_signature == 0
+    and wrong_public_key == 0
+)
+
+print(
+    f"Category "
+    f'{data["category"]} '
+    f"target "
+    f'{data["target"]}: '
+    f"positive={positive}, "
+    f"wrong_message="
+    f"{wrong_message}, "
+    f"wrong_signature="
+    f"{wrong_signature}, "
+    f"wrong_public_key="
+    f"{wrong_public_key}"
+)
+
+raise SystemExit(0 if passed else 1)

@@ -105,10 +105,7 @@ instruction and data access behavior, cache behavior, branch behavior, dynamic m
 
 These measurements provide the basis for identifying bottlenecks and evaluating the feasibility of the selected CROSS components on the embedded target.
 
-Notes:
-Cachegrind measures the behavior of the host executable and therefore does not represent the actual number of CPU cycles required on the STM32F4.
-For the embedded runtime evaluation, the STM32F4 cycle counter is the relevant measurement.
-Similarly, the heap allocation reported by Memcheck describes the executed benchmark process and should not be interpreted directly as the static RAM footprint of a CROSS subroutine.
+
 
 
 

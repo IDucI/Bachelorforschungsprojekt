@@ -43,7 +43,6 @@ else
 endif
 LDFLAGS=-lcrypto
 
-# create a list of all the names of the variants in $(ALG_PATH)(Original Kyber)
 # LIBNAMES_PATHS := $(dir $(wildcard $(ALG_PATH)*/))
 # LIBNAMES := $(LIBNAMES_PATHS:$(ALG_PATH)%/=%)
 # LIBNAMES := $(filter-out $(EXCLLIBS), $(LIBNAMES))

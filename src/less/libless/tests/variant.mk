@@ -11,6 +11,7 @@ VARIANT_PARTS := $(subst _, ,$(ALG_VERSION))
 CATEGORY_NAME := $(word 2,$(VARIANT_PARTS))
 TARGET := $(word 3,$(VARIANT_PARTS))
 
+# CATEGORY values defined by the LESS reference implementation.
 CATEGORY_VALUE_cat1 := 252
 CATEGORY_VALUE_cat3 := 400
 CATEGORY_VALUE_cat5 := 548

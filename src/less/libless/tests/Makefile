@@ -16,3 +16,14 @@ BUILD_DIR := build/
 
 clean:
 	rm -rf $(BUILD_DIR)
+
+.PHONY: all $(VARIANTS) clean test_wrappers test_signatures test
+
+test_wrappers: all
+	PYTHONPATH=.. python3 test_less.py
+
+test_signatures: test_wrappers
+	cd .. && PYTHONPATH=. python3 -m tests.sign
+
+test: test_signatures
+	@echo "All LESS host tests passed"
