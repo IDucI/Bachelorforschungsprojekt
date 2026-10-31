@@ -228,7 +228,14 @@ uint8_t subroutines(uint8_t cmd, uint8_t scmd, uint8_t len, uint8_t* x) {
     uint8_t result_rsdp_g[DENSELY_PACKED_FZ_RSDP_G_VEC_SIZE];
 
     // Pack the FZ vector using the RSDPG-specific packing function.
+<<<<<<< Updated upstream
     pack_fz_rsdp_g_vec(result_rsdp_g, (const FZ_ELEM*)databuffer);
+=======
+    cross_pack_fz_rsdp_g_vec(result_rsdp_g, (const FZ_ELEM*)databuffer);
+
+    __asm volatile ("" ::: "memory");
+    last_cycles = DWT->CYCCNT - cycle_start;
+>>>>>>> Stashed changes
 
     // Return the packed vector to the host.
     simpleserial_put('r', DENSELY_PACKED_FZ_RSDP_G_VEC_SIZE, result_rsdp_g);
