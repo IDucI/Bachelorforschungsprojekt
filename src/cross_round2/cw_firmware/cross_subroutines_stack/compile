@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+# if you call make with --trace it will provide more debug information as to what is happening. similar to --debug
+# --trace
+
+MAKE=make
+# colormake is nice, use it if you have it
+if [ -x "$(command -v colormake)" ]
+then
+    MAKE=colormake
+fi
+
+# this allows you to call the script from outside the directory
+pushd $(dirname $0)
+
+set -x
+# because of $@ every argument you pass to the script will be passed to this make call
+/usr/bin/env $MAKE $@ PLATFORM=PINATA HIGH_SPEED_BAUD=1
+set +x

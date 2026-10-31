@@ -26,28 +26,16 @@ extern "C" {
     // High-Level API
     // -----------------------------------------------------------------------
 
-    void cross_keygen(uint8_t* SK, uint8_t* PK) {
-        sk_t sk;
-        pk_t pk;
-        CROSS_keygen(&sk, &pk);
-        memcpy(SK, &sk, sizeof(sk_t));
-        memcpy(PK, &pk, sizeof(pk_t));
+    void cross_keygen(sk_t *SK, pk_t *PK) {
+        CROSS_keygen(SK, PK);
     }
 
-    void cross_sign(const uint8_t* SK, const uint8_t* m, uint64_t mlen, uint8_t* sig) {
-        sk_t sk;
-        memcpy(&sk, SK, sizeof(sk_t));
-        CROSS_sig_t signature;
-        CROSS_sign(&sk, (const char*)m, mlen, &signature);
-        memcpy(sig, &signature, sizeof(CROSS_sig_t));
+    void cross_sign(const sk_t *SK, const char *m, uint64_t mlen, CROSS_sig_t *sig) {
+        CROSS_sign(SK, m, mlen, sig);
     }
 
-    int cross_verify(const uint8_t* PK, const uint8_t* m, uint64_t mlen, const uint8_t* sig) {
-        pk_t pk;
-        memcpy(&pk, PK, sizeof(pk_t));
-        CROSS_sig_t signature;
-        memcpy(&signature, sig, sizeof(CROSS_sig_t));
-        return CROSS_verify(&pk, (const char*)m, mlen, &signature);
+    int cross_verify(const pk_t *PK, const char *m, uint64_t mlen, const CROSS_sig_t *sig) {
+        return CROSS_verify(PK, m, mlen, sig);
     }
 
     // -----------------------------------------------------------------------
