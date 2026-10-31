@@ -236,9 +236,6 @@ uint8_t subroutines(uint8_t cmd, uint8_t scmd, uint8_t len, uint8_t* x) {
     __asm volatile ("" ::: "memory");
     last_cycles = DWT->CYCCNT - cycle_start;
 
-    __asm volatile ("" ::: "memory");
-    last_cycles = DWT->CYCCNT - cycle_start;
-
     // Return the packed vector to the host.
     simpleserial_put('r', DENSELY_PACKED_FZ_RSDP_G_VEC_SIZE, result_rsdp_g);
 
