@@ -80,3 +80,13 @@ cw-env311/
 venv/
 __pycache__/
 *.pyc
+
+# macOS metadata
+.DS_Store
+
+# LESS evaluation results
+!/src/less/cw_firmware/less_subroutines/evaluation/board_test_results.csv
+!/src/less/cw_firmware/less_subroutines/evaluation/results/runtime_measurement.csv
+!/src/less/cw_firmware/less_subroutines/evaluation/cachegrind/cachegrind_results.csv
+!/src/less/cw_firmware/less_subroutines/evaluation/cachegrind/memcheck_results.csv
+!/src/less/cw_firmware/less_subroutines/evaluation/board_test_details.csv

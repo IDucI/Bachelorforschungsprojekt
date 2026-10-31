@@ -108,6 +108,7 @@ const size_t less_sigbytes = sizeof(sign_t);
 // Functions for internal state calculation                                 
 // -------------------------------------------------------------------------
 
+// Initialize the platform CSPRNG with the supplied seed.
 void less_initialize_randombytes(
     const uint8_t *seed,
     uint32_t seed_length
@@ -119,6 +120,7 @@ void less_initialize_randombytes(
     );
 }
 
+// Derive the generator seed and private monomial seeds from the secret-key seed.
 void less_expand_private_key_seeds(
     uint8_t *g0_seed,
     uint8_t *private_monomial_seeds,
@@ -148,6 +150,7 @@ void less_expand_private_key_seeds(
     }
 }
 
+// Reconstruct a full generator matrix from compact values and column positions.
 void less_generator_rref_expand(
     FQ_ELEM *full_values,
     const FQ_ELEM *compact_values,
@@ -179,6 +182,7 @@ void less_generator_rref_expand(
     );
 }
 
+// Compute the inverse monomial transformation and return its components.
 void less_monomial_inv(
     FQ_ELEM *res_coefficients,
     POSITION_T *res_permutation,
@@ -219,6 +223,8 @@ void less_monomial_inv(
 // Selected subroutines                                                      
 // ------------------------------------------------------------------------- 
 
+// Apply a monomial transformation using the LESS reference function.
+// Convert input arrays to LESS structures and copy the result back.
 void less_generator_monomial_mul(
     FQ_ELEM *res_values,
     const FQ_ELEM *generator_values,
@@ -278,6 +284,8 @@ void less_row_mul3(
     );
 }
 
+// Sample a compact generator matrix and copy its values and column positions
+// into separate output arrays.
 void less_generator_sample(
     FQ_ELEM *res_values,
     POSITION_T *res_column_pos,
@@ -305,6 +313,8 @@ void less_generator_sample(
     );
 }
 
+// Sample a private-key monomial transformation and return its
+// coefficients and permutation in separate output arrays.
 void less_monomial_sample_prikey(
     FQ_ELEM *res_coefficients,
     POSITION_T *res_permutation,

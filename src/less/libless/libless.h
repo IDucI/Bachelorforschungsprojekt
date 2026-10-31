@@ -11,12 +11,21 @@
 extern "C" {
 #endif
 
-// High-level API for official LESS parameter sets
+/**
+ * secret_key: output buffer of less_skbytes bytes
+ * public_key: output buffer of less_pkbytes bytes
+ */
 void less_keygen(
     uint8_t *secret_key,
     uint8_t *public_key
 );
 
+/**
+ * secret_key: input secret key
+ * message: input message
+ * message_length: message length in bytes
+ * signature: output buffer of less_sigbytes bytes
+ */
 void less_sign(
     const uint8_t *secret_key,
     const uint8_t *message,
@@ -24,6 +33,13 @@ void less_sign(
     uint8_t *signature
 );
 
+/**
+ * public_key: input public key
+ * message: input message
+ * message_length: message length in bytes
+ * signature: input signature
+ * returns: verification result from LESS_verify()
+ */
 int less_verify(
     const uint8_t *public_key,
     const uint8_t *message,
@@ -35,7 +51,7 @@ extern const size_t less_skbytes;
 extern const size_t less_pkbytes;
 extern const size_t less_sigbytes;
 
-// LESS uses a caller-initialized deterministic platform CSPRNG
+// Initialize the global platform CSPRNG from the supplied seed.
 void less_initialize_randombytes(
     const uint8_t *seed,
     uint32_t seed_length

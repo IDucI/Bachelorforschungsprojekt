@@ -1,7 +1,6 @@
 from dataclasses import dataclass
 from typing import Optional
 
-
 VALID_CATEGORIES = {1, 3, 5}
 VALID_TARGETS = {
     1: {192, 68, 45},
@@ -39,10 +38,6 @@ class LessParams:
     @property
     def generator_values_count(self) -> int:
         return self.k * self.n_pad
-
-    @property
-    def security_parameter_bits(self) -> int:
-        return self.seed_length_bytes * 8
 
     @property
     def private_key_seed_length_bytes(self) -> int:

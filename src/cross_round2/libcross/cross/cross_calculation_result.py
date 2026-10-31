@@ -8,22 +8,6 @@ link shared values between containers.
 from dataclasses import dataclass, field
 
 @dataclass
-class ExpandSkData:
-    """
-    Intermediate values for expand_sk during CROSS_sign().
-
-    For RSDP, the input and corresponding outputs are stored as:
-        seed_sk -> expand_sk -> e_bar, V_tr
-
-    For RSDPG, the input and corresponding outputs are stored as:
-        seed_sk -> expand_sk -> e_bar, e_G_bar, V_tr, W_mat
-    """
-    e_bar: list = field(default_factory=list)
-    V_tr: list = field(default_factory=list)
-    e_G_bar: list = field(default_factory=list)
-    W_mat: list = field(default_factory=list)
-
-@dataclass
 class FzVecSubNData:
     """
     Intermediate values for fz_vec_sub_n during CROSS_sign().
@@ -31,7 +15,7 @@ class FzVecSubNData:
     One entry is stored per signing round:
         e_bar, e_bar_prime[i] -> fz_vec_sub_n -> v_bar[i]
     """
-    e_bar: list = field(init=False)
+    e_bar: list = field(default_factory=list)
     e_bar_prime: list = field(default_factory=list)
     v_bar: list = field(default_factory=list)
 
@@ -95,27 +79,27 @@ class FpVecByFpMatrixData:
         u[i], V_tr -> fp_vec_by_fp_matrix -> s_prime[i]
     """
     u : list = field(init=False)
-    V_tr: list = field(init=False)
+    V_tr: list = field(default_factory=list)
     s_prime: list = field(default_factory=list)
 
 @dataclass
-class KeygenPackFpSynData:
-    """
-    Intermediate values for pack_fp_syn during CROSS_keygen().
-
-    The syndrome s is packed once during key generation:
-        s_in -> pack_fp_syn -> s_out
-    """
-    s_in: list = field(default_factory=list)
-    s_out: list = field(default_factory=list)
-
-@dataclass
-class SignPackFpSynData:
+class PackFpSynData:
     """
     Intermediate values for pack_fp_syn during CROSS_sign().
 
     One entry is stored per signing round:
         s_prime_in[i] -> pack_fp_syn -> s_prime_out[i]
+    """
+    s_prime_in: list = field(init=False)
+    s_prime_out: list = field(default_factory=list)
+
+@dataclass
+class FpDzNormSyndData:
+    """
+    Intermediate values for fp_dz_norm_synd during CROSS_sign().
+
+    One entry is stored per signing round:
+        s_prime_in[i] -> fp_dz_norm_synd -> s_prime_out[i]
     """
     s_prime_in: list = field(default_factory=list)
     s_prime_out: list = field(default_factory=list)
@@ -132,17 +116,6 @@ class FpVecByRestrVecScaledData:
     chall_1: list = field(default_factory=list)
     u_prime: list = field(init=False)
     y: list = field(default_factory=list)
-
-@dataclass
-class ExpandDigestToFixedWeightData:
-    """
-    Intermediate values for expand_digest_to_fixed_weight during CROSS_sign().
-
-    The input and corresponding output are stored as:
-        digest_chall_2 -> expand_digest_to_fixed_weight -> chall_2
-    """
-    digest_chall_2: bytes = field(default_factory=bytes)
-    chall_2: list = field(default_factory=list)
 
 @dataclass
 class PackFzVecData:
@@ -174,7 +147,7 @@ class FzVecSubMData:
     One entry is stored per signing round:
         e_G_bar, e_G_bar_prime[i] -> fz_vec_sub_m -> v_G_bar[i]
     """
-    e_G_bar: list = field(init=False)
+    e_G_bar: list = field(default_factory=list)
     e_G_bar_prime: list = field(default_factory=list)
     v_G_bar: list = field(default_factory=list)
 
@@ -199,21 +172,6 @@ class SignFzInfWByFzMatrixData:
     """
     e_G_bar_prime: list = field(init=False)
     e_bar_prime: list = field(default_factory=list)
-    W_mat: list = field(init=False)
-
-@dataclass
-class ExpandPkData:
-    """
-    Intermediate values for expand_pk during CROSS_keygen().
-
-    For RSDP, the input and corresponding output are stored as:
-        seed_pk -> expand_pk -> V_tr
-
-    For RSDPG, the input and corresponding outputs are stored as:
-        seed_pk -> expand_pk -> V_tr, W_mat
-    """
-    V_tr: list = field(default_factory=list)
-    seed_pk: bytes = field(default_factory=bytes)
     W_mat: list = field(default_factory=list)
 
 @dataclass
@@ -226,7 +184,7 @@ class KeygenFzInfWByFzMatrixData:
     """
     e_bar: list = field(default_factory=list)
     e_G_bar: list = field(default_factory=list)
-    W_mat: list = field(init=False)
+    W_mat: list = field(default_factory=list)
 
 @dataclass
 class RestrVecByFpMatrixData:
@@ -238,7 +196,7 @@ class RestrVecByFpMatrixData:
     """
     s: list = field(default_factory=list)
     e_bar: list = field(default_factory=list)
-    V_tr: list = field(init=False)
+    V_tr: list = field(default_factory=list)
 
 
 @dataclass
@@ -252,16 +210,12 @@ class KeygenCalculationResult:
     seed_sk  : bytes
     pk  : bytes = field(default_factory=bytes) #seed_pk || s
 
-    expand_pk: ExpandPkData = field(default_factory=ExpandPkData)
     fz_inf_w_by_fz_matrix: KeygenFzInfWByFzMatrixData = field(default_factory=KeygenFzInfWByFzMatrixData)
     fz_dz_norm_n: KeygenFzDzNormNData = field(default_factory=KeygenFzDzNormNData)
     restr_vec_by_fp_matrix: RestrVecByFpMatrixData = field(default_factory=RestrVecByFpMatrixData)
-    pack_fp_syn: KeygenPackFpSynData = field(default_factory=KeygenPackFpSynData)
 
     def __post_init__(self):
-        self.fz_inf_w_by_fz_matrix.W_mat = self.expand_pk.W_mat
         self.fz_dz_norm_n.e_bar_in = self.fz_inf_w_by_fz_matrix.e_bar
-        self.restr_vec_by_fp_matrix.V_tr = self.expand_pk.V_tr
 
 @dataclass
 class SignCalculationResult:
@@ -282,15 +236,14 @@ class SignCalculationResult:
     salt     : bytes
     signature: bytes = field(init=False)
 
-    expand_sk: ExpandSkData = field(default_factory=ExpandSkData)
     fz_vec_sub_n: FzVecSubNData = field(default_factory=FzVecSubNData)
     convert_restr_vec_to_fp: ConvertRestrVecToFpData = field(default_factory=ConvertRestrVecToFpData)
     fz_dz_norm_n: SignFzDzNormNData = field(default_factory=SignFzDzNormNData)
     fp_vec_by_fp_vec_pointwise: FpVecByFpVecPointwiseData = field(default_factory=FpVecByFpVecPointwiseData)
     fp_vec_by_fp_matrix: FpVecByFpMatrixData = field(default_factory=FpVecByFpMatrixData)
-    pack_fp_syn: SignPackFpSynData = field(default_factory=SignPackFpSynData)
+    fp_dz_norm_synd: FpDzNormSyndData = field(default_factory=FpDzNormSyndData)
+    pack_fp_syn: PackFpSynData = field(default_factory=PackFpSynData)
     fp_vec_by_restr_vec_scaled: FpVecByRestrVecScaledData = field(default_factory=FpVecByRestrVecScaledData)
-    expand_digest_to_fixed_weight: ExpandDigestToFixedWeightData = field(default_factory=ExpandDigestToFixedWeightData)
     pack_fz_vec: PackFzVecData = field(default_factory=PackFzVecData)
     pack_fz_rsdp_g_vec: PackFzRsdpGVecData = field(default_factory=PackFzRsdpGVecData)
     fz_vec_sub_m: FzVecSubMData = field(default_factory=FzVecSubMData)
@@ -298,18 +251,16 @@ class SignCalculationResult:
     fz_inf_w_by_fz_matrix: SignFzInfWByFzMatrixData = field(default_factory=SignFzInfWByFzMatrixData)
 
     def __post_init__(self):
-        self.fz_vec_sub_n.e_bar = self.expand_sk.e_bar
         self.convert_restr_vec_to_fp.v_bar = self.fz_vec_sub_n.v_bar
         self.fz_dz_norm_n.v_bar_in = self.fz_vec_sub_n.v_bar
         self.fp_vec_by_fp_vec_pointwise.v = self.convert_restr_vec_to_fp.v
         self.fp_vec_by_fp_matrix.u = self.fp_vec_by_fp_vec_pointwise.u
-        self.fp_vec_by_fp_matrix.V_tr = self.expand_sk.V_tr
         self.fp_vec_by_restr_vec_scaled.e_bar_prime = self.fz_vec_sub_n.e_bar_prime
         self.fp_vec_by_restr_vec_scaled.u_prime = self.fp_vec_by_fp_vec_pointwise.u_prime
-        self.fz_vec_sub_m.e_G_bar = self.expand_sk.e_G_bar
         self.fz_dz_norm_m.v_G_bar_in = self.fz_vec_sub_m.v_G_bar
         self.fz_inf_w_by_fz_matrix.e_G_bar_prime = self.fz_vec_sub_m.e_G_bar_prime
-        self.fz_inf_w_by_fz_matrix.W_mat = self.expand_sk.W_mat
         self.fz_dz_norm_n.e_bar_prime_in = self.fz_inf_w_by_fz_matrix.e_bar_prime
         self.pack_fz_vec.v_bar_in = self.fz_dz_norm_n.v_bar_out
         self.pack_fz_rsdp_g_vec.v_G_bar_in = self.fz_dz_norm_m.v_G_bar_out
+        self.fp_dz_norm_synd.s_prime_in = self.fp_vec_by_fp_matrix.s_prime
+        self.pack_fp_syn.s_prime_in = self.fp_dz_norm_synd.s_prime_out

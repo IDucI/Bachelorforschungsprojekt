@@ -1,0 +1,20 @@
+[build-system]
+requires = ["setuptools >= 64.0", "setuptools_scm>=8"]
+build-backend = "setuptools.build_meta"
+
+[project]
+dynamic = ["version"]
+description = "Python bindings for LESS"
+name = "less"
+requires-python = ">=3.10"
+dependencies = []
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["less*"]
+
+[tool.setuptools.dynamic]
+version = {attr = "less.__version__"}

@@ -77,7 +77,6 @@ EDITABLE := -e
 ALG_DIR = $(ALG_PATH)$f/
 
 # variables exported to lib_Makefile
-DEBUG = -g
 
 export ALG_PATH
 export DEBUG

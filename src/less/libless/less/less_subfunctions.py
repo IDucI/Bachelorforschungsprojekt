@@ -15,21 +15,15 @@ class LessSubfunctions:
         self.n_pad = self.params.n_pad
         self.num_keypairs = self.params.num_keypairs
         self.seed_length_bytes = self.params.seed_length_bytes
-        self.private_key_seed_length_bytes = (
-            self.params.private_key_seed_length_bytes
-        )
+        self.private_key_seed_length_bytes = self.params.private_key_seed_length_bytes
 
-        self.generator_values_count = (
-            self.params.generator_values_count
-        )
+        self.generator_values_count = self.params.generator_values_count
 
         self.row_values_count = self.n - self.k
-        self.rref_values_count = (
-            self.k * self.row_values_count
-        )
+        self.rref_values_count = self.k * self.row_values_count
         self.private_monomial_seeds_count = (
-            (self.num_keypairs - 1) * self.private_key_seed_length_bytes
-        )
+            self.num_keypairs - 1
+        ) * self.private_key_seed_length_bytes
 
     def load_dll(self) -> None:
         """Declare native libless argument and return types."""
@@ -99,6 +93,8 @@ class LessSubfunctions:
         self,
         compressed_sk: Sequence[int] | bytes | bytearray,
     ) -> Tuple[bytes, List[bytes]]:
+        """Derive the generator seed and private monomial seeds
+        from the compressed secret-key seed."""
         compressed_sk = bytes(compressed_sk)
         if len(compressed_sk) != self.private_key_seed_length_bytes:
             raise ValueError(
@@ -123,7 +119,7 @@ class LessSubfunctions:
         private_seeds = bytes(c_private_seeds)
         seed_size = self.private_key_seed_length_bytes
         return bytes(c_g0_seed), [
-            private_seeds[offset:offset + seed_size]
+            private_seeds[offset : offset + seed_size]
             for offset in range(0, len(private_seeds), seed_size)
         ]
 
@@ -132,6 +128,8 @@ class LessSubfunctions:
         compact_values: List[int],
         column_pos: List[int],
     ) -> List[int]:
+        """Expand compact RREF values and column positions
+        into a full LESS generator matrix."""
         if len(compact_values) != self.rref_values_count:
             raise ValueError(
                 f"Expected {self.rref_values_count} compact entries, "
@@ -163,6 +161,8 @@ class LessSubfunctions:
         coefficients: List[int],
         permutation: List[int],
     ) -> Tuple[List[int], List[int]]:
+        """Compute the inverse monomial transformation
+        and return its coefficients and permutation."""
         if len(coefficients) != self.n or len(permutation) != self.n:
             raise ValueError(f"Expected {self.n} monomial entries")
 
@@ -199,48 +199,28 @@ class LessSubfunctions:
 
         if len(coefficients) != self.n:
             raise ValueError(
-                f"Expected {self.n} monomial coefficients, "
-                f"got {len(coefficients)}"
+                f"Expected {self.n} monomial coefficients, " f"got {len(coefficients)}"
             )
 
         if len(permutation) != self.n:
             raise ValueError(
-                f"Expected {self.n} permutation entries, "
-                f"got {len(permutation)}"
+                f"Expected {self.n} permutation entries, " f"got {len(permutation)}"
             )
 
-        if any(
-            value < 0 or value >= self.q
-            for value in generator_values
-        ):
-            raise ValueError(
-                f"Generator entries must be in [0, {self.q - 1}]"
-            )
+        if any(value < 0 or value >= self.q for value in generator_values):
+            raise ValueError(f"Generator entries must be in [0, {self.q - 1}]")
 
-        if any(
-            value <= 0 or value >= self.q
-            for value in coefficients
-        ):
-            raise ValueError(
-                f"Coefficients must be in [1, {self.q - 1}]"
-            )
+        if any(value <= 0 or value >= self.q for value in coefficients):
+            raise ValueError(f"Coefficients must be in [1, {self.q - 1}]")
 
         if sorted(permutation) != list(range(self.n)):
-            raise ValueError(
-                "Permutation must contain each index from 0 to N-1"
-            )
+            raise ValueError("Permutation must contain each index from 0 to N-1")
 
-        generator_type = (
-            c_uint8 * self.generator_values_count
-        )
+        generator_type = c_uint8 * self.generator_values_count
 
-        coefficient_type = (
-            c_uint8 * self.n
-        )
+        coefficient_type = c_uint8 * self.n
 
-        permutation_type = (
-            c_uint16 * self.n
-        )
+        permutation_type = c_uint16 * self.n
 
         c_result = generator_type()
         c_generator = generator_type(*generator_values)
@@ -263,18 +243,12 @@ class LessSubfunctions:
         """Return the LESS reference inverse of one field element."""
 
         if not isinstance(value, int):
-            raise TypeError(
-                "Field element must be an integer"
-            )
+            raise TypeError("Field element must be an integer")
 
         if value < 0 or value >= self.q:
-            raise ValueError(
-                f"Field element must be in [0, {self.q - 1}]"
-            )
+            raise ValueError(f"Field element must be in [0, {self.q - 1}]")
 
-        return int(
-            self.less.c_less.less_fq_inv(value)
-        )
+        return int(self.less.c_less.less_fq_inv(value))
 
     def row_mul3(
         self,
@@ -285,35 +259,21 @@ class LessSubfunctions:
 
         if len(in1) != self.row_values_count:
             raise ValueError(
-                f"Expected {self.row_values_count} entries in in1, "
-                f"got {len(in1)}"
+                f"Expected {self.row_values_count} entries in in1, " f"got {len(in1)}"
             )
 
         if len(in2) != self.row_values_count:
             raise ValueError(
-                f"Expected {self.row_values_count} entries in in2, "
-                f"got {len(in2)}"
+                f"Expected {self.row_values_count} entries in in2, " f"got {len(in2)}"
             )
 
-        if any(
-            value < 0 or value >= self.q
-            for value in in1
-        ):
-            raise ValueError(
-                f"in1 entries must be in [0, {self.q - 1}]"
-            )
+        if any(value < 0 or value >= self.q for value in in1):
+            raise ValueError(f"in1 entries must be in [0, {self.q - 1}]")
 
-        if any(
-            value < 0 or value >= self.q
-            for value in in2
-        ):
-            raise ValueError(
-                f"in2 entries must be in [0, {self.q - 1}]"
-            )
+        if any(value < 0 or value >= self.q for value in in2):
+            raise ValueError(f"in2 entries must be in [0, {self.q - 1}]")
 
-        row_type = (
-            c_uint8 * self.row_values_count
-        )
+        row_type = c_uint8 * self.row_values_count
 
         c_out = row_type()
         c_in1 = row_type(*in1)
@@ -336,9 +296,7 @@ class LessSubfunctions:
         try:
             seed_bytes = bytes(seed)
         except (TypeError, ValueError) as exc:
-            raise TypeError(
-                "Seed must be bytes or a sequence of byte values"
-            ) from exc
+            raise TypeError("Seed must be bytes or a sequence of byte values") from exc
 
         if len(seed_bytes) != self.seed_length_bytes:
             raise ValueError(
@@ -346,17 +304,11 @@ class LessSubfunctions:
                 f"got {len(seed_bytes)}"
             )
 
-        values_type = (
-            c_uint8 * self.rref_values_count
-        )
+        values_type = c_uint8 * self.rref_values_count
 
-        positions_type = (
-            c_uint16 * self.row_values_count
-        )
+        positions_type = c_uint16 * self.row_values_count
 
-        seed_type = (
-            c_uint8 * self.seed_length_bytes
-        )
+        seed_type = c_uint8 * self.seed_length_bytes
 
         c_values = values_type()
         c_positions = positions_type()
@@ -382,9 +334,7 @@ class LessSubfunctions:
         try:
             seed_bytes = bytes(seed)
         except (TypeError, ValueError) as exc:
-            raise TypeError(
-                "Seed must be bytes or a sequence of byte values"
-            ) from exc
+            raise TypeError("Seed must be bytes or a sequence of byte values") from exc
 
         if len(seed_bytes) != self.private_key_seed_length_bytes:
             raise ValueError(
@@ -392,17 +342,11 @@ class LessSubfunctions:
                 f"got {len(seed_bytes)}"
             )
 
-        coefficients_type = (
-            c_uint8 * self.n
-        )
+        coefficients_type = c_uint8 * self.n
 
-        permutation_type = (
-            c_uint16 * self.n
-        )
+        permutation_type = c_uint16 * self.n
 
-        seed_type = (
-            c_uint8 * self.private_key_seed_length_bytes
-        )
+        seed_type = c_uint8 * self.private_key_seed_length_bytes
 
         c_coefficients = coefficients_type()
         c_permutation = permutation_type()
