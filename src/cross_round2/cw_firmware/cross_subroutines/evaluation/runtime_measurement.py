@@ -422,9 +422,6 @@ def measure_case(target, case, repetitions):
 def write_results(rows):
     """
     Write accumulated runtime measurements to a CSV file.
-    Args:
-        rows: List of dictionaries containing configuration metadata,
-              subroutine names and measurement statistics.
     """
     RESULTS_DIR.mkdir(parents = True, exist_ok = True)
 

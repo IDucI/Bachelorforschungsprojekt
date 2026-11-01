@@ -72,8 +72,6 @@ subroutine_fz_dz_norm_n                     = 0x13
 subroutine_fz_dz_norm_m                     = 0x14
 subroutine_fp_dz_norm_synd                  = 0x15
 
-
-
 # =============================================================================
 # USB / Chipwhisperer
 # =============================================================================
@@ -82,7 +80,7 @@ def release_cdc_acm() -> None:
     """
     Release Linux CDC-ACM driver under WSL.
     """
-    subprocess.run(["sudo", "modprobe", "-r", "cdc_acm"], check=False)
+    subprocess.run(["sudo", "modprobe", "-r", "cdc_acm"], check = False)
 
 # =============================================================================
 # Buffer Logic
@@ -113,7 +111,7 @@ def board_write_buffer(target, data: bytes) -> None:
         # Send the input chunk using the ChipWhisperer SimpleSerial2 library.
         target.send_cmd(ord("s"), chunk_index, chunk)
 
-        response = target.read_cmd(timeout=2000)
+        response = target.read_cmd(timeout = 2000)
 
         if response is None:
             raise TimeoutError("Timeout while waiting for ACK from STM32")
@@ -239,6 +237,7 @@ def intermediate_results(c: Cross, rng):
 
         return keygen, sign
 
+
 # Convert Python integer lists to the byte representation expected by the firmware interface.
 # The required element width depends on whether the values represent FZ_ELEM or FP_ELEM.
 def fz_to_bytes(values):
@@ -301,7 +300,7 @@ def test_intermediate_values(
 def compare(name, expected, actual):
     """
     Compare reference output with board output.
-    If a mismatch occurs, report the first differing index and a small surrounding window to make debugging easier.
+    If a mismatch occurs, report the first differing index.
     """
     expected = list(expected)
     actual = list(actual)

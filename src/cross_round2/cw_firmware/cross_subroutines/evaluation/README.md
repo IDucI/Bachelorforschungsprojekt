@@ -1,16 +1,19 @@
 # README
 
-This folder contains the testing and evaluation tools for the board communication, memory consumption and runtime measurement.
+This folder contains tools for testing the communication between the host system and the STM32F4 target, validating the functional correctness of selected subroutines, and measuring their execution time.
 
 ## Context
 
-The examined subroutines can be analyzed in terms of memory consumption and runtime. The evaluation allows us to:
 
-- identify potential memory and performance bottlenecks,
-- evaluate whether the implemented components meet the constraints of the embedded platform,
-- estimate the feasibility of executing larger parts or the full algorithm on the target device,
-- assess the suitability of selected operations for side-channel analysis based on execution time and expected trace length, and
-- measure the runtime of selected subroutines on the STM32F4 microcontroller.
+The provided tools support the following tasks:
+
+- verify the communication between the host system and the target device,
+- validate the outputs of selected subroutines against reference values from the Python CROSS implementation,
+- measure the execution time of selected subroutines on the STM32F4 microcontroller, and
+- collect runtime statistics for performance evaluation and to support future side-channel investigations.
+
+Memory analysis and the broader assessment of the feasibility of executing larger algorithm components on the target platform are addressed separately in other parts of the project and are therefore outside the scope of this folder.
+
 
 ## Folder Structure
 
@@ -19,14 +22,16 @@ The `evaluation` folder contains scripts for testing the board communication and
 - `run_board_test.py`: Tests the communication between the PC and the STM32 board and verifies the correctness of the implemented subroutines.
 - `runtime_measurement.py`: Measures the execution time of selected subroutines on the STM32F4 and saves the results for further analysis.
 
+
 ## Testing the Board Communication and Subroutine Correctness
 
-To start the communication, navigate to the following folder:
+To run the board tests, navigate to the following folder:
 
 `.../Bachelorforschungsprojekt/src/cross_round2/cw_firmware/cross_subroutines/evaluation`
 
 The directory structure is:
 
+```text
 Bachelorforschungsprojekt/
 └── src/
     └── cross_round2/
@@ -36,7 +41,7 @@ Bachelorforschungsprojekt/
                     ├── run_board_test.py
                     ├── runtime_measurement.py
                     └── ...
-
+```
 
 The file `run_board_test.py` can be used to test the communication between the PC and the STM32 board as well as the correctness of the implemented subroutines.
 
@@ -58,67 +63,62 @@ When all 18 variants are tested, the summary contains all 18 variants. When a sp
 
 The test results are displayed in the terminal.
 
+
 ## Runtime Measurement
 
-The file `runtime_measurement.py` measures the execution time of selected CROSS operations and subroutines on the STM32F4 microcontroller.
+The `runtime_measurement.py` script measures the execution time of selected CROSS subroutines on the STM32F4. In addition to verifying the firmware outputs against the Python reference implementation, it records the CPU cycles required by each operation using the DWT cycle counter and derives the corresponding execution times.
 
-Unlike `run_board_test.py`, which focuses on communication and validation, the runtime measurement script records the number of CPU cycles required by each operation and derives the corresponding execution time. Before accepting a measurement, the script compares the firmware output with the expected output from the Python reference implementation.
 
 ## Prerequisites
 
 - The STM32F4 board is connected to the PC.
+- The compiled firmware HEX files for the evaluated configurations are available.
 - The required ChipWhisperer and CROSS Python dependencies are installed.
 - The board is accessible through the configured serial communication interface.
+
 
 ## Running the Runtime Measurement
 
 Navigate to the `evaluation` folder and run:
 
-`python runtime_measurement.py`
+If no specific configuration is provided, all configured parameter sets are evaluated.
 
-By default, the script evaluates the configured parameter variants and measures each selected operation repeatedly.
+`python runtime_measurement.py`
 
 To measure only a specific configuration, provide the family, category, and optimization:
 
 `python runtime_measurement.py RSDP 5 small`
 
-Running `python runtime_measurement.py` evaluates all configured parameter sets and measures each selected operation using the default number of repetitions.
-
 The number of repetitions can be changed using the `--repetitions` argument. For example, to perform 20 measurements per operation:
 
 `python runtime_measurement.py --repetitions 20`. 
 
-The default number of repetitions is currently set to 10. This provides an initial estimate of the runtime statistics. The number of repetitions can be increased using the `--repetitions` argument if a more robust statistical evaluation is required.
-
 
 ### Measurement Procedure
 
-For each selected configuration, the script prepares test cases using the Python CROSS reference implementation. It then executes the corresponding firmware subroutines on the STM32F4 and retrieves the complete output, including outputs that require multiple communication chunks.
+The `runtime_measurement.py` script automatically measures the execution time of selected CROSS subroutines on the STM32F4 target using the ChipWhisperer Nano and SimpleSerial V2.1.
 
-The retrieved output is compared with the expected reference output. The cycle count and CPU clock frequency are then used to calculate the execution time.
+For each firmware configuration, the script generates test inputs and expected outputs using the Python CROSS reference implementation. It transfers the inputs to the target, executes the corresponding firmware subroutines, and retrieves their outputs. The returned outputs are compared with the expected reference values to verify functional correctness.
 
-The script records successful measurements and calculates summary statistics, including:
+Execution cycles are measured directly on the target using the DWT cycle counter. The firmware records the cycle count around the selected function call. The host subsequently retrieves the recorded cycle count and CPU clock frequency via SimpleSerial V2.1 and calculates the execution time.
 
-- number of successful and failed repetitions,
-- mean and median cycle counts,
-- minimum and maximum cycle counts,
-- standard deviation, and
-- corresponding execution-time statistics in microseconds.
+By default, each subroutine is measured ten times. The script calculates the mean, median, minimum, and maximum cycle counts, as well as the corresponding execution-time statistics and standard deviation. The median execution time is used as the primary value for evaluation.
 
-The measurements are intended to characterize the runtime of the selected operations on the target microcontroller. They should be interpreted in the context of the firmware implementation, target configuration, and measurement setup.
+Failed repetitions are recorded as errors, while subsequent repetitions are attempted by default.
+
 
 ## Results
 
 The results are saved as a CSV file in the `results` subfolder:
 
+```text
 evaluation/
 └── results/
     └── runtime_measurement.csv
+```
 
-The CSV file contains the configuration metadata, operation names, repetition counts, and runtime statistics. It can be used for further analysis and comparison between parameter variants.
+The CSV file contains the firmware configuration, subroutine names, requested and completed repetition counts, error messages, CPU clock frequency, and the calculated cycle-count and execution-time statistics.
 
-The measurement script also prints progress information and measurement results to the terminal. If a repetition fails, the script records the error and can continue with subsequent measurements, depending on the configured error-handling behavior.
+The measurement script also displays progress information and individual measurement results in the terminal.
 
-## Notes
 
-- Runtime measurements and memory-consumption measurements are separate evaluations and should be interpreted accordingly.
