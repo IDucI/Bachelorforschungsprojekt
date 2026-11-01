@@ -15,10 +15,7 @@ make
 Build the Piñata firmware from `src/less/cw_firmware/less_subroutines`:
 
 ```bash
-for category in toy cat1_192 cat1_68 cat1_45 cat3_220 cat3_102 cat5_345 cat5_137; do
-    ./compile clean LESS_CATEGORY="$category"
-    ./compile LESS_CATEGORY="$category"
-done
+make clean && make
 ```
 
 This generates the firmware HEX files for all eight LESS variants.
@@ -32,6 +29,8 @@ python3 run_board_test.py
 ```
 
 The runner calls `../flash.py` for each selected firmware image. The board test compares the supported LESS subroutines against the host reference implementation.
+
+The inputs for `fq_inv`, `generator_sample`, `monomial_sample_prikey` and `generator_monomial_mul` are derived from LESS key generation.
 
 To test a single variant:
 

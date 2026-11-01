@@ -215,201 +215,75 @@ def compare(
     raise AssertionError(f"{name}: {detail}")
 
 
-def test_fq_inv(
-    target,
-    less,
-    rng,
-) -> None:
-    """Compare field inversion on the board with the host reference.
-    The input is a nonzero field element."""
-    value = rng.randrange(
-        1,
-        less.subfunctions.q,
-    )
+def create_reference_cases(less, rng):
+    """Generate inputs and expected outputs for the selected subroutines."""
 
-    expected = bytes([less.subfunctions.fq_inv(value)])
+    sub = less.subfunctions
+    compressed_sk = random_bytes(rng, sub.private_key_seed_length_bytes)
+    keygen = less.calculation.keygen(compressed_sk)
 
-    actual = board_run_subroutine(
-        target,
-        LESS_FQ_INV,
-        bytes([value]),
-        len(expected),
-    )
+    cases = []
 
-    compare(
-        "fq_inv",
-        expected,
-        actual,
-    )
-
-
-def test_row_mul3(
-    target,
-    less,
-    rng,
-) -> None:
-    """Compare row_mul3 with the host reference.
-    The inputs are two rows of N-K field elements.
-    The result is their element-wise product."""
-    count = less.subfunctions.row_values_count
-
-    q = less.subfunctions.q
-
-    in1 = [rng.randrange(q) for _ in range(count)]
-
-    in2 = [rng.randrange(q) for _ in range(count)]
-
-    expected = bytes(
-        less.subfunctions.row_mul3(
-            in1,
-            in2,
+    def add(name, subroutine_id, input_data, output_data):
+        cases.append(
+            {
+                "name": name,
+                "id": subroutine_id,
+                "input": bytes(input_data),
+                "expected_output": bytes(output_data),
+                "output_length": len(output_data),
+            }
         )
+
+    inv = keygen.fq_inv
+    add(
+        "fq_inv",
+        LESS_FQ_INV,
+        bytes([inv.value]),
+        bytes([inv.inverse]),
     )
 
-    actual = board_run_subroutine(
-        target,
+    count = sub.row_values_count
+    in1 = [rng.randrange(sub.q) for _ in range(count)]
+    in2 = [rng.randrange(sub.q) for _ in range(count)]
+    result = sub.row_mul3(in1, in2)
+
+    add(
+        "row_mul3",
         LESS_ROW_MUL3,
         bytes(in1) + bytes(in2),
-        len(expected),
+        result,
     )
 
-    compare(
-        "row_mul3",
-        expected,
-        actual,
-    )
-
-
-def test_generator_sample(
-    target,
-    less,
-    rng,
-) -> None:
-    """Compare generator_sample with the host reference.
-    The input is a random seed.
-    The result contains generator matrix values and column positions."""
-    seed = random_bytes(
-        rng,
-        less.subfunctions.seed_length_bytes,
-    )
-
-    values, positions = less.subfunctions.generator_sample(seed)
-
-    expected = bytes(values) + serialize_positions(positions)
-
-    actual = board_run_subroutine(
-        target,
+    sample = keygen.generator_sample
+    add(
+        "generator_sample",
         LESS_GENERATOR_SAMPLE,
-        seed,
-        len(expected),
+        sample.seed,
+        sample.values + serialize_positions(sample.positions),
     )
 
-    compare(
-        "generator_sample",
-        expected,
-        actual,
-    )
-
-
-def test_monomial_sample_prikey(
-    target,
-    less,
-    rng,
-) -> None:
-    """Compare monomial_sample_prikey with the host reference.
-    The input is a private-key seed.
-    The result contains field coefficients and a permutation."""
-    seed = random_bytes(
-        rng,
-        less.subfunctions.private_key_seed_length_bytes,
-    )
-
-    coefficients, permutation = less.subfunctions.monomial_sample_prikey(seed)
-
-    expected = bytes(coefficients) + serialize_positions(permutation)
-
-    actual = board_run_subroutine(
-        target,
+    monomial = keygen.monomial_sample_prikey
+    add(
+        "monomial_sample_prikey",
         LESS_MONOMIAL_SAMPLE_PRIKEY,
-        seed,
-        len(expected),
+        monomial.seed,
+        monomial.coefficients + serialize_positions(monomial.permutation),
     )
 
-    compare(
-        "monomial_sample_prikey",
-        expected,
-        actual,
-    )
+    if less.params.category in (None, 1):
+        multiplication = keygen.generator_monomial_mul
 
-
-def test_generator_monomial_mul(
-    target,
-    less,
-    rng,
-) -> None:
-    """Compare generator_monomial_mul with the host reference.
-    The inputs are a generator matrix, coefficients and a permutation.
-    The result is the transformed generator matrix."""
-    sub = less.subfunctions
-
-    generator = [rng.randrange(sub.q) for _ in range(sub.generator_values_count)]
-
-    coefficients = [
-        rng.randrange(
-            1,
-            sub.q,
+        add(
+            "generator_monomial_mul",
+            LESS_GENERATOR_MONOMIAL_MUL,
+            multiplication.generator
+            + multiplication.coefficients
+            + serialize_positions(multiplication.permutation),
+            multiplication.result,
         )
-        for _ in range(sub.n)
-    ]
 
-    permutation = list(range(sub.n))
-
-    rng.shuffle(permutation)
-
-    expected = bytes(
-        sub.generator_monomial_mul(
-            generator,
-            coefficients,
-            permutation,
-        )
-    )
-
-    input_data = (
-        bytes(generator) + bytes(coefficients) + serialize_positions(permutation)
-    )
-
-    actual = board_run_subroutine(
-        target,
-        LESS_GENERATOR_MONOMIAL_MUL,
-        input_data,
-        len(expected),
-    )
-
-    compare(
-        "generator_monomial_mul",
-        expected,
-        actual,
-    )
-
-
-COMMON_TESTS = [
-    (
-        "fq_inv",
-        test_fq_inv,
-    ),
-    (
-        "row_mul3",
-        test_row_mul3,
-    ),
-    (
-        "generator_sample",
-        test_generator_sample,
-    ),
-    (
-        "monomial_sample_prikey",
-        test_monomial_sample_prikey,
-    ),
-]
+    return cases
 
 
 def make_less(
@@ -476,22 +350,22 @@ def run_tests(
 ) -> bool:
     """Run the supported subroutine tests for one firmware variant.
     Compare each board result with the host reference implementation."""
-    tests = list(COMMON_TESTS)
+    names = [
+        "fq_inv",
+        "row_mul3",
+        "generator_sample",
+        "monomial_sample_prikey",
+    ]
 
     if less.params.category in {
         None,
         1,
     }:
-        tests.append(
-            (
-                "generator_monomial_mul",
-                test_generator_monomial_mul,
-            )
-        )
+        names.append("generator_monomial_mul")
 
-    total = len(tests) * ROUNDS_PER_SUBROUTINE
-
+    total = len(names) * ROUNDS_PER_SUBROUTINE
     passed = 0
+    rounds = {}
 
     print()
     print("=" * 64)
@@ -508,33 +382,33 @@ def run_tests(
 
     print()
 
-    for test_number, (
-        name,
-        test_function,
-    ) in enumerate(
-        tests,
-        start=1,
-    ):
+    for test_number, name in enumerate(names, start=1):
         print(
-            f"[{test_number:02d}/" f"{len(tests):02d}] " f"{name:<30}",
+            f"[{test_number:02d}/" f"{len(names):02d}] " f"{name:<30}",
             end="",
             flush=True,
         )
 
-        for round_number in range(
-            1,
-            ROUNDS_PER_SUBROUTINE + 1,
-        ):
-            seed = (base_seed + test_number * 1000 + round_number) & 0xFFFFFFFF
-
-            rng = random.Random(seed)
+        for round_number in range(1, ROUNDS_PER_SUBROUTINE + 1):
+            seed = (base_seed + round_number) & 0xFFFFFFFF
 
             try:
-                test_function(
+                if round_number not in rounds:
+                    cases = create_reference_cases(less, random.Random(seed))
+                    rounds[round_number] = {
+                        case["name"]: case for case in cases
+                    }
+
+                case = rounds[round_number][name]
+
+                actual = board_run_subroutine(
                     target,
-                    less,
-                    rng,
+                    case["id"],
+                    case["input"],
+                    case["output_length"],
                 )
+
+                compare(name, case["expected_output"], actual)
 
             except Exception as exc:
                 log_test_result(

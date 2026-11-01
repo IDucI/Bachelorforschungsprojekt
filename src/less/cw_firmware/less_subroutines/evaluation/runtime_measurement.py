@@ -18,15 +18,9 @@ from board_test import (
     PARAMETER_SETS,
     BAUDRATE,
     release_cdc_acm,
-    random_bytes,
-    serialize_positions,
     board_run_subroutine,
+    create_reference_cases,
     make_less,
-    LESS_FQ_INV,
-    LESS_ROW_MUL3,
-    LESS_GENERATOR_SAMPLE,
-    LESS_MONOMIAL_SAMPLE_PRIKEY,
-    LESS_GENERATOR_MONOMIAL_MUL,
 )
 
 from run_board_test import get_hex_path, flash_firmware
@@ -36,74 +30,6 @@ RESULTS_DIR = BASE_DIR / "results"
 OUTPUT_FILE = RESULTS_DIR / "runtime_measurement.csv"
 
 FAIL_ON_MEASUREMENT_ERROR = False
-
-
-def create_reference_cases(less, rng):
-    """Generate input and reference output for each supported subroutine."""
-    sub = less.subfunctions
-    cases = []
-
-    def add(name, subroutine_id, input_data, expected_output):
-        cases.append(
-            {
-                "name": name,
-                "id": subroutine_id,
-                "input": bytes(input_data),
-                "expected_output": bytes(expected_output),
-                "output_length": len(expected_output),
-            }
-        )
-
-    value = rng.randrange(1, sub.q)
-    add(
-        "fq_inv",
-        LESS_FQ_INV,
-        bytes([value]),
-        bytes([sub.fq_inv(value)]),
-    )
-
-    count = sub.row_values_count
-    in1 = [rng.randrange(sub.q) for _ in range(count)]
-    in2 = [rng.randrange(sub.q) for _ in range(count)]
-    add(
-        "row_mul3",
-        LESS_ROW_MUL3,
-        bytes(in1) + bytes(in2),
-        bytes(sub.row_mul3(in1, in2)),
-    )
-
-    seed = random_bytes(rng, sub.seed_length_bytes)
-    values, positions = sub.generator_sample(seed)
-    add(
-        "generator_sample",
-        LESS_GENERATOR_SAMPLE,
-        seed,
-        bytes(values) + serialize_positions(positions),
-    )
-
-    seed = random_bytes(rng, sub.private_key_seed_length_bytes)
-    coefficients, permutation = sub.monomial_sample_prikey(seed)
-    add(
-        "monomial_sample_prikey",
-        LESS_MONOMIAL_SAMPLE_PRIKEY,
-        seed,
-        bytes(coefficients) + serialize_positions(permutation),
-    )
-
-    if less.params.category in (None, 1):
-        generator = [rng.randrange(sub.q) for _ in range(sub.generator_values_count)]
-        coefficients = [rng.randrange(1, sub.q) for _ in range(sub.n)]
-        permutation = list(range(sub.n))
-        rng.shuffle(permutation)
-
-        add(
-            "generator_monomial_mul",
-            LESS_GENERATOR_MONOMIAL_MUL,
-            bytes(generator) + bytes(coefficients) + serialize_positions(permutation),
-            bytes(sub.generator_monomial_mul(generator, coefficients, permutation)),
-        )
-
-    return cases
 
 
 def read_cycles(target):

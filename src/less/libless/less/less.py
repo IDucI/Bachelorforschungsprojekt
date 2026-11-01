@@ -8,6 +8,7 @@ from typing import Optional
 
 from .less_params import get_params
 from .less_subfunctions import LessSubfunctions
+from .less_calculations import Calculations
 
 
 def platform_release_string() -> str:
@@ -46,6 +47,7 @@ class Less:
 
         self.select_lib(path, name, self.params.version, release_suffix)
         self.load_dll()
+        self.calculation = Calculations(self.subfunctions)
 
     def select_lib(self, path, name=None, version=None, release_suffix=None):
         """Select the shared library path and filename for the LESS variant."""

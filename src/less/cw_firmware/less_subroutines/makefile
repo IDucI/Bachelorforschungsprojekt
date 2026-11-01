@@ -1,4 +1,28 @@
+PLATFORM = PINATA
 MCU_CLK ?= INT
+
+ifndef BUILD_SUB_VARIANT
+
+.DEFAULT_GOAL := all
+
+LESS_CATEGORIES := toy cat1_192 cat1_68 cat1_45 cat3_220 cat3_102 cat5_345 cat5_137
+
+.PHONY: all clean $(LESS_CATEGORIES)
+
+all: $(LESS_CATEGORIES)
+
+$(LESS_CATEGORIES):
+	$(MAKE) --no-print-directory -f makefile BUILD_SUB_VARIANT=1 \
+		LESS_CATEGORY=$@ TARGET=less_subroutines_$@ \
+		OBJDIR=objdir-less_subroutines_$@ PLATFORM=$(PLATFORM) MCU_CLK=$(MCU_CLK) all
+
+clean:
+	rm -rf objdir-less_subroutines_*
+	rm -f less_subroutines_*-PINATA.hex less_subroutines_*-PINATA.elf \
+		less_subroutines_*-PINATA.map less_subroutines_*-PINATA.lss \
+		less_subroutines_*-PINATA.sym less_subroutines_*-PINATA.bin
+
+else
 
 SS_VER = SS_VER_2_1
 
@@ -91,3 +115,5 @@ endif
 LDFLAGS += -Wl,--print-memory-usage
 
 ALL_CFLAGS += -fstack-usage
+
+endif

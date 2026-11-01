@@ -15,6 +15,7 @@ From the `src/less/libless` directory:
 make
 make -C tests
 PYTHONPATH=. python3 tests/test_less.py
+PYTHONPATH=. python3 tests/test_intermediates.py
 python3 -m tests.sign
 ```
 
@@ -23,6 +24,8 @@ python3 -m tests.sign
 `make -C tests` compiles and executes `test_less.c`, generating reference JSON files for all seven official parameter sets.
 
 `test_less.py` compares the reconstructed generator matrix products against these reference values.
+
+`test_intermediates.py` validates key-generation intermediate values used by the board evaluation.
 
 `tests.sign` and `tests.verify` test key generation, signing and verification for all seven official parameter sets.
 
