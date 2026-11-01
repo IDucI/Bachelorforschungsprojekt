@@ -1,16 +1,17 @@
 Markdown
 # Bachelorforschungsprojekt
-# Embedded Implementation and Analysis of Post-Quantum Signature Schemes (CROSS,LESS so far) on STM32F4
+## Embedded Implementation and Evaluation of Selected Subroutines from Post-Quantum Signature Schemes (CROSS and LESS) on the STM32F4
 
 ## Overview
 
-This project focuses on the implementation and analysis of selected components of the post-quantum signature scheme CROSS on an embedded platform.
+Post-quantum cryptography is becoming increasingly important as quantum computers pose a potential threat to the security of conventional public-key cryptographic schemes. However, deploying post-quantum cryptographic algorithms on resource-constrained embedded systems introduces practical challenges, particularly with respect to execution time and memory consumption. Furthermore, executing cryptographic operations on physical hardware raises questions about potential side-channel vulnerabilities. Investigating these aspects requires controlled access to individual cryptographic operations and a reliable setup for executing and evaluating them on embedded platforms.
 
-CROSS is a code-based digital signature scheme submitted to the NIST Post-Quantum Cryptography (PQC) standardization process. It relies on the hardness of decoding problems in error-correcting codes and is designed to remain secure against quantum attacks. In addition to CROSS, other code-based signature schemes such as LESS have been proposed within the NIST additional signature call, providing alternative design approaches and performance characteristics.
+This project addresses these challenges by implementing and evaluating selected subroutines from the CROSS and LESS digital signature schemes on an STM32F4 microcontroller hosted on a Riscure Piñata platform. The work focuses on individual cryptographic operations, including vector and matrix computations, data conversion, and packing routines. The selected operations are implemented in embedded C and integrated into the target firmware. A Python-based host environment, together with ChipWhisperer and the SimpleSerial V2.1 communication protocol, enables the transfer of input data, execution of selected subroutines, and retrieval of their outputs. Functional validation is performed by comparing the results obtained on the target with corresponding reference values.
 
-CROSS aims to provide efficient digital signatures with competitive performancewhile maintaining strong security guarantees. Similar design goals can also be observed in other code-based candidates such as LESS.
+In addition to functional validation, the project evaluates the execution time and memory requirements of selected operations. Runtime measurements are performed directly on the STM32F4 using the Cortex-M4 DWT cycle counter, while static stack analysis provides estimates of the memory requirements of individual functions and their call paths. These evaluations provide insights into the computational and memory constraints associated with executing cryptographic operations on the embedded platform.
 
-The goal of this project is not to implement the full algorithm, but to adapt and analyze critical subroutines on constrained hardware. Therefore, this project focuses on implementing selected components of multiple PQC signature schemes on an embedded platform and preparing them for side-channel evaluation.
+Although no physical side-channel traces were acquired as part of this project, the implemented testing and evaluation setup provides a practical basis for future investigations. The results help characterize the selected operations and identify potential candidates for subsequent side-channel measurements on resource-constrained embedded systems.
+
 
 ## Objectives
 
@@ -18,38 +19,40 @@ The goal of this project is not to implement the full algorithm, but to adapt an
 - Implement selected subroutines in C
 - Port the implementation to an embedded platform (STM32F4)
 - Validate correctness against reference implementations
-- Prepare and perform side-channel analysis (SCA), only if time permits
+- Prepare the infrastructure for future side-channel analysis (SCA)
 - Evaluate runtime and memory consumption
 
 ## Hardware Platform
 
-- Riscure Piñata Board  
+- Riscure Pinata Board  
 - Microcontroller: STM32F4 
 - Analysis Tooling: ChipWhisperer  
 
 ## Project Structure
 
-The project is seperated into many areas, same folder as this README we have an docs folder `.../Bachelorforschungsprojekt/docs`
-where we placed our scientific paper/report and proposal to read. If we go into the src folder we get to the important things, we can see all of the schemes which we analyzed and the libkyber libary which we get to used. 
+The project is organized into documentation and source code. The `docs` folder contains the scientific report, project proposal, and other relevant documentation.
 
+The `src` folder contains the implementations of the investigated schemes, supporting libraries, and the provided Python environment.
+
+```text
 ...Bachelorforschungsprojekt/
-├─ docs/                 (Folder with our documentation & other important PDFs)                           
-├─ src/                     
-│  ├─ cross_round2/      (CROSS scheme)   
-│  ├─ cw-env311          (Virtual environment)    
-│  ├─ less/              (LESS scheme)
-│  ├─ libkyber/          (Libkyber libary)
-│  └── ...               (Placeholder for further schemes)                      
-├─ README.md             (This current README)         
-│
+├── docs/                 (Project documentation and reports)
+├── src/
+│   ├── cross_round2/     (CROSS implementation)
+│   ├── cw-env311/        (Python virtual environment)
+│   ├── less/             (LESS implementation)
+│   ├── libkyber/         (Supporting Kyber library)
+│   └── ...
+├── README.md             (Main project README)
 └── ...
+```
 
 ## Important
 
-Each scheme has its own README file in its respective folder. Please read these README files carefully and follow their instructions to understand the internal project structure, setup requirements, and how to work with the respective implementation.
+Each scheme has its own README file in its respective folder. Please read these README files carefully and follow their instructions to understand the internal project structure, setup requirements, and implementation details.
 
-Before inspecting or working with any of the schemes, activate the provided Python environment by running the following command `source cw-env311/bin/activate` in the terminal from the specific folder:
+Before working with the project, activate the provided Python environment from the `src` directory:
 
-`.../Bachelorforschungsprojekt/src`
-
-After activating the environment, you can work with the project and its provided components.
+```bash
+cd .../Bachelorforschungsprojekt/src
+source cw-env311/bin/activate
