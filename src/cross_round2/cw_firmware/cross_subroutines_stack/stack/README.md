@@ -150,7 +150,7 @@ The Static Stack Analyzer should then display the estimated stack usage. Inspect
 
 Repeat this procedure for the other firmware configurations to obtain their respective stack analysis results.
 
-### Stack Analysis Results
+### 5. Stack Analysis Results
 
 The Static Stack Analyzer in STM32CubeIDE provides stack usage information for individual functions and their call relationships.
 
