@@ -166,3 +166,22 @@ The exported CSV file contains the following columns:
 The `max_cost_bytes` and `local_cost_bytes` values describe the stack requirements associated with the analysed functions. Buffers allocated by a caller and passed to a called function via pointers are not part of the called function's own stack frame. They are allocated in the caller's stack frame, if the caller allocates them locally.
 
 The exported CSV file is stored in the `...cw_firmware\cross_subroutines_stack\stack\cross_stack_analysis_18_variants.csv`  
+
+**Example: Caller-Allocated Buffers**
+
+Consider the function `cross_restr_vec_by_fp_matrix()`. Its input and output arrays are passed as pointers. Consequently, their storage is not included in the function's own local stack cost reported by STM32CubeIDE.
+
+The calling code in `subroutines()` allocates the output array locally, while the input data is stored in the global CCMRAM buffer. For the `rsdp_1_balanced` configuration, this results in:
+
+- 4,003 bytes of input data in CCMRAM (127 bytes for the vector and 3,876 bytes for the matrix).
+- 51 bytes for the local output array in the stack frame of `subroutines()`.
+- 32 bytes of local stack usage within `cross_restr_vec_by_fp_matrix()`.
+
+Since the individual switch cases are not separate functions, their local arrays are accounted for in the stack frame of `subroutines()` rather than appearing as separate entries in the call graph.
+
+This behaviour was experimentally verified by introducing a local array of 300,000 bytes in the verify case. STM32CubeIDE subsequently reported a local cost of 300,040 bytes for `subroutines()`.
+
+Therefore, the buffer sizes calculated by `cross_memory.py` represent the estimated storage requirements of the input and output buffers. They should be treated as a separate buffer-size estimate, not as an exact additional stack requirement that can simply be added to the values reported by STM32CubeIDE. Compiler overhead and memory already accounted for in the stack analysis must also be considered.
+
+The exported CSV file is stored in the `...cw_firmware\cross_subroutines_stack\stack\cross_stack_analysis_18_variants.csv`  
+
