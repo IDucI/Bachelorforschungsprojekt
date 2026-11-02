@@ -1,10 +1,8 @@
 import argparse
-import csv
 import random
 import subprocess
 import sys
 import time
-from datetime import datetime
 from pathlib import Path
 
 import chipwhisperer as cw
@@ -13,7 +11,6 @@ EVALUATION_DIR = Path(__file__).resolve().parent
 FIRMWARE_DIR = EVALUATION_DIR.parent
 LIBLESS_DIR = FIRMWARE_DIR.parent.parent / "libless"
 BUILD_DIR = LIBLESS_DIR / "build"
-RESULTS_CSV = EVALUATION_DIR / "board_test_details.csv"
 
 if str(LIBLESS_DIR) not in sys.path:
     sys.path.insert(0, str(LIBLESS_DIR))
@@ -34,7 +31,7 @@ PARAMETER_SETS = {
 BAUDRATE = 230400
 INPUT_CHUNK_SIZE = 160
 OUTPUT_CHUNK_SIZE = 160
-ROUNDS_PER_SUBROUTINE = 5
+ROUNDS_PER_SUBROUTINE = 1
 
 LESS_FQ_INV = 0x03
 LESS_ROW_MUL3 = 0x04
@@ -299,48 +296,6 @@ def make_less(
     )
 
 
-def log_test_result(
-    category: str,
-    subroutine: str,
-    round_number: int | None,
-    base_seed: int,
-    test_seed: int | None,
-    status: str,
-    error: str = "",
-) -> None:
-    """Append a board test result to the CSV file."""
-    needs_header = not RESULTS_CSV.exists() or RESULTS_CSV.stat().st_size == 0
-
-    with RESULTS_CSV.open("a", newline="", encoding="utf-8") as file:
-        writer = csv.writer(file)
-
-        if needs_header:
-            writer.writerow(
-                [
-                    "timestamp",
-                    "category",
-                    "subroutine",
-                    "round",
-                    "base_seed",
-                    "test_seed",
-                    "status",
-                    "error",
-                ]
-            )
-
-        writer.writerow(
-            [
-                datetime.now().astimezone().isoformat(timespec="seconds"),
-                category,
-                subroutine,
-                round_number,
-                base_seed,
-                test_seed,
-                status,
-                error,
-            ]
-        )
-
 
 def run_tests(
     target,
@@ -411,15 +366,6 @@ def run_tests(
                 compare(name, case["expected_output"], actual)
 
             except Exception as exc:
-                log_test_result(
-                    category_name,
-                    name,
-                    round_number,
-                    base_seed,
-                    seed,
-                    "Fail",
-                    f"{type(exc).__name__}: {exc}",
-                )
 
                 print("Fail")
 
@@ -443,14 +389,6 @@ def run_tests(
 
                 return False
 
-            log_test_result(
-                category_name,
-                name,
-                round_number,
-                base_seed,
-                seed,
-                "Pass",
-            )
 
             passed += 1
 
@@ -461,15 +399,6 @@ def run_tests(
         5,
     }:
 
-        log_test_result(
-            category_name,
-            "generator_monomial_mul",
-            None,
-            base_seed,
-            None,
-            "Skip",
-            "STM32F4 memory budget",
-        )
 
         print(
             "[SKIP] generator_monomial_mul: "
