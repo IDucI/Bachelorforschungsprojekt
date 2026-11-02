@@ -57,11 +57,13 @@ static uint32_t last_cycles = 0u;
 // The host specifies the requested chunk using x[0]. The firmware calculates
 // the corresponding byte offset and transmits only that slice of the result.
 //
-// This chunking mechanism is used consistently for large outputs throughout
-// the subroutines below. Subroutines 0x13-0x15 are handled slightly different, 
-// because they operate in-place on vectors stored in databuffer.
-// Their output is therefore transmitted directly from databuffer rather
-// than from a separate result buffer.
+// This chunking mechanism is used by subroutines that produce
+// outputs requiring multiple SimpleSerial responses.
+//
+// Subroutines 0x13-0x15 are handled slightly differently because
+// they operate in-place on vectors stored in databuffer. Their
+// output is therefore transmitted directly from databuffer
+// rather than from a separate result buffer.
 //
 // If the subroutine is using chunking it is marked with 
 // --- CHUNKING LOGIC BEGIN --- and end with // --- CHUNKING LOGIC END ---
@@ -505,7 +507,7 @@ uint8_t subroutines(uint8_t cmd, uint8_t scmd, uint8_t len, uint8_t* x) {
         uint32_t offset_chall = N * sizeof(FZ_ELEM);
         FP_ELEM chall_1 = *(FP_ELEM*)(databuffer + offset_chall);
 
-        // Vector u_prime (dimension N - K)
+         // Vector u_prime (length N)
         uint32_t offset_u_prime = offset_chall + sizeof(FP_ELEM);
         const FP_ELEM* vec_u_prime = (const FP_ELEM*)(databuffer + offset_u_prime);
 
