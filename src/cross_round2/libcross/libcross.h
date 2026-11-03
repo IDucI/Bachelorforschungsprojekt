@@ -39,7 +39,7 @@ extern "C" {
     * sig:     input signature
     * returns: 1 if valid, 0 otherwise
     */
-    int CROSS_verify(const pk_t *const PK, const char *const m, const uint64_t mlen, const CROSS_sig_t *const sig);
+    int cross_verify(const pk_t *const PK, const char *const m, const uint64_t mlen, const CROSS_sig_t *const sig);
 
     // -----------------------------------------------------------------------
     // Functions for internal state calculation
