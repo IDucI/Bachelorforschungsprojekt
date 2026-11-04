@@ -1,9 +1,0 @@
-timestamp,category,base_seed,hex_exists,flash_passed,board_test_passed,error
-2026-10-23T03:13:08+02:00,toy,3274317932,True,True,True,
-2026-10-23T03:14:30+02:00,cat1_192,3707706037,True,True,True,
-2026-10-23T03:15:57+02:00,cat1_68,3540871106,True,True,True,
-2026-10-23T03:17:24+02:00,cat1_45,1515900677,True,True,True,
-2026-10-23T03:18:21+02:00,cat3_220,2933098505,True,True,True,
-2026-10-23T03:19:18+02:00,cat3_102,2962786696,True,True,True,
-2026-10-23T03:20:44+02:00,cat5_345,2553085913,True,True,True,
-2026-10-23T03:22:10+02:00,cat5_137,3745024264,True,True,True,

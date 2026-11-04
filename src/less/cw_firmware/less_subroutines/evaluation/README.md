@@ -69,9 +69,3 @@ The results are saved to:
 `results/runtime_measurement.csv`
 
 Measurements include CPU cycles and execution times in microseconds. Serial communication is excluded from the measured subroutine execution time.
-
-## Host Evaluation
-
-Cachegrind and Memcheck evaluate the native LESS reference implementation on the host PC.
-
-See `cachegrind/README.md` for build instructions and result collection.
