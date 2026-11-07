@@ -83,4 +83,15 @@ __pycache__/
 # macOS metadata
 .DS_Store
 
-# LESS evaluation results
+.env
+.env.*
+*.env
+secrets.*
+config/secrets.*
+credentials.*
+*.pem
+*.key
+*.cert
+id_rsa
+id_rsa.pub
+client_secret*.json
