@@ -54,9 +54,6 @@ stack-usage: copy
 		su_dir="$(OUT_DIR)/stack_analysis_$$variant/objdir-$(PREFIX)_$$variant"; \
 		printf 'memcpy.c:1:1:memcpy\t0\tstatic\n' > "$$su_dir/memcpy.su"; \
 		printf 'memset.c:1:1:memset\t12\tstatic\n' > "$$su_dir/memset.su"; \
-		if [ "$(OUT_DIR)" = "overall" ]; then \
-			printf '__popcountsi2.c:1:1:__popcountsi2\t0\tstatic\n' > "$$su_dir/__popcountsi2.su"; \
-		fi; \
 	done
 
 memory:

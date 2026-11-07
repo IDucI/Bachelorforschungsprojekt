@@ -1,5 +1,0 @@
-REMOVE:
-libcross/README_setup.md
-libcross/try_cross.py
-cw_firmware/cross_convert_restr_vec_to_fp/README_setup.md
-cw_firmware/cross_convert_restr_vec_to_fp/verify_pinata_external_clock.py

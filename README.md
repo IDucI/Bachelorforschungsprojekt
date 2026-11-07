@@ -15,7 +15,7 @@ Although no physical side-channel traces were acquired as part of this project, 
 
 ## Objectives
 
-- Understand the structure and principles of the CROSS signature scheme
+- Understand the structure and principles of the CROSS & LESS signature scheme
 - Implement selected subroutines in C
 - Port the implementation to an embedded platform (STM32F4)
 - Validate correctness against reference implementations
@@ -28,6 +28,7 @@ Although no physical side-channel traces were acquired as part of this project, 
 - Microcontroller: STM32F4 
 - Analysis Tooling: ChipWhisperer  
 
+
 ## Project Structure
 
 The project is organized into documentation and source code. The `docs` folder contains the scientific report, project proposal, and other relevant documentation.
@@ -36,10 +37,8 @@ The `src` folder contains the implementations of the investigated schemes, suppo
 
 ```text
 ...Bachelorforschungsprojekt/
-├── docs/                 (Project documentation and reports)
 ├── src/
 │   ├── cross_round2/     (CROSS implementation)
-│   ├── cw-env311/        (Python virtual environment)
 │   ├── less/             (LESS implementation)
 │   ├── libkyber/         (Supporting Kyber library)
 │   └── ...

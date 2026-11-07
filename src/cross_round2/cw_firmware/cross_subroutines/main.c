@@ -148,13 +148,13 @@ uint8_t subroutines(uint8_t cmd, uint8_t scmd, uint8_t len, uint8_t* x) {
         // Local array for converted Fp vector elements
         FP_ELEM result[N];
 
-        __asm volatile ("" ::: "memory");
+        __asm__ volatile ("" ::: "memory");
         uint32_t cycle_start = DWT->CYCCNT;
 
         // Execute element-wise conversion from FZ vector (in databuffer) to Fp vector
         cross_convert_restr_vec_to_fp(result, (const FZ_ELEM*)databuffer);
 
-        __asm volatile ("" ::: "memory");
+        __asm__ volatile ("" ::: "memory");
         last_cycles = DWT->CYCCNT - cycle_start;
 
         // --- CHUNKING LOGIC BEGIN ---
@@ -197,13 +197,13 @@ uint8_t subroutines(uint8_t cmd, uint8_t scmd, uint8_t len, uint8_t* x) {
         FZ_ELEM* restr_vector = (FZ_ELEM*)(databuffer);
         FP_ELEM* matrix_V_tr  = (FP_ELEM*)(databuffer + (N * sizeof(FZ_ELEM)));
 
-        __asm volatile ("" ::: "memory");
+        __asm__ volatile ("" ::: "memory");
         uint32_t cycle_start = DWT->CYCCNT;
         
         // Actual function call with 3 arguments:
         cross_restr_vec_by_fp_matrix(result, restr_vector, (FP_ELEM (*)[N-K]) matrix_V_tr);
 
-        __asm volatile ("" ::: "memory");
+        __asm__ volatile ("" ::: "memory");
         last_cycles = DWT->CYCCNT - cycle_start;
         
         // Return exactly (N - K) field elements
@@ -226,13 +226,13 @@ uint8_t subroutines(uint8_t cmd, uint8_t scmd, uint8_t len, uint8_t* x) {
 #if defined(RSDPG)
     uint8_t result_rsdp_g[DENSELY_PACKED_FZ_RSDP_G_VEC_SIZE];
 
-    __asm volatile ("" ::: "memory");
+    __asm__ volatile ("" ::: "memory");
     uint32_t cycle_start = DWT->CYCCNT;
 
     // Pack the FZ vector using the RSDPG-specific packing function.
     cross_pack_fz_rsdp_g_vec(result_rsdp_g, (const FZ_ELEM*)databuffer);
 
-    __asm volatile ("" ::: "memory");
+    __asm__ volatile ("" ::: "memory");
     last_cycles = DWT->CYCCNT - cycle_start;
 
     // Return the packed vector to the host.
@@ -240,12 +240,12 @@ uint8_t subroutines(uint8_t cmd, uint8_t scmd, uint8_t len, uint8_t* x) {
 
 // Standard variant (RSDP): Use the standard FZ packing format.
 #else
-    __asm volatile ("" ::: "memory");
+    __asm__ volatile ("" ::: "memory");
     uint32_t cycle_start = DWT->CYCCNT;
 
     cross_pack_fz_vec(result, (const FZ_ELEM*)databuffer);
  
-    __asm volatile ("" ::: "memory");
+    __asm__ volatile ("" ::: "memory");
     last_cycles = DWT->CYCCNT - cycle_start;
 
     simpleserial_put('r', DENSELY_PACKED_FZ_VEC_SIZE, result);
@@ -267,13 +267,13 @@ uint8_t subroutines(uint8_t cmd, uint8_t scmd, uint8_t len, uint8_t* x) {
         FP_ELEM* unpacked_input = (FP_ELEM*)(databuffer);
         uint8_t out[DENSELY_PACKED_FP_SYN_SIZE]; 
 
-        __asm volatile ("" ::: "memory");
+        __asm__ volatile ("" ::: "memory");
         uint32_t cycle_start = DWT->CYCCNT;
 
         // Compress unpacked Fp syndrome vector into bit-packed format
         cross_pack_fp_syn(out, unpacked_input);
 
-        __asm volatile ("" ::: "memory");
+        __asm__ volatile ("" ::: "memory");
         last_cycles = DWT->CYCCNT - cycle_start;
 
         // Return packed syndrome byte array back to host
@@ -296,13 +296,13 @@ uint8_t subroutines(uint8_t cmd, uint8_t scmd, uint8_t len, uint8_t* x) {
         FZ_ELEM* restr_vec_a = (FZ_ELEM*)(databuffer);
         FZ_ELEM* restr_vec_b = (FZ_ELEM*)(databuffer + (N * sizeof(FZ_ELEM)));
 
-        __asm volatile ("" ::: "memory");
+        __asm__ volatile ("" ::: "memory");
         uint32_t cycle_start = DWT->CYCCNT;
         
         // Compute element-wise vector subtraction: result = vec_a - vec_b (mod p)
         cross_fz_vec_sub_n(result, restr_vec_a, restr_vec_b);
 
-        __asm volatile ("" ::: "memory");
+        __asm__ volatile ("" ::: "memory");
         last_cycles = DWT->CYCCNT - cycle_start;
         
         const uint16_t output_len = (uint16_t)(N * sizeof(FZ_ELEM));
@@ -339,13 +339,13 @@ uint8_t subroutines(uint8_t cmd, uint8_t scmd, uint8_t len, uint8_t* x) {
         FP_ELEM* fp_vector = (FP_ELEM*)(databuffer);
         FP_ELEM* matrix_V_tr = (FP_ELEM*)(databuffer + (N * sizeof(FP_ELEM)));
 
-        __asm volatile ("" ::: "memory");
+        __asm__ volatile ("" ::: "memory");
         uint32_t cycle_start = DWT->CYCCNT;
 
         // Perform vector-matrix multiplication
         cross_fp_vec_by_fp_matrix(result, fp_vector, (FP_ELEM (*)[N-K]) matrix_V_tr);
 
-        __asm volatile ("" ::: "memory");
+        __asm__ volatile ("" ::: "memory");
         last_cycles = DWT->CYCCNT - cycle_start;
 
         // Return (N - K) field elements back to host
@@ -368,13 +368,13 @@ uint8_t subroutines(uint8_t cmd, uint8_t scmd, uint8_t len, uint8_t* x) {
         FP_ELEM* fp_vec_a = (FP_ELEM*)(databuffer);
         FP_ELEM* fp_vec_b = (FP_ELEM*)(databuffer + (N * sizeof(FP_ELEM)));
 
-        __asm volatile ("" ::: "memory");
+        __asm__ volatile ("" ::: "memory");
         uint32_t cycle_start = DWT->CYCCNT;
         
         // Perform element-wise multiplication: result[i] = vec_a[i] * vec_b[i] (mod p)
         cross_fp_vec_by_fp_vec_pointwise(result, fp_vec_a, fp_vec_b);
 
-        __asm volatile ("" ::: "memory");
+        __asm__ volatile ("" ::: "memory");
         last_cycles = DWT->CYCCNT - cycle_start;
         
         // --- CHUNKING LOGIC BEGIN ---
@@ -417,13 +417,13 @@ uint8_t subroutines(uint8_t cmd, uint8_t scmd, uint8_t len, uint8_t* x) {
         FZ_ELEM* vec_b = all_elements + M;
         FZ_ELEM result[M];
 
-        __asm volatile ("" ::: "memory");
+        __asm__ volatile ("" ::: "memory");
         uint32_t cycle_start = DWT->CYCCNT;
 
         // Execute module-specific vector subtraction
         cross_fz_vec_sub_m(result, vec_a, vec_b);
 
-        __asm volatile ("" ::: "memory");
+        __asm__ volatile ("" ::: "memory");
         last_cycles = DWT->CYCCNT - cycle_start;
 
         simpleserial_put('r', M * sizeof(FZ_ELEM), (uint8_t*)result);
@@ -452,13 +452,13 @@ uint8_t subroutines(uint8_t cmd, uint8_t scmd, uint8_t len, uint8_t* x) {
         FZ_ELEM (*matrix_W)[N - M] = (FZ_ELEM(*)[N - M])(all_elements + M);
         FZ_ELEM result[N];
 
-        __asm volatile ("" ::: "memory");
+        __asm__ volatile ("" ::: "memory");
         uint32_t cycle_start = DWT->CYCCNT;
 
         // Multiply vector e with generator matrix W to expand dimension M to N
         cross_fz_inf_w_by_fz_matrix(result, vec_e, matrix_W);
 
-        __asm volatile ("" ::: "memory");
+        __asm__ volatile ("" ::: "memory");
         last_cycles = DWT->CYCCNT - cycle_start;
 
         // --- CHUNKING LOGIC BEGIN ---
@@ -508,13 +508,13 @@ uint8_t subroutines(uint8_t cmd, uint8_t scmd, uint8_t len, uint8_t* x) {
         uint32_t offset_u_prime = offset_chall + sizeof(FP_ELEM);
         const FP_ELEM* vec_u_prime = (const FP_ELEM*)(databuffer + offset_u_prime);
 
-        __asm volatile ("" ::: "memory");
+        __asm__ volatile ("" ::: "memory");
         uint32_t cycle_start = DWT->CYCCNT;
 
         // Compute combined scaling operation: result = convert(e) + (chall_1 * u_prime)
         cross_fp_vec_by_restr_vec_scaled(result, vec_e, chall_1, vec_u_prime);
 
-        __asm volatile ("" ::: "memory");
+        __asm__ volatile ("" ::: "memory");
         last_cycles = DWT->CYCCNT - cycle_start;
 
         // --- CHUNKING LOGIC BEGIN ---
@@ -547,7 +547,7 @@ uint8_t subroutines(uint8_t cmd, uint8_t scmd, uint8_t len, uint8_t* x) {
     case subroutine_fz_dz_norm_n: {
         led2_on();
 
-        __asm volatile ("" ::: "memory");
+        __asm__ volatile ("" ::: "memory");
         uint32_t cycle_start = DWT->CYCCNT;
 
         // Execute the actual fz_dz_norm_n operation on the input vector.
@@ -556,7 +556,7 @@ uint8_t subroutines(uint8_t cmd, uint8_t scmd, uint8_t len, uint8_t* x) {
         // in place by the function.
         cross_fz_dz_norm_n((FZ_ELEM*)databuffer);
 
-        __asm volatile ("" ::: "memory");
+        __asm__ volatile ("" ::: "memory");
         last_cycles = DWT->CYCCNT - cycle_start;
 
         // --- CHUNKING LOGIC BEGIN ---
@@ -592,14 +592,14 @@ uint8_t subroutines(uint8_t cmd, uint8_t scmd, uint8_t len, uint8_t* x) {
 #if defined(RSDPG)
         led2_on();
 
-        __asm volatile ("" ::: "memory");
+        __asm__ volatile ("" ::: "memory");
         uint32_t cycle_start = DWT->CYCCNT;
 
         // In-place normalization of raw elements modulo p across dimension M
         // Ensures element representations strictly conform to canonical range.
         cross_fz_dz_norm_m((FZ_ELEM*)(databuffer));
 
-        __asm volatile ("" ::: "memory");
+        __asm__ volatile ("" ::: "memory");
         last_cycles = DWT->CYCCNT - cycle_start;
 
         // --- CHUNKING LOGIC BEGIN ---
@@ -637,13 +637,13 @@ uint8_t subroutines(uint8_t cmd, uint8_t scmd, uint8_t len, uint8_t* x) {
         // The syndrome vector is stored directly in databuffer.
         FP_ELEM* syndrome = (FP_ELEM*)databuffer;
 
-        __asm volatile ("" ::: "memory");
+        __asm__ volatile ("" ::: "memory");
         uint32_t cycle_start = DWT->CYCCNT;
 
         // Normalize the syndrome vector in place.
         cross_fp_dz_norm_synd(syndrome);
 
-        __asm volatile ("" ::: "memory");
+        __asm__ volatile ("" ::: "memory");
         last_cycles = DWT->CYCCNT - cycle_start;
 
         // --- CHUNKING LOGIC BEGIN ---
