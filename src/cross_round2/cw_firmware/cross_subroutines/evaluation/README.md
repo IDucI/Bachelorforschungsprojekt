@@ -61,7 +61,7 @@ To test only a specific variant, provide the family, category, and optimization 
 
 When all 18 variants are tested, the summary contains all 18 variants. When a specific variant is selected, only that variant is listed.
 
-The test results are displayed in the terminal.
+The test results are displayed in the terminal and an additional .csv is created for a better overview to check the results.
 
 
 ## Runtime Measurement

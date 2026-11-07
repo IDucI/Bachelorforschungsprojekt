@@ -43,7 +43,6 @@ src/cross_round2/cw_firmware/cross_subroutines/evaluation/cachegrind/cachegrind_
 # Python egg metadata, regenerated from source files by setuptools.
 *.egg-info/
 
-*.csv
 *.json
 *.log
 *.kate-swp
@@ -85,6 +84,3 @@ __pycache__/
 .DS_Store
 
 # LESS evaluation results
-!/src/less/cw_firmware/less_subroutines/evaluation/results/runtime_measurement.csv
-!/src/less/cw_firmware/less_subroutines_stack/stack/less_memory.csv
-!/src/less/cw_firmware/less_subroutines_stack/stack/less_stack_analysis.csv

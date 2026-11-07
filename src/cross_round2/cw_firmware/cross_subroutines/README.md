@@ -75,7 +75,7 @@ cross_subroutines_<family>_<category>_<variant>-PINATA.hex
 
 For example: `cross_subroutines_rsdp_1_fast-PINATA.hex`
 
-A successful build should finish without compilation or linking errors. The build output may report that all 14 supported firmware subroutines have been generated. This refers to the available subroutine implementations, not the number of firmware configurations.
+A successful build should finish without compilation or linking errors. The build output may report that all the firmware generation is completed for all 18 configurations.
 
 
 ## Clock Configuration

@@ -1,6 +1,8 @@
 import sys
 import subprocess
 import random
+import csv
+from datetime import datetime
 from pathlib import Path
 import chipwhisperer as cw
 
@@ -11,6 +13,8 @@ import chipwhisperer as cw
 base_dir = Path(__file__).resolve().parent
 libcross_dir = base_dir.parent.parent.parent / "libcross"
 build_dir = libcross_dir / "build"
+results_csv = base_dir / "board_test_details.csv"
+
 
 if str(libcross_dir) not in sys.path:
     sys.path.insert(0, str(libcross_dir))
@@ -253,6 +257,55 @@ def fp_to_bytes(values, c):
         int(value).to_bytes(byte_length, "little")
         for value in values
     )
+
+
+def log_test_result(
+    family: str,
+    category: int,
+    variant: str,
+    subroutine: str,
+    round_number: int | str,
+    base_seed: int,
+    test_seed: int,
+    status: str,
+    error: str = ""
+) -> None:
+    """Append a CROSS board test result to the CSV file."""
+
+    needs_header = (
+        not results_csv.exists()
+        or results_csv.stat().st_size == 0
+    )
+
+    with results_csv.open("a", newline = "", encoding = "utf-8") as file:
+        writer = csv.writer(file)
+
+        if needs_header:
+            writer.writerow([
+                "timestamp",
+                "family",
+                "category",
+                "variant",
+                "subroutine",
+                "round",
+                "base_seed",
+                "test_seed",
+                "status",
+                "error",
+            ])
+
+        writer.writerow([
+            datetime.now().astimezone().isoformat(timespec = "seconds"),
+            family,
+            category,
+            variant,
+            subroutine,
+            round_number,
+            base_seed,
+            test_seed,
+            status,
+            error,
+        ])
 
 
 def test_intermediate_values(
@@ -724,12 +777,14 @@ def run_intermediate_tests(target, c: Cross):
     elif c.params.algorithm == "RSDPG":
         tests.extend(RSDPG_INTERMEDIATE_TESTS)
 
-    rng = random.Random(
+    test_seed = (
         random_seed
         + 500000
         + c.params.category * 100000
         + (1000000 if c.params.algorithm == "RSDPG" else 0)
     )
+
+    rng = random.Random(test_seed)
 
     keygen, sign = intermediate_results(c, rng)
 
@@ -743,18 +798,32 @@ def run_intermediate_tests(target, c: Cross):
         print(f"{name:<38}", end = "", flush = True)
 
         result = sign if source == "sign" else keygen
+        round_number = ""
 
         try:
             # Execute the selected test.
             if round_specific:
                 # Select a random signing round for this subroutine test.
                 i = rng.randrange(c.params.t)
+                round_number = i + 1
                 test_function(target, c, result, i)
             else:
                 test_function(target, c, result)
 
         except Exception as exc:
             import traceback
+
+            log_test_result(
+                c.params.algorithm,
+                c.params.category,
+                c.params.optimization,
+                name,
+                round_number,
+                random_seed,
+                test_seed,
+                "Fail",
+                f"{type(exc).__name__}: {exc}",
+            )
 
             print(" Fail")
             traceback.print_exc()
@@ -766,6 +835,17 @@ def run_intermediate_tests(target, c: Cross):
             print(f"Exception  : {type(exc).__name__}: {exc}")
             print("============================================================")
             return False, f"{name} intermediate test failed"
+
+        log_test_result(
+            c.params.algorithm,
+            c.params.category,
+            c.params.optimization,
+            name,
+            round_number,
+            random_seed,
+            test_seed,
+            "Pass"
+        )
 
         print(" Pass")
 

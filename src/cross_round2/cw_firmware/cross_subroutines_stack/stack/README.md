@@ -150,7 +150,7 @@ The Static Stack Analyzer should then display the estimated stack usage. Inspect
 
 Repeat this procedure for the other firmware configurations to obtain their respective stack analysis results.
 
-### 5. Stack Analysis Results
+### Stack Analysis Results
 
 The Static Stack Analyzer in STM32CubeIDE provides stack usage information for individual functions and their call relationships.
 
@@ -182,4 +182,3 @@ Since the individual switch cases are not separate functions, their local arrays
 This behaviour was experimentally verified by introducing a local array of 300,000 bytes in the verify case. STM32CubeIDE subsequently reported a local cost of 300,040 bytes for `subroutines()`.
 
 Therefore, the buffer sizes calculated by `cross_memory.py` represent the estimated storage requirements of the input and output buffers. They should be treated as a separate buffer-size estimate, not as an exact additional stack requirement that can simply be added to the values reported by STM32CubeIDE. Compiler overhead and memory already accounted for in the stack analysis must also be considered.
-
