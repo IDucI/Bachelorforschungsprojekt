@@ -55,3 +55,7 @@ Before working with the project, activate the provided Python environment from t
 ```bash
 cd .../Bachelorforschungsprojekt/src
 source cw-env311/bin/activate
+```
+
+Acknowledgments & References
+This project was developed as part of a Bachelor research project. It builds upon reference implementations, templates, and foundational materials provided by the project supervisors and university course guidelines, alongside official specifications for the CROSS and LESS post-quantum signature schemes and so on.
